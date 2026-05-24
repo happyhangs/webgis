@@ -425,7 +425,25 @@ body,
 
 .builtin-done {
   font-size: 10px;
-  color: #999;
+  color: #4caf50;
+  font-weight: 700;
+}
+
+.builtin-size {
+  font-size: 10px;
+  color: #bbb;
+  flex-shrink: 0;
+}
+
+.builtin-cat {
+  margin-bottom: 2px;
+}
+
+.builtin-cat-label {
+  font-size: 11px;
+  color: #aaa;
+  padding: 2px 6px;
+  margin-top: 2px;
 }
 
 @keyframes spin {

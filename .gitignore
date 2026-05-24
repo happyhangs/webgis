@@ -6,3 +6,11 @@ dist/
 vite.out.log
 vite.err.log
 src/test.html
+
+# 大型 GeoJSON（>50MB），本地运行 convert-shp.mjs 生成
+public/data/市界.json
+public/data/县界.json
+public/data/高速.json
+public/data/国道.json
+public/data/省道.json
+public/data/区县(2021-05).json

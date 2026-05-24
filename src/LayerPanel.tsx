@@ -17,7 +17,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useAppContext, DEFAULT_LAYER_ID } from './AppContext';
-import { BUILTIN_LAYERS, fetchBuiltinLayer } from './utils/builtin';
+import { BUILTIN_LAYERS, BUILTIN_CATEGORIES, fetchBuiltinLayer } from './utils/builtin';
 import type { GeoJSONFeature, Layer } from './types';
 
 const shapeIcon = (shapeType: string) => {
@@ -233,25 +233,35 @@ export default function LayerPanel() {
             <Database size={13} />
             <span>内置数据</span>
           </div>
-          {BUILTIN_LAYERS.map((def) => {
-            const loading = loadingBuiltin === def.key;
-            const alreadyLoaded = state.layers.some((l) => l.name === def.name);
+          {BUILTIN_CATEGORIES.map((cat) => {
+            const catLayers = BUILTIN_LAYERS.filter((d) => d.category === cat.key);
+            if (catLayers.length === 0) return null;
             return (
-              <div
-                key={def.key}
-                className={`builtin-item ${alreadyLoaded ? 'loaded' : ''}`}
-                onClick={() => {
-                  if (!alreadyLoaded && !loading) handleLoadBuiltin(def);
-                }}
-                title={alreadyLoaded ? '已加载' : '点击加载'}
-              >
-                <span
-                  className="builtin-color"
-                  style={{ backgroundColor: def.color }}
-                />
-                <span className="builtin-name">{def.name}</span>
-                {loading && <Loader2 size={12} className="builtin-spinner" />}
-                {alreadyLoaded && <span className="builtin-done">已加载</span>}
+              <div key={cat.key} className="builtin-cat">
+                <div className="builtin-cat-label">{cat.label}</div>
+                {catLayers.map((def) => {
+                  const loading = loadingBuiltin === def.key;
+                  const alreadyLoaded = state.layers.some((l) => l.name === def.name);
+                  return (
+                    <div
+                      key={def.key}
+                      className={`builtin-item ${alreadyLoaded ? 'loaded' : ''}`}
+                      onClick={() => {
+                        if (!alreadyLoaded && !loading) handleLoadBuiltin(def);
+                      }}
+                      title={alreadyLoaded ? '已加载' : `点击加载 (${def.size})`}
+                    >
+                      <span
+                        className="builtin-color"
+                        style={{ backgroundColor: def.color }}
+                      />
+                      <span className="builtin-name">{def.name}</span>
+                      <span className="builtin-size">{def.size}</span>
+                      {loading && <Loader2 size={11} className="builtin-spinner" />}
+                      {alreadyLoaded && <span className="builtin-done">✓</span>}
+                    </div>
+                  );
+                })}
               </div>
             );
           })}
