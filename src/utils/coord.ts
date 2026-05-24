@@ -83,6 +83,27 @@ function convertCoord(lat: number, lng: number, from: CoordSystem): [number, num
   return [lat, lng];
 }
 
+/** Convert all coords from WGS-84 to GCJ-02 for Amap display */
+export function applyGCJOffset(feature: any): any {
+  const f = { ...feature, geometry: { ...feature.geometry } };
+  const convertPt = (c: number[]) => {
+    const [lat, lng] = wgs2gcj(c[1], c[0]);
+    return [lng, lat];
+  };
+  if (f.geometry.type === 'Point') {
+    f.geometry.coordinates = convertPt(f.geometry.coordinates);
+  } else if (f.geometry.type === 'MultiPoint' || f.geometry.type === 'LineString') {
+    f.geometry.coordinates = f.geometry.coordinates.map(convertPt);
+  } else if (f.geometry.type === 'MultiLineString' || f.geometry.type === 'Polygon') {
+    f.geometry.coordinates = f.geometry.coordinates.map((ring: any) => ring.map(convertPt));
+  } else if (f.geometry.type === 'MultiPolygon') {
+    f.geometry.coordinates = f.geometry.coordinates.map((poly: any) =>
+      poly.map((ring: any) => ring.map(convertPt)),
+    );
+  }
+  return f;
+}
+
 /** Convert all coordinates in a GeoJSON feature from source CS to WGS-84 */
 export function convertFeatureCoords(feature: any, from: CoordSystem): any {
   if (from === 'wgs84') return feature; // no conversion needed

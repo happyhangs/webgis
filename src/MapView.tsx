@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import { useAppContext } from './AppContext';
 import { getBasemapConfig } from './basemaps';
 import { getFeatureMeasurement } from './utils/measure';
+import { applyGCJOffset } from './utils/coord';
 import type { GeoJSONFeature, BasemapConfig } from './types';
 
 const SHAPE_LABELS: Record<string, string> = {
@@ -246,12 +247,19 @@ export default function MapView() {
       }
     }
 
+    // Check if current basemap needs GCJ-02 offset for display
+    const cfg = getBasemapConfig(state.basemap);
+    const toGCJ = cfg.wgs2gcj === true;
+
     // Add new features not yet on map (and from visible layers)
     for (const feature of state.features) {
       if (!visibleIds.has(feature.properties.layerId)) continue;
       if (layerMap.current.has(feature.properties.id)) continue;
 
-      const gj = L.geoJSON(feature as any, {
+      // Apply display offset for Amap basemaps
+      const displayFeature = toGCJ ? applyGCJOffset(feature) : feature;
+
+      const gj = L.geoJSON(displayFeature as any, {
         pointToLayer: (_f: any, latlng) =>
           L.circleMarker(latlng, {
             radius: 8,
@@ -280,7 +288,7 @@ export default function MapView() {
       });
       gj.addTo(map);
     }
-  }, [state.features, state.layers, visibleIds, dispatch]);
+  }, [state.features, state.layers, visibleIds, state.basemap, dispatch]);
 
   // Highlight selected feature
   useEffect(() => {
@@ -380,12 +388,14 @@ export default function MapView() {
   const flyToFeature = useCallback((feature: GeoJSONFeature) => {
     const map = mapRef.current;
     if (!map) return;
-    const gj = L.geoJSON(feature as any);
+    const cfg = getBasemapConfig(state.basemap);
+    const displayFeature = cfg.wgs2gcj ? applyGCJOffset(feature) : feature;
+    const gj = L.geoJSON(displayFeature as any);
     const bounds = gj.getBounds();
     if (bounds.isValid()) {
       map.flyToBounds(bounds, { padding: [50, 50], duration: 1 });
     }
-  }, []);
+  }, [state.basemap]);
 
   const placeMarker = useCallback((lat: number, lng: number, name: string) => {
     const map = mapRef.current;
