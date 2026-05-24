@@ -35,47 +35,30 @@ export default function Toolbar() {
   const shpInputRef = useRef<HTMLInputElement>(null);
   const [importType, setImportType] = useState<'geojson' | 'csv'>('geojson');
   const [searchText, setSearchText] = useState('');
-  const [searching, setSearching] = useState(false);
 
   const api = () => (window as any).__webgis;
 
-  const handleSearch = useCallback(async () => {
+  const handleSearch = useCallback(() => {
     const q = searchText.trim();
     if (!q) return;
     const a = api();
     if (!a) return;
 
-    // Try parsing as "lat, lng"
+    // Parse "lat, lng" or "lat lng"
     const coordMatch = q.match(/^(-?\d+\.?\d*)\s*[,，\s]\s*(-?\d+\.?\d*)$/);
-    if (coordMatch) {
-      const lat = parseFloat(coordMatch[1]);
-      const lng = parseFloat(coordMatch[2]);
-      if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
-        a.flyTo(lat, lng);
-        a.placeMarker(lat, lng, `${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-        return;
-      }
+    if (!coordMatch) {
+      alert('请输入坐标，格式：纬度,经度\n例如：39.9042, 116.4074');
+      return;
     }
-
-    // Geocode via Nominatim
-    setSearching(true);
-    try {
-      const resp = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`,
-      );
-      const results = await resp.json();
-      if (results.length === 0) {
-        alert('未找到该地点');
-        return;
-      }
-      const { lat, lon, display_name } = results[0];
-      a.flyTo(parseFloat(lat), parseFloat(lon));
-      a.placeMarker(parseFloat(lat), parseFloat(lon), display_name);
-    } catch {
-      alert('搜索失败，请检查网络');
-    } finally {
-      setSearching(false);
+    const lat = parseFloat(coordMatch[1]);
+    const lng = parseFloat(coordMatch[2]);
+    if (Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+      alert('坐标范围错误：纬度 -90~90，经度 -180~180');
+      return;
     }
+    a.flyTo(lat, lng);
+    a.placeMarker(lat, lng, `${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+    setSearchText('');
   }, [searchText]);
 
   const handleToolClick = useCallback(
@@ -222,7 +205,7 @@ export default function Toolbar() {
         <input
           className="search-input"
           type="text"
-          placeholder="坐标或地名，如 39.9,116.4 或 北京"
+          placeholder="输入坐标，如 39.9042, 116.4074"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
@@ -230,9 +213,8 @@ export default function Toolbar() {
         <button
           className="toolbar-btn search-btn"
           onClick={handleSearch}
-          disabled={searching}
         >
-          {searching ? '...' : '定位'}
+          定位
         </button>
       </div>
 
