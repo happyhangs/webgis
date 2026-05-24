@@ -34,7 +34,7 @@ export interface PersistedState {
   basemap: string;
 }
 
-export type BasemapKey = 'osm' | 'amap' | 'amap_sat' | 'amap_hybrid' | 'google' | 'google_sat';
+export type BasemapKey = 'osm' | 'amap' | 'amap_sat' | 'amap_hybrid' | 'google' | 'google_sat' | 'google_hybrid';
 
 export interface BasemapConfig {
   key: BasemapKey;

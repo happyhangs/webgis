@@ -51,6 +51,16 @@ export const BASEMAPS: Record<BasemapKey, BasemapConfig> = {
     subdomains: ['0', '1', '2', '3'],
     attribution: '&copy; Google',
   },
+  google_hybrid: {
+    key: 'google_hybrid',
+    name: '谷歌卫星混合',
+    url: 'https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+    subdomains: ['0', '1', '2', '3'],
+    attribution: '&copy; Google',
+    overlayUrl: 'https://mt{s}.google.com/vt/lyrs=h&x={x}&y={y}&z={z}',
+    overlaySubdomains: ['0', '1', '2', '3'],
+    overlayOpacity: 0.5,
+  },
 };
 
 export const BASEMAP_OPTIONS = Object.values(BASEMAPS);
