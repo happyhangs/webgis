@@ -1,0 +1,8 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.edge-cdp-profile/
+全国shp/
+vite.out.log
+vite.err.log
+src/test.html
