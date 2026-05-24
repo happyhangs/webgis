@@ -63,6 +63,12 @@ export const BASEMAPS: Record<BasemapKey, BasemapConfig> = {
     overlaySubdomains: ['0', '1', '2', '3'],
     overlayOpacity: 0.5,
   },
+  esri_sat: {
+    key: 'esri_sat',
+    name: 'ESRI卫星',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: '&copy; Esri, Maxar, Earthstar Geographics',
+  },
 };
 
 export const BASEMAP_OPTIONS = Object.values(BASEMAPS);

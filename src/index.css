@@ -1390,6 +1390,87 @@ button {
 .field-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .field-mu { color: #1a73e8; font-weight: 600; font-size: 12px; flex-shrink: 0; }
 
+/* ===== Field Detect Panel ===== */
+.detect-launcher {
+  position: absolute;
+  top: 8px;
+  right: 236px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border: 1px solid #2f7d32;
+  border-radius: 6px;
+  background: #f0f7f0;
+  cursor: pointer;
+  font-size: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  color: #2f7d32;
+}
+.detect-launcher:hover { background: #e0efe0; }
+.field-loc-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.field-loc-btn {
+  padding: 4px 10px;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+}
+.field-loc-btn.active { background: #2f7d32; color: #fff; border-color: #2f7d32; }
+.field-loc-btn:hover:not(.active) { background: #f0f0f0; }
+
+.field-detect-btn {
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  background: #2f7d32;
+  color: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: inherit;
+}
+.field-detect-btn:hover:not(:disabled) { background: #256b28; }
+.field-detect-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.field-hint {
+  font-size: 11px;
+  color: #999;
+  margin-top: 8px;
+  line-height: 1.6;
+}
+.field-hint strong { color: #666; }
+
+.field-result { margin-top: 10px; }
+.field-result-card {
+  padding: 6px 8px;
+  background: #f0f7f0;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+.field-result-name { font-size: 12px; font-weight: 600; color: #2f7d32; }
+.field-result-stats {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #555;
+}
+.field-result-stats span { display: flex; align-items: center; gap: 3px; }
+
 @keyframes spin {
   from {
     transform: rotate(0deg);

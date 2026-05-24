@@ -4,6 +4,7 @@ import LayerPanel from './LayerPanel';
 import NavigationPanel from './NavigationPanel';
 import WeatherPanel from './WeatherPanel';
 import FieldPanel from './FieldPanel';
+import FieldDetectPanel from './FieldDetectPanel';
 import PropertyPanel from './PropertyPanel';
 import MapView from './MapView';
 
@@ -18,6 +19,7 @@ export default function App() {
             <MapView />
             <NavigationPanel />
             <WeatherPanel />
+            <FieldDetectPanel />
             <FieldPanel />
           </div>
           <PropertyPanel />
