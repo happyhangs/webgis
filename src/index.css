@@ -137,6 +137,23 @@ body,
   border-color: #69b4ff;
 }
 
+.cs-select {
+  padding: 3px 4px;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: inherit;
+  background: #fff;
+  cursor: pointer;
+  color: #333;
+  max-width: 72px;
+}
+
+.cs-select:focus {
+  outline: none;
+  border-color: #69b4ff;
+}
+
 .toolbar-btn.active {
   background: #cce5ff;
   border-color: #69b4ff;

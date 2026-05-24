@@ -18,6 +18,8 @@ import { useAppContext } from './AppContext';
 import { BASEMAP_OPTIONS } from './basemaps';
 import { exportGeoJSON, importGeoJSON } from './utils/geojson';
 import { exportCSV, importCSV } from './utils/csv';
+import { convertFeatureCoords } from './utils/coord';
+import type { CoordSystem } from './utils/coord';
 import type { GeoJSONFeature } from './types';
 
 type ActiveTool =
@@ -36,7 +38,10 @@ export default function Toolbar() {
   const shpInputRef = useRef<HTMLInputElement>(null);
   const kmlInputRef = useRef<HTMLInputElement>(null);
   const [importType, setImportType] = useState<'geojson' | 'csv'>('geojson');
+  const [importCS, setImportCS] = useState<string>(() => localStorage.getItem('webgis_import_cs') || 'wgs84');
   const [searchText, setSearchText] = useState('');
+
+  const saveImportCS = (cs: string) => { setImportCS(cs); localStorage.setItem('webgis_import_cs', cs); };
 
   const api = () => (window as any).__webgis;
 
@@ -167,20 +172,21 @@ export default function Toolbar() {
         const text = reader.result as string;
         const features =
           importType === 'geojson' ? importGeoJSON(text) : importCSV(text);
-        if (features.length === 0) {
+        const converted = features.map((f) => convertFeatureCoords(f, importCS as CoordSystem));
+        if (converted.length === 0) {
           alert('未找到有效数据');
           return;
         }
         // Merge with existing — avoid duplicate IDs
         const existingIds = new Set(state.features.map((f) => f.properties.id));
-        const newFeatures = features.filter(
+        const newFeatures = converted.filter(
           (f) => !existingIds.has(f.properties.id),
         );
         dispatch({
           type: 'SET_FEATURES',
           features: [...state.features, ...newFeatures],
         });
-        alert(`成功导入 ${newFeatures.length} 个要素`);
+        alert(`成功导入 ${newFeatures.length} 个要素 (${importCS.toUpperCase()})`);
       } catch {
         alert('文件解析失败，请检查格式');
       }
@@ -227,8 +233,9 @@ export default function Toolbar() {
         });
 
       dispatch({ type: 'ADD_LAYER', layer: { id: layerId, name: layerName, visible: true } });
-      dispatch({ type: 'BATCH_ADD_FEATURES', features });
-      alert(`成功导入 SHP: ${features.length} 个要素 → 图层「${layerName}」`);
+      const converted = features.map((f) => convertFeatureCoords(f, importCS as CoordSystem));
+      dispatch({ type: 'BATCH_ADD_FEATURES', features: converted });
+      alert(`成功导入 SHP: ${converted.length} 个要素 → 图层「${layerName}」 (${importCS.toUpperCase()})`);
     } catch (err: any) {
       alert(`SHP 解析失败: ${err.message || '未知错误'}`);
     }
@@ -286,8 +293,9 @@ export default function Toolbar() {
         });
 
       dispatch({ type: 'ADD_LAYER', layer: { id: layerId, name: layerName, visible: true } });
-      dispatch({ type: 'BATCH_ADD_FEATURES', features });
-      alert(`成功导入 KML: ${features.length} 个要素 → 图层「${layerName}」`);
+      const converted = features.map((f) => convertFeatureCoords(f, importCS as CoordSystem));
+      dispatch({ type: 'BATCH_ADD_FEATURES', features: converted });
+      alert(`成功导入 KML: ${converted.length} 个要素 → 图层「${layerName}」 (${importCS.toUpperCase()})`);
     } catch (err: any) {
       alert(`KML 解析失败: ${err.message || '未知错误'}`);
     }
@@ -380,6 +388,16 @@ export default function Toolbar() {
       </div>
 
       <div className="toolbar-group">
+        <select
+          className="cs-select"
+          value={importCS}
+          onChange={(e) => saveImportCS(e.target.value)}
+          title="导入坐标系"
+        >
+          <option value="wgs84">WGS-84</option>
+          <option value="gcj02">GCJ-02</option>
+          <option value="bd09">BD-09</option>
+        </select>
         <button
           className="toolbar-btn"
           title="导入 KML"
