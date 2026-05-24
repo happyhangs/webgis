@@ -394,7 +394,15 @@ export default function MapView() {
       fillOpacity: 0.9,
     }).addTo(map);
     (marker as any).feature = feature;
-    marker.bindPopup(`<b>${name}</b><br>${lat.toFixed(6)}, ${lng.toFixed(6)}`).openPopup();
+    const popupContent = document.createElement('div');
+    popupContent.innerHTML = `<b>${name}</b><br>${lat.toFixed(6)}, ${lng.toFixed(6)}<br><a href="#" class="popup-delete" style="color:#c00;font-size:12px;">删除此标记</a>`;
+    popupContent.querySelector('.popup-delete')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      map.removeLayer(marker);
+      layerMap.current.delete(feature.properties.id);
+      dispatch({ type: 'DELETE_FEATURE', id: feature.properties.id });
+    });
+    marker.bindPopup(popupContent).openPopup();
     marker.on('click', () => {
       dispatch({ type: 'SELECT_FEATURE', id: feature.properties.id });
     });
