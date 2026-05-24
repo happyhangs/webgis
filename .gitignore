@@ -6,6 +6,9 @@ dist/
 vite.out.log
 vite.err.log
 src/test.html
+webgis/
+重点研发/
+webgis.zip
 
 # 大型 GeoJSON（>50MB），本地运行 convert-shp.mjs 生成
 public/data/市界.json
