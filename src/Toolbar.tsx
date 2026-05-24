@@ -245,8 +245,8 @@ export default function Toolbar() {
       const errNode = xml.querySelector('parsererror');
       if (errNode) throw new Error('XML 解析失败');
 
-      const { default: toGeoJSON } = await import('@tmcw/togeojson');
-      const geojson: any = toGeoJSON.kml(xml);
+      const { kml } = await import('@tmcw/togeojson');
+      const geojson: any = kml(xml);
 
       const items: any[] =
         geojson.type === 'FeatureCollection'
