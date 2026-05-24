@@ -295,6 +295,14 @@ export default function Toolbar() {
 
   return (
     <div className="toolbar">
+      <div className="toolbar-brand">
+        <span className="toolbar-brand-mark">
+          <img src="/point-tool-icon.svg" alt="" />
+        </span>
+        <span className="toolbar-brand-title">点位工具</span>
+        <span className="toolbar-brand-count">{state.features.length}</span>
+      </div>
+
       <div className="toolbar-group search-group">
         <input
           className="search-input"

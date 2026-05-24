@@ -1,6 +1,7 @@
 import { AppProvider } from './AppContext';
 import Toolbar from './Toolbar';
 import LayerPanel from './LayerPanel';
+import NavigationPanel from './NavigationPanel';
 import PropertyPanel from './PropertyPanel';
 import MapView from './MapView';
 
@@ -11,7 +12,10 @@ export default function App() {
         <Toolbar />
         <div className="app-main">
           <LayerPanel />
-          <MapView />
+          <div className="map-stage">
+            <MapView />
+            <NavigationPanel />
+          </div>
           <PropertyPanel />
         </div>
       </div>

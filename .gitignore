@@ -2,6 +2,7 @@ node_modules/
 dist/
 *.tsbuildinfo
 .edge-cdp-profile/
+.edge-test-profile/
 全国shp/
 vite.out.log
 vite.err.log
@@ -11,9 +12,19 @@ webgis/
 webgis.zip
 
 # 大型 GeoJSON（>50MB），本地运行 convert-shp.mjs 生成
+public/data/国界线.json
+public/data/省.json
+public/data/省界.json
 public/data/市界.json
 public/data/县界.json
+public/data/铁路.json
 public/data/高速.json
 public/data/国道.json
 public/data/省道.json
 public/data/区县(2021-05).json
+public/data/一级河流(线).json
+public/data/一级河流(面).json
+public/data/二级河流(线).json
+public/data/二级河流(面).json
+public/data/四级河流.json
+public/data/五级河流.json
