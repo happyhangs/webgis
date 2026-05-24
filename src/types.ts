@@ -34,7 +34,7 @@ export interface PersistedState {
   basemap: string;
 }
 
-export type BasemapKey = 'osm' | 'amap' | 'amap_sat' | 'google' | 'google_sat';
+export type BasemapKey = 'osm' | 'amap' | 'amap_sat' | 'amap_hybrid' | 'google' | 'google_sat' | 'baidu' | 'baidu_sat';
 
 export interface BasemapConfig {
   key: BasemapKey;
@@ -42,4 +42,7 @@ export interface BasemapConfig {
   url: string;
   subdomains?: string[];
   attribution: string;
+  overlayUrl?: string;
+  overlaySubdomains?: string[];
+  overlayOpacity?: number;
 }

@@ -100,6 +100,21 @@ body,
   font-weight: 600;
 }
 
+.key-input {
+  padding: 4px 6px;
+  border: 1px solid #e9c46a;
+  border-radius: 4px 0 0 4px;
+  font-size: 11px;
+  font-family: inherit;
+  width: 80px;
+  outline: none;
+  background: #fffdf0;
+}
+
+.key-input:focus {
+  border-color: #f4a261;
+}
+
 .toolbar-inline-icon {
   color: #888;
   flex-shrink: 0;

@@ -94,6 +94,7 @@ export default function MapView() {
   const layerMap = useRef<Map<string, L.Layer>>(new Map());
   const selectedLayer = useRef<L.Layer | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
+  const overlayTileRef = useRef<L.TileLayer | null>(null);
   const currentLayerIdRef = useRef(state.currentLayerId);
   const initializedRef = useRef(false);
 
@@ -114,6 +115,16 @@ export default function MapView() {
     const cfg = getBasemapConfig(state.basemap);
     const tileLayer = L.tileLayer(cfg.url, getTileLayerOptions(cfg)).addTo(map);
     tileLayerRef.current = tileLayer;
+
+    if (cfg.overlayUrl) {
+      const ol = L.tileLayer(cfg.overlayUrl, {
+        attribution: '',
+        maxZoom: 19,
+        subdomains: cfg.overlaySubdomains,
+        opacity: cfg.overlayOpacity ?? 0.4,
+      }).addTo(map);
+      overlayTileRef.current = ol;
+    }
 
     // --- Geoman event handlers ---
 
@@ -178,6 +189,7 @@ export default function MapView() {
       selectedLayer.current = null;
       initializedRef.current = false;
       tileLayerRef.current = null;
+      overlayTileRef.current = null;
       mapRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -189,14 +201,24 @@ export default function MapView() {
     if (!map) return;
     const cfg = getBasemapConfig(state.basemap);
 
-    // Remove old tile layer
-    if (tileLayerRef.current) {
-      map.removeLayer(tileLayerRef.current);
-    }
+    // Remove old tile layers
+    if (tileLayerRef.current) map.removeLayer(tileLayerRef.current);
+    if (overlayTileRef.current) map.removeLayer(overlayTileRef.current);
 
-    // Add new one
+    // Add main tile layer
     const tl = L.tileLayer(cfg.url, getTileLayerOptions(cfg)).addTo(map);
     tileLayerRef.current = tl;
+
+    // Add overlay if hybrid
+    if (cfg.overlayUrl) {
+      const ol = L.tileLayer(cfg.overlayUrl, {
+        attribution: '',
+        maxZoom: 19,
+        subdomains: cfg.overlaySubdomains,
+        opacity: cfg.overlayOpacity ?? 0.4,
+      }).addTo(map);
+      overlayTileRef.current = ol;
+    }
   }, [state.basemap]);
 
   // SynFeature visibility: get visible layer IDs

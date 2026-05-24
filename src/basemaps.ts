@@ -10,6 +10,7 @@ export const BASEMAPS: Record<BasemapKey, BasemapConfig> = {
     subdomains: ['a', 'b', 'c'],
     attribution: '&copy; OpenStreetMap contributors',
   },
+  // ── 高德 ──
   amap: {
     key: 'amap',
     name: '高德标准',
@@ -24,6 +25,18 @@ export const BASEMAPS: Record<BasemapKey, BasemapConfig> = {
     subdomains: ['1', '2', '3', '4'],
     attribution: '&copy; 高德地图',
   },
+  amap_hybrid: {
+    key: 'amap_hybrid',
+    name: '高德卫星混合',
+    url: 'https://webst0{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
+    subdomains: ['1', '2', '3', '4'],
+    attribution: '&copy; 高德地图',
+    // Satellite base + road label overlay
+    overlayUrl: 'https://webst0{s}.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}&size=1&scl=1',
+    overlaySubdomains: ['1', '2', '3', '4'],
+    overlayOpacity: 0.35,
+  },
+  // ── 谷歌 ──
   google: {
     key: 'google',
     name: '谷歌标准',
@@ -37,6 +50,21 @@ export const BASEMAPS: Record<BasemapKey, BasemapConfig> = {
     url: 'https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
     subdomains: ['0', '1', '2', '3'],
     attribution: '&copy; Google',
+  },
+  // ── 百度 ──
+  baidu: {
+    key: 'baidu',
+    name: '百度标准',
+    url: 'https://online{s}.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=pl&scaler=1&p=1',
+    subdomains: ['0', '1', '2', '3'],
+    attribution: '&copy; 百度地图',
+  },
+  baidu_sat: {
+    key: 'baidu_sat',
+    name: '百度卫星',
+    url: 'https://shangetu{s}.map.bdimg.com/it/u=x={x};y={y};z={z};v=009;type=sate&fm=46',
+    subdomains: ['0', '1', '2', '3'],
+    attribution: '&copy; 百度地图',
   },
 };
 

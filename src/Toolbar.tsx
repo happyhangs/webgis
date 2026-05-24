@@ -11,7 +11,6 @@ import {
   Table,
   Layers,
   Package,
-  Search,
 } from 'lucide-react';
 import { useAppContext } from './AppContext';
 import { BASEMAP_OPTIONS } from './basemaps';
@@ -35,31 +34,60 @@ export default function Toolbar() {
   const shpInputRef = useRef<HTMLInputElement>(null);
   const [importType, setImportType] = useState<'geojson' | 'csv'>('geojson');
   const [searchText, setSearchText] = useState('');
+  const [amapKey, setAmapKey] = useState(() => localStorage.getItem('webgis_amap_key') || '');
 
   const api = () => (window as any).__webgis;
 
-  const handleSearch = useCallback(() => {
+  const handleSearch = useCallback(async () => {
     const q = searchText.trim();
     if (!q) return;
     const a = api();
     if (!a) return;
 
-    // Parse "lat, lng" or "lat lng"
+    // 1) Try "lat, lng" coordinates
     const coordMatch = q.match(/^(-?\d+\.?\d*)\s*[,，\s]\s*(-?\d+\.?\d*)$/);
-    if (!coordMatch) {
-      alert('请输入坐标，格式：纬度,经度\n例如：39.9042, 116.4074');
+    if (coordMatch) {
+      const lat = parseFloat(coordMatch[1]);
+      const lng = parseFloat(coordMatch[2]);
+      if (Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+        alert('坐标范围错误：纬度 -90~90，经度 -180~180');
+        return;
+      }
+      a.flyTo(lat, lng);
+      a.placeMarker(lat, lng, `${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+      setSearchText('');
       return;
     }
-    const lat = parseFloat(coordMatch[1]);
-    const lng = parseFloat(coordMatch[2]);
-    if (Math.abs(lat) > 90 || Math.abs(lng) > 180) {
-      alert('坐标范围错误：纬度 -90~90，经度 -180~180');
+
+    // 2) Geocode via Amap API
+    if (!amapKey) {
+      alert('地名搜索需要高德 API Key。\n\n免费获取：https://lbs.amap.com → 创建应用 → 添加 Web服务 API\n然后将 Key 粘贴到搜索框左侧的 🔑 输入框。');
       return;
     }
-    a.flyTo(lat, lng);
-    a.placeMarker(lat, lng, `${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-    setSearchText('');
-  }, [searchText]);
+
+    try {
+      const resp = await fetch(
+        `https://restapi.amap.com/v3/geocode/geo?key=${encodeURIComponent(amapKey)}&address=${encodeURIComponent(q)}`,
+      );
+      const data = await resp.json();
+      if (data.status !== '1' || !data.geocodes?.length) {
+        alert(`未找到「${q}」，请尝试更具体的名称或使用坐标。`);
+        return;
+      }
+      const [lng, lat] = data.geocodes[0].location.split(',').map(Number);
+      const name = data.geocodes[0].formatted_address || q;
+      a.flyTo(lat, lng);
+      a.placeMarker(lat, lng, name);
+      setSearchText('');
+    } catch {
+      alert('搜索失败，请检查网络或 Key 是否正确。');
+    }
+  }, [searchText, amapKey]);
+
+  const saveAmapKey = (key: string) => {
+    setAmapKey(key);
+    localStorage.setItem('webgis_amap_key', key);
+  };
 
   const handleToolClick = useCallback(
     (tool: ActiveTool) => {
@@ -201,19 +229,35 @@ export default function Toolbar() {
   return (
     <div className="toolbar">
       <div className="toolbar-group search-group">
-        <Search size={15} className="toolbar-inline-icon" />
+        {!amapKey && (
+          <input
+            className="key-input"
+            type="text"
+            placeholder="高德Key"
+            title="高德Web服务API Key，免费申请：lbs.amap.com"
+            defaultValue={amapKey}
+            onBlur={(e) => saveAmapKey(e.target.value.trim())}
+            onKeyDown={(e) => { if (e.key === 'Enter') saveAmapKey((e.target as HTMLInputElement).value.trim()); }}
+          />
+        )}
+        {amapKey && (
+          <button
+            className="toolbar-btn"
+            title="已配置高德Key，点击清除"
+            onClick={() => { saveAmapKey(''); }}
+          >
+            🔑
+          </button>
+        )}
         <input
           className="search-input"
           type="text"
-          placeholder="输入坐标，如 39.9042, 116.4074"
+          placeholder={amapKey ? '地名或坐标，如 北京 / 39.9,116.4' : '输入坐标，如 39.9042, 116.4074'}
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
         />
-        <button
-          className="toolbar-btn search-btn"
-          onClick={handleSearch}
-        >
+        <button className="toolbar-btn search-btn" onClick={handleSearch}>
           定位
         </button>
       </div>
