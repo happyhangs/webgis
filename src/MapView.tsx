@@ -132,6 +132,8 @@ export default function MapView() {
       dispatch({ type: 'ADD_FEATURE', feature });
     });
 
+    let updateTimer: ReturnType<typeof setTimeout> | null = null;
+
     map.on('pm:update', (e: any) => {
       const layer = e.layer;
       const feature = layer.feature as GeoJSONFeature | undefined;
@@ -143,7 +145,12 @@ export default function MapView() {
       };
       layer.feature = updated;
       updateTooltip(layer, updated);
-      dispatch({ type: 'UPDATE_FEATURE_GEOMETRY', feature: updated });
+
+      // Debounce React state — pm:update fires per pixel during vertex drag
+      if (updateTimer) clearTimeout(updateTimer);
+      updateTimer = setTimeout(() => {
+        dispatch({ type: 'UPDATE_FEATURE_GEOMETRY', feature: updated });
+      }, 200);
     });
 
     map.on('pm:remove', (e: any) => {
