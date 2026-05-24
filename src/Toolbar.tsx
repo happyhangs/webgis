@@ -41,15 +41,19 @@ export default function Toolbar() {
       const a = api();
       if (!a) return;
 
-      // Deactivate current
-      a.disableDraw();
-      a.disableEdit();
-      a.disableRemoval();
-
       if (activeTool === tool) {
+        // Toggle off
+        a.disableDraw();
+        a.disableEdit();
+        a.disableRemoval();
         setActiveTool(null);
         return;
       }
+
+      // Deactivate previous tool
+      a.disableDraw();
+      a.disableEdit();
+      a.disableRemoval();
 
       switch (tool) {
         case 'Marker':
@@ -65,6 +69,10 @@ export default function Toolbar() {
           a.enableDraw('Rectangle');
           break;
         case 'Edit':
+          if (!state.selectedFeatureId) {
+            alert('请先在图层列表中选中一个要素，再点击编辑。');
+            return;
+          }
           a.enableEdit();
           break;
         case 'Remove':

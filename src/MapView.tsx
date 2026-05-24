@@ -305,6 +305,9 @@ export default function MapView() {
     prevFeaturesRef.current = state.features;
   }, [state.features, state.selectedFeatureId]);
 
+  // Track which layer is being edited (single-feature edit mode)
+  const editingLayerRef = useRef<L.Layer | null>(null);
+
   // Expose controls for Toolbar
   const enableDraw = useCallback(
     (shape: string) => {
@@ -318,11 +321,26 @@ export default function MapView() {
   }, []);
 
   const enableEdit = useCallback(() => {
-    mapRef.current?.pm.enableGlobalEditMode();
+    // Edit only the selected feature, not all features (avoids freeze with large datasets)
+    if (editingLayerRef.current) {
+      (editingLayerRef.current as any).pm.disable();
+      editingLayerRef.current = null;
+    }
+    const map = mapRef.current;
+    if (!map) return;
+    // Find feature ID from state via a ref we'll sync
+    const layer = (window as any).__webgis_selectedLayer;
+    if (layer) {
+      (layer as any).pm.enable();
+      editingLayerRef.current = layer;
+    }
   }, []);
 
   const disableEdit = useCallback(() => {
-    mapRef.current?.pm.disableGlobalEditMode();
+    if (editingLayerRef.current) {
+      (editingLayerRef.current as any).pm.disable();
+      editingLayerRef.current = null;
+    }
   }, []);
 
   const enableRemoval = useCallback(() => {
@@ -332,6 +350,14 @@ export default function MapView() {
   const disableRemoval = useCallback(() => {
     mapRef.current?.pm.disableGlobalRemovalMode();
   }, []);
+
+  // Sync selected layer ref for toolbar access
+  useEffect(() => {
+    const layer = state.selectedFeatureId
+      ? layerMap.current.get(state.selectedFeatureId) || null
+      : null;
+    (window as any).__webgis_selectedLayer = layer;
+  }, [state.selectedFeatureId]);
 
   useEffect(() => {
     (window as any).__webgis = {
@@ -344,6 +370,7 @@ export default function MapView() {
     };
     return () => {
       delete (window as any).__webgis;
+      delete (window as any).__webgis_selectedLayer;
     };
   }, [enableDraw, disableDraw, enableEdit, disableEdit, enableRemoval, disableRemoval]);
 
