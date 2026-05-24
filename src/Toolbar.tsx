@@ -47,10 +47,10 @@ export default function Toolbar() {
 
   const handleShiftCoords = useCallback(() => {
     if (state.features.length === 0) { alert('暂无标注数据'); return; }
-    if (!confirm(`将所有 ${state.features.length} 个标注的坐标在 WGS-84 与 GCJ-02 之间互转？\n\n高德底图需 GCJ-02，OSM/谷歌需 WGS-84。`)) return;
+    if (!confirm(`将所有 ${state.features.length} 个标注坐标在 WGS-84 与 GCJ-02 之间互转？\n\n高德底图需 GCJ-02，OSM/谷歌需 WGS-84。`)) return;
     const converted = state.features.map((f) => applyGCJOffset(f));
     dispatch({ type: 'SET_FEATURES', features: converted as any });
-    alert(`已转换 ${converted.length} 个标注。再次点击可切回。`);
+    alert(`已转换 ${converted.length} 个标注。再点一次切换回去。`);
   }, [state.features, dispatch]);
 
   const handleLocate = useCallback(() => {
@@ -406,8 +406,8 @@ export default function Toolbar() {
           <option value="gcj02">GCJ-02</option>
           <option value="bd09">BD-09</option>
         </select>
-        <button className="toolbar-btn" onClick={handleShiftCoords} title="WGS-84 ↔ GCJ-02 互转全部标注">
-          <span className="toolbar-label">W↔G</span>
+        <button className="toolbar-btn" onClick={handleShiftCoords} title="将全部标注坐标转为所选坐标系">
+          <span className="toolbar-label">转换</span>
         </button>
         <button
           className="toolbar-btn"
