@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebGIS</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      window.onerror = function(msg, src, line, col, err) {
+        document.getElementById('root').innerHTML =
+          '<div style="padding:20px;font-family:monospace;color:red;background:#fff;position:fixed;inset:0;z-index:99999;overflow:auto">' +
+          '<h2>JS Error</h2>' +
+          '<p><b>Message:</b> ' + (err ? err.message : msg) + '</p>' +
+          '<pre>' + (err && err.stack ? err.stack : (src + ':' + line + ':' + col)) + '</pre>' +
+          '</div>';
+      };
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
