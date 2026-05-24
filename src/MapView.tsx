@@ -239,6 +239,20 @@ export default function MapView() {
       });
     });
 
+    // Weather click: right-click or ctrl+click to query weather at that point
+    map.on('contextmenu', (e: any) => {
+      const { lat, lng } = e.latlng;
+      const wl = { lat, lng, ts: Date.now() };
+      (window as any).__webgis_weatherLoc = wl;
+      // Notify WeatherPanel via custom event
+      window.dispatchEvent(new CustomEvent('weather-loc', { detail: wl }));
+      // Show a temporary marker
+      L.circleMarker([lat, lng], { radius: 8, color: '#1a73e8', fillColor: '#1a73e8', fillOpacity: 0.6, weight: 2 })
+        .addTo(map)
+        .bindPopup(`📍 ${lat.toFixed(4)}, ${lng.toFixed(4)}<br>天气查询中...`)
+        .openPopup();
+    });
+
     mapRef.current = map;
 
     return () => {

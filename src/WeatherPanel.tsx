@@ -9,14 +9,22 @@ import {
   Droplets,
   Wind,
   Loader2,
+  MapPin,
 } from 'lucide-react';
 import { fetchWeather, fetchHistory } from './utils/weather';
 import type { CurrentWeather, DayWeather, HistoryDay } from './utils/weather';
 
-const SHIHEZI = { lat: 44.3061, lng: 86.0806, name: '石河子' };
+interface Loc {
+  lat: number;
+  lng: number;
+  name: string;
+}
+
+const DEFAULT_LOC: Loc = { lat: 44.3061, lng: 86.0806, name: '石河子 (默认)' };
 
 export default function WeatherPanel() {
   const [collapsed, setCollapsed] = useState(true);
+  const [loc, setLoc] = useState<Loc>(DEFAULT_LOC);
   const [current, setCurrent] = useState<CurrentWeather | null>(null);
   const [forecast, setForecast] = useState<DayWeather[]>([]);
   const [history, setHistory] = useState<HistoryDay[]>([]);
@@ -26,15 +34,38 @@ export default function WeatherPanel() {
   const [historyMonth, setHistoryMonth] = useState(() => new Date().getMonth() + 1);
   const [tab, setTab] = useState<'current' | 'history'>('current');
 
+  // Listen for map clicks
+  useEffect(() => {
+    const handler = async (e: Event) => {
+      const { lat, lng } = (e as CustomEvent).detail;
+      let name = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+      // Reverse geocode via Amap
+      try {
+        const resp = await fetch(
+          `https://restapi.amap.com/v3/geocode/regeo?key=fcfdf69df521f74f022e6cc53cb1d8b9&location=${lng},${lat}`,
+        );
+        const data = await resp.json();
+        if (data.status === '1' && data.regeocode) {
+          name = data.regeocode.formatted_address || name;
+        }
+      } catch { /* use coords as fallback */ }
+      setLoc({ lat, lng, name });
+      setCurrent(null);
+      setForecast([]);
+    };
+    window.addEventListener('weather-loc', handler);
+    return () => window.removeEventListener('weather-loc', handler);
+  }, []);
+
   const loadCurrent = useCallback(async () => {
     setLoadingCurrent(true);
     try {
-      const result = await fetchWeather(SHIHEZI.lat, SHIHEZI.lng);
+      const result = await fetchWeather(loc.lat, loc.lng);
       setCurrent(result.current);
       setForecast(result.forecast);
     } catch { /* silent */ }
     finally { setLoadingCurrent(false); }
-  }, []);
+  }, [loc]);
 
   const loadHistory = useCallback(async () => {
     setLoadingHistory(true);
@@ -42,11 +73,11 @@ export default function WeatherPanel() {
       const start = `${historyYear}-${String(historyMonth).padStart(2, '0')}-01`;
       const lastDay = new Date(historyYear, historyMonth, 0).getDate();
       const end = `${historyYear}-${String(historyMonth).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
-      const data = await fetchHistory(SHIHEZI.lat, SHIHEZI.lng, start, end);
+      const data = await fetchHistory(loc.lat, loc.lng, start, end);
       setHistory(data);
     } catch { /* silent */ }
     finally { setLoadingHistory(false); }
-  }, [historyYear, historyMonth]);
+  }, [loc, historyYear, historyMonth]);
 
   useEffect(() => {
     if (!collapsed && tab === 'current' && !current) loadCurrent();
@@ -54,7 +85,7 @@ export default function WeatherPanel() {
 
   if (collapsed) {
     return (
-      <button className="weather-launcher" type="button" onClick={() => setCollapsed(false)} title="石河子天气">
+      <button className="weather-launcher" type="button" onClick={() => setCollapsed(false)} title="天气查询">
         <CloudSun size={18} />
         <span>天气</span>
         <ChevronsRight size={14} />
@@ -67,7 +98,7 @@ export default function WeatherPanel() {
       <div className="weather-header">
         <span className="weather-title">
           <CloudSun size={16} />
-          <span>{SHIHEZI.name}天气</span>
+          <span>天气</span>
         </span>
         <div className="weather-tabs">
           <button className={`weather-tab ${tab === 'current' ? 'active' : ''}`} onClick={() => setTab('current')}>
@@ -83,6 +114,15 @@ export default function WeatherPanel() {
       </div>
 
       <div className="weather-body">
+        <div className="weather-loc-info">
+          <MapPin size={12} />
+          <span>{loc.name}</span>
+          <button className="weather-refresh" onClick={loadCurrent} title="刷新天气">
+            {loadingCurrent ? <Loader2 size={12} className="builtin-spinner" /> : '🔄'}
+          </button>
+        </div>
+        <div className="weather-hint-click">在地图上右键任意位置查询该地天气</div>
+
         {tab === 'current' && (
           <>
             {loadingCurrent ? (
@@ -104,9 +144,7 @@ export default function WeatherPanel() {
                 )}
 
                 <div className="weather-forecast">
-                  <div className="weather-section-title">
-                    <Calendar size={13} /> 7日预报
-                  </div>
+                  <div className="weather-section-title"><Calendar size={13} /> 7日预报</div>
                   <div className="weather-days">
                     {forecast.map((d) => (
                       <div key={d.date} className="weather-day">
