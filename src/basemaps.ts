@@ -17,7 +17,6 @@ export const BASEMAPS: Record<BasemapKey, BasemapConfig> = {
     url: 'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
     subdomains: ['1', '2', '3', '4'],
     attribution: '&copy; 高德地图',
-    wgs2gcj: true,
   },
   amap_sat: {
     key: 'amap_sat',
@@ -25,7 +24,6 @@ export const BASEMAPS: Record<BasemapKey, BasemapConfig> = {
     url: 'https://webst0{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
     subdomains: ['1', '2', '3', '4'],
     attribution: '&copy; 高德地图',
-    wgs2gcj: true,
   },
   amap_hybrid: {
     key: 'amap_hybrid',
@@ -37,7 +35,6 @@ export const BASEMAPS: Record<BasemapKey, BasemapConfig> = {
     overlayUrl: 'https://webst0{s}.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}&size=1&scl=1',
     overlaySubdomains: ['1', '2', '3', '4'],
     overlayOpacity: 0.35,
-    wgs2gcj: true,
   },
   // ── 谷歌 ──
   google: {

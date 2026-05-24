@@ -45,5 +45,4 @@ export interface BasemapConfig {
   overlayUrl?: string;
   overlaySubdomains?: string[];
   overlayOpacity?: number;
-  wgs2gcj?: boolean; // Amap basemaps need WGS-84 → GCJ-02 offset for display
 }
