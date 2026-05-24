@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<kml xmlns='http://www.opengis.net/kml/2.2' xmlns:gx='http://www.google.com/kml/ext/2.2'>
+<Document>
+<name>50亩可降解</name>
+<Placemark>
+<styleUrl>#642f6b14-dfb0-4820-b5f0-3d73041e1df6</styleUrl>
+<name>50亩可降解</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.90841886,44.40316162,0.0 85.90833307,44.40218974,0.0 85.91290811,44.40691500,0.0 85.91237582,44.40720758,0.0 85.90841886,44.40316162,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>32535.56</value></Data>
+<Data name="面积(亩)"><value>48.803</value></Data>
+<Data name="begin_time"><value>2026-04-14 18:17:52</value></Data>
+<Data name="end_time"><value>2026-04-14 18:17:52</value></Data>
+<Data name="mi"><value>1350.8</value></Data>
+<Data name="desc"><value>25复合肥、有机肥</value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='642f6b14-dfb0-4820-b5f0-3d73041e1df6'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>000000FF</color>
+</PolyStyle>
+</Style>
+</Document>
+</kml>

@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<kml xmlns='http://www.opengis.net/kml/2.2' xmlns:gx='http://www.google.com/kml/ext/2.2'>
+<Document>
+<name>石河子</name>
+<Placemark>
+<name>石河子</name>
+<description><![CDATA[:: {"名称":"石河子","纬经度":"85.94621100,44.39729700,331.85","照片":"","时间":"2026-04-13 19:02:49","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":85,"精度":"3.79"}]]></description>
+<Point>
+<coordinates>85.94621100,44.39729700,331.85</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>85</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>3.79</value></Data>
+<Data name="saveTime"><value>2026-04-13 19:02:49</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+</Document>
+</kml>

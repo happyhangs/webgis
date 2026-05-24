@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<kml xmlns='http://www.opengis.net/kml/2.2' xmlns:gx='http://www.google.com/kml/ext/2.2'>
+<Document>
+<name>辣子100</name>
+<Placemark>
+<styleUrl>#617344ef-3d4d-469a-bda2-f07ba9217c97</styleUrl>
+<name>辣子100</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.94998116,44.40685647,0.0 85.94965214,44.40035656,0.0 85.95092529,44.40030546,0.0 85.95132584,44.40678494,0.0 85.94998116,44.40685647,0.0 85.94998116,44.40685647,0.0 85.94998116,44.40685647,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>75233.09</value></Data>
+<Data name="面积(亩)"><value>112.850</value></Data>
+<Data name="begin_time"><value>2026-04-21 14:37:46</value></Data>
+<Data name="end_time"><value>2026-04-21 14:37:46</value></Data>
+<Data name="mi"><value>1654.7</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='617344ef-3d4d-469a-bda2-f07ba9217c97'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+</Document>
+</kml>

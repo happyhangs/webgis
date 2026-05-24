@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<kml xmlns='http://www.opengis.net/kml/2.2' xmlns:gx='http://www.google.com/kml/ext/2.2'>
+<Document>
+<name>全生命周期1</name>
+<Placemark>
+<name>全生命周期1</name>
+<description><![CDATA[:: <a href="全生命周期1/35cd892cda87da865b59d0da8d3e57c8.jpg" target="_balnk"><img src="全生命周期1/35cd892cda87da865b59d0da8d3e57c8.jpg" width="300"/></a><br/><a href="全生命周期1/8004c815af9ab038f5437f259911a0ff.jpg" target="_balnk"><img src="全生命周期1/8004c815af9ab038f5437f259911a0ff.jpg" width="300"/></a><br/><a href="全生命周期1/b6d349b8791eebe50d8b3fdd43d6ec6b.jpg" target="_balnk"><img src="全生命周期1/b6d349b8791eebe50d8b3fdd43d6ec6b.jpg" width="300"/></a><br/><a href="全生命周期1/1e020967f5a9aeb6e5774d8b48a7a0d4.jpg" target="_balnk"><img src="全生命周期1/1e020967f5a9aeb6e5774d8b48a7a0d4.jpg" width="300"/></a><br/><a href="全生命周期1/f9583c46d122936204429f01907f57a0.jpg" target="_balnk"><img src="全生命周期1/f9583c46d122936204429f01907f57a0.jpg" width="300"/></a><br/><a href="全生命周期1/2568a458023b4407c5f8a9a4e6ef84a4.jpg" target="_balnk"><img src="全生命周期1/2568a458023b4407c5f8a9a4e6ef84a4.jpg" width="300"/></a><br/><a href="全生命周期1/810998dc53e312b4905dcf409f56b74b.jpg" target="_balnk"><img src="全生命周期1/810998dc53e312b4905dcf409f56b74b.jpg" width="300"/></a><br/>{"名称":"全生命周期1","纬经度":"85.93936100,44.39400400,334.08","照片":"35cd892cda87da865b59d0da8d3e57c8.jpg;8004c815af9ab038f5437f259911a0ff.jpg;b6d349b8791eebe50d8b3fdd43d6ec6b.jpg;1e020967f5a9aeb6e5774d8b48a7a0d4.jpg;f9583c46d122936204429f01907f57a0.jpg;2568a458023b4407c5f8a9a4e6ef84a4.jpg;810998dc53e312b4905dcf409f56b74b.jpg","时间":"2026-05-10 10:09:58","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":68,"精度":"3.79"}]]></description>
+<Point>
+<coordinates>85.93936100,44.39400400,334.08</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>68</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>3.79</value></Data>
+<Data name="memo"><value>35cd892cda87da865b59d0da8d3e57c8.jpg;8004c815af9ab038f5437f259911a0ff.jpg;b6d349b8791eebe50d8b3fdd43d6ec6b.jpg;1e020967f5a9aeb6e5774d8b48a7a0d4.jpg;f9583c46d122936204429f01907f57a0.jpg;2568a458023b4407c5f8a9a4e6ef84a4.jpg;810998dc53e312b4905dcf409f56b74b.jpg</value></Data>
+<Data name="saveTime"><value>2026-05-10 10:09:58</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+</Document>
+</kml>

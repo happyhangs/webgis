@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<kml xmlns='http://www.opengis.net/kml/2.2' xmlns:gx='http://www.google.com/kml/ext/2.2'>
+<Document>
+<name>奇台</name>
+<Placemark>
+<name>奇台</name>
+<description><![CDATA[:: {"名称":"奇台","纬经度":"89.48535107,44.10237081,0","照片":"","时间":"2026-04-21 14:23:07","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":0,"精度":0}]]></description>
+<visibility></visibility>
+<Point>
+<coordinates>89.48535107,44.10237081,0</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>0</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>0</value></Data>
+<Data name="saveTime"><value>2026-04-21 14:23:07</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+</Document>
+</kml>

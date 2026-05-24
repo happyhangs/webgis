@@ -12,6 +12,7 @@ import {
   Layers,
   Package,
   Crosshair,
+  Search,
 } from 'lucide-react';
 import { useAppContext } from './AppContext';
 import { BASEMAP_OPTIONS } from './basemaps';
@@ -304,8 +305,8 @@ export default function Toolbar() {
           onChange={(e) => setSearchText(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
         />
-        <button className="toolbar-btn search-btn" onClick={handleSearch}>
-          定位
+        <button className="toolbar-btn" onClick={handleSearch} title="搜索定位">
+          <Search size={16} />
         </button>
         <button className="toolbar-btn" onClick={handleLocate} title="我的位置 (GPS)">
           <Crosshair size={16} />
