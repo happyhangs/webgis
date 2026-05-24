@@ -51,21 +51,6 @@ export const BASEMAPS: Record<BasemapKey, BasemapConfig> = {
     subdomains: ['0', '1', '2', '3'],
     attribution: '&copy; Google',
   },
-  // ── 百度 ──
-  baidu: {
-    key: 'baidu',
-    name: '百度标准',
-    url: 'https://online{s}.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=pl&scaler=1&p=1',
-    subdomains: ['0', '1', '2', '3'],
-    attribution: '&copy; 百度地图',
-  },
-  baidu_sat: {
-    key: 'baidu_sat',
-    name: '百度卫星',
-    url: 'https://shangetu{s}.map.bdimg.com/it/u=x={x};y={y};z={z};v=009;type=sate&fm=46',
-    subdomains: ['0', '1', '2', '3'],
-    attribution: '&copy; 百度地图',
-  },
 };
 
 export const BASEMAP_OPTIONS = Object.values(BASEMAPS);
