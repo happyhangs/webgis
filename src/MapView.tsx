@@ -351,6 +351,35 @@ export default function MapView() {
     mapRef.current?.pm.disableGlobalRemovalMode();
   }, []);
 
+  const flyTo = useCallback((lat: number, lng: number, zoom = 14) => {
+    mapRef.current?.flyTo([lat, lng], zoom, { duration: 1.5 });
+  }, []);
+
+  const placeMarker = useCallback((lat: number, lng: number, name: string) => {
+    const map = mapRef.current;
+    if (!map) return;
+    const feature = buildFeature(
+      { type: 'Feature' as const, geometry: { type: 'Point' as const, coordinates: [lng, lat] } },
+      'Marker',
+      currentLayerIdRef.current,
+    );
+    feature.properties.name = name;
+    const marker = L.circleMarker([lat, lng], {
+      radius: 10,
+      fillColor: '#e63946',
+      color: '#fff',
+      weight: 3,
+      fillOpacity: 0.9,
+    }).addTo(map);
+    (marker as any).feature = feature;
+    marker.bindPopup(`<b>${name}</b><br>${lat.toFixed(6)}, ${lng.toFixed(6)}`).openPopup();
+    marker.on('click', () => {
+      dispatch({ type: 'SELECT_FEATURE', id: feature.properties.id });
+    });
+    layerMap.current.set(feature.properties.id, marker);
+    dispatch({ type: 'ADD_FEATURE', feature });
+  }, [dispatch]);
+
   // Sync selected layer ref for toolbar access
   useEffect(() => {
     const layer = state.selectedFeatureId
@@ -367,12 +396,14 @@ export default function MapView() {
       disableEdit,
       enableRemoval,
       disableRemoval,
+      flyTo,
+      placeMarker,
     };
     return () => {
       delete (window as any).__webgis;
       delete (window as any).__webgis_selectedLayer;
     };
-  }, [enableDraw, disableDraw, enableEdit, disableEdit, enableRemoval, disableRemoval]);
+  }, [enableDraw, disableDraw, enableEdit, disableEdit, enableRemoval, disableRemoval, flyTo, placeMarker]);
 
   return (
     <div id="map-container">
