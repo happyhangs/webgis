@@ -377,6 +377,16 @@ export default function MapView() {
     mapRef.current?.flyTo([lat, lng], zoom, { duration: 1.5 });
   }, []);
 
+  const flyToFeature = useCallback((feature: GeoJSONFeature) => {
+    const map = mapRef.current;
+    if (!map) return;
+    const gj = L.geoJSON(feature as any);
+    const bounds = gj.getBounds();
+    if (bounds.isValid()) {
+      map.flyToBounds(bounds, { padding: [50, 50], duration: 1 });
+    }
+  }, []);
+
   const placeMarker = useCallback((lat: number, lng: number, name: string) => {
     const map = mapRef.current;
     if (!map) return;
@@ -427,13 +437,14 @@ export default function MapView() {
       enableRemoval,
       disableRemoval,
       flyTo,
+      flyToFeature,
       placeMarker,
     };
     return () => {
       delete (window as any).__webgis;
       delete (window as any).__webgis_selectedLayer;
     };
-  }, [enableDraw, disableDraw, enableEdit, disableEdit, enableRemoval, disableRemoval, flyTo, placeMarker]);
+  }, [enableDraw, disableDraw, enableEdit, disableEdit, enableRemoval, disableRemoval, flyTo, flyToFeature, placeMarker]);
 
   return (
     <div id="map-container">

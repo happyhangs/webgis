@@ -156,7 +156,13 @@ export default function LayerPanel() {
                   {features.length === 0 && <div className="layer-empty-hint">空图层</div>}
                   {features.map((f: GeoJSONFeature) => (
                     <div key={f.properties.id} className={`layer-item ${selectedId === f.properties.id ? 'selected' : ''}`}
-                      onClick={() => dispatch({ type: 'SELECT_FEATURE', id: selectedId === f.properties.id ? null : f.properties.id })}>
+                      onClick={() => {
+                        dispatch({ type: 'SELECT_FEATURE', id: selectedId === f.properties.id ? null : f.properties.id });
+                        if (selectedId !== f.properties.id) {
+                          const a = (window as any).__webgis;
+                          a?.flyToFeature?.(f);
+                        }
+                      }}>
                       <span className="layer-color" style={{ backgroundColor: f.properties.color }} />
                       <span className="layer-icon">{shapeIcon(f.properties.shapeType)}</span>
                       <span className="layer-name">{f.properties.name}</span>
