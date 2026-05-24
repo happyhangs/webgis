@@ -3,6 +3,7 @@ import Toolbar from './Toolbar';
 import LayerPanel from './LayerPanel';
 import NavigationPanel from './NavigationPanel';
 import WeatherPanel from './WeatherPanel';
+import FieldPanel from './FieldPanel';
 import PropertyPanel from './PropertyPanel';
 import MapView from './MapView';
 
@@ -17,6 +18,7 @@ export default function App() {
             <MapView />
             <NavigationPanel />
             <WeatherPanel />
+            <FieldPanel />
           </div>
           <PropertyPanel />
         </div>
