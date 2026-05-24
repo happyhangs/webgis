@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import { useAppContext } from './AppContext';
 import { getBasemapConfig } from './basemaps';
 import { getFeatureMeasurement } from './utils/measure';
+import { wgs2gcj, gcj2wgs } from './utils/coord';
 import type { GeoJSONFeature, BasemapConfig } from './types';
 
 const SHAPE_LABELS: Record<string, string> = {
@@ -74,6 +75,56 @@ function updateTooltip(layer: any, feature: GeoJSONFeature) {
   }
 }
 
+function shiftCoords(coords: any, fn: (lat: number, lng: number) => [number, number]): any {
+  if (typeof coords[0] === 'number') {
+    const [lat, lng] = fn(coords[1], coords[0]);
+    return [lng, lat];
+  }
+  return coords.map((c: any) => shiftCoords(c, fn));
+}
+
+function shiftFeatureCoords(feature: any, fn: (lat: number, lng: number) => [number, number]): any {
+  return {
+    ...feature,
+    geometry: {
+      ...feature.geometry,
+      coordinates: shiftCoords(feature.geometry.coordinates, fn),
+    },
+  };
+}
+
+function shiftLayerCoords(layer: L.Layer, fn: (lat: number, lng: number) => [number, number]) {
+  if (layer instanceof L.CircleMarker) {
+    const ll = layer.getLatLng();
+    const [lat, lng] = fn(ll.lat, ll.lng);
+    layer.setLatLng([lat, lng]);
+  } else if (layer instanceof L.Polyline || layer instanceof L.Polygon) {
+    const latlngs = (layer as any).getLatLngs();
+    (layer as any).setLatLngs(shiftLatLngs(latlngs, fn));
+  } else if (layer instanceof L.LayerGroup || (layer as any)._layers) {
+    const group = layer as any;
+    if (group._layers) {
+      for (const id of Object.keys(group._layers)) {
+        shiftLayerCoords(group._layers[id], fn);
+      }
+    }
+    if (group.eachLayer) {
+      group.eachLayer((l: L.Layer) => shiftLayerCoords(l, fn));
+    }
+  }
+}
+
+function shiftLatLngs(latlngs: any, fn: (lat: number, lng: number) => [number, number]): any {
+  if (latlngs && typeof latlngs.lat === 'number') {
+    const [lat, lng] = fn(latlngs.lat, latlngs.lng);
+    return L.latLng(lat, lng);
+  }
+  if (Array.isArray(latlngs)) {
+    return latlngs.map((c: any) => shiftLatLngs(c, fn));
+  }
+  return latlngs;
+}
+
 function getTileLayerOptions(cfg: BasemapConfig): L.TileLayerOptions {
   const options: L.TileLayerOptions = {
     attribution: cfg.attribution,
@@ -97,6 +148,7 @@ export default function MapView() {
   const overlayTileRef = useRef<L.TileLayer | null>(null);
   const currentLayerIdRef = useRef(state.currentLayerId);
   const initializedRef = useRef(false);
+  const displayWithGCJ = useRef(false); // whether layers currently have GCJ offset applied
 
   // Keep ref in sync
   currentLayerIdRef.current = state.currentLayerId;
@@ -221,7 +273,20 @@ export default function MapView() {
     }
   }, [state.basemap]);
 
-  // SynFeature visibility: get visible layer IDs
+  // When basemap toggles between GCJ / WGS, shift all layer coords in-place (no re-render)
+  useEffect(() => {
+    const needGCJ = getBasemapConfig(state.basemap).wgs2gcj === true;
+    if (displayWithGCJ.current === needGCJ) return; // no change
+    const fn = needGCJ ? wgs2gcj : gcj2wgs;
+    for (const [, layer] of layerMap.current) {
+      shiftLayerCoords(layer, fn);
+      const feat = (layer as any).feature;
+      if (feat) {
+        (layer as any).feature = shiftFeatureCoords(feat, fn);
+      }
+    }
+    displayWithGCJ.current = needGCJ;
+  }, [state.basemap]);
   const visibleIds = useMemo(
     () => new Set(state.layers.filter((l) => l.visible).map((l) => l.id)),
     [state.layers],
@@ -247,11 +312,18 @@ export default function MapView() {
     }
 
     // Add new features not yet on map (and from visible layers)
+    const needGCJ = getBasemapConfig(state.basemap).wgs2gcj === true;
+
     for (const feature of state.features) {
       if (!visibleIds.has(feature.properties.layerId)) continue;
       if (layerMap.current.has(feature.properties.id)) continue;
 
-      const gj = L.geoJSON(feature as any, {
+      let displayFeature = { ...feature, geometry: { ...feature.geometry } };
+      if (needGCJ) {
+        displayFeature = shiftFeatureCoords(displayFeature, wgs2gcj);
+      }
+
+      const gj = L.geoJSON(displayFeature as any, {
         pointToLayer: (_f: any, latlng) =>
           L.circleMarker(latlng, {
             radius: 8,
@@ -380,12 +452,14 @@ export default function MapView() {
   const flyToFeature = useCallback((feature: GeoJSONFeature) => {
     const map = mapRef.current;
     if (!map) return;
-    const gj = L.geoJSON(feature as any);
+    const needGCJ = getBasemapConfig(state.basemap).wgs2gcj === true;
+    const displayFeature = needGCJ ? shiftFeatureCoords(feature, wgs2gcj) : feature;
+    const gj = L.geoJSON(displayFeature as any);
     const bounds = gj.getBounds();
     if (bounds.isValid()) {
       map.flyToBounds(bounds, { padding: [50, 50], duration: 1 });
     }
-  }, []);
+  }, [state.basemap]);
 
   const placeMarker = useCallback((lat: number, lng: number, name: string) => {
     const map = mapRef.current;

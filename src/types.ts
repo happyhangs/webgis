@@ -45,4 +45,5 @@ export interface BasemapConfig {
   overlayUrl?: string;
   overlaySubdomains?: string[];
   overlayOpacity?: number;
+  wgs2gcj?: boolean;
 }
