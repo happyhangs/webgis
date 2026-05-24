@@ -13,11 +13,17 @@ import {
   Package,
   Crosshair,
   Search,
+  Sprout,
 } from 'lucide-react';
 import { useAppContext } from './AppContext';
 import { BASEMAP_OPTIONS } from './basemaps';
 import { exportGeoJSON, importGeoJSON } from './utils/geojson';
 import { exportCSV, importCSV } from './utils/csv';
+import { getDefaultFeatureStyle } from './utils/featureStyle';
+import {
+  createShiheziFarmlandSegmentation,
+  SHIHEZI_FARMLAND_LAYER_NAME,
+} from './utils/farmland';
 import type { GeoJSONFeature } from './types';
 
 type ActiveTool =
@@ -158,6 +164,27 @@ export default function Toolbar() {
     downloadBlob(blob, 'webgis-points.csv');
   };
 
+  const handleFarmlandSegmentation = useCallback(() => {
+    const existingLayer = state.layers.find((layer) => layer.name === SHIHEZI_FARMLAND_LAYER_NAME);
+    const result = createShiheziFarmlandSegmentation();
+
+    if (existingLayer) {
+      dispatch({ type: 'DELETE_LAYER', id: existingLayer.id });
+    }
+    dispatch({ type: 'ADD_LAYER', layer: result.layer });
+    dispatch({ type: 'BATCH_ADD_FEATURES', features: result.features });
+    dispatch({ type: 'SET_CURRENT_LAYER', id: result.layer.id });
+
+    setTimeout(() => {
+      api()?.flyTo(result.center[0], result.center[1], 12);
+    }, 80);
+
+    alert(
+      `已生成石河子农田识别示例：${result.parcelCount} 个地块，约 ${result.totalAreaMu} 亩。\n` +
+      '当前为前端模拟图像分割结果，后续可接入真实遥感影像分割模型。',
+    );
+  }, [state.layers, dispatch]);
+
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -218,7 +245,7 @@ export default function Toolbar() {
               id: crypto.randomUUID(),
               name: f.properties?.NAME || f.properties?.name || `${layerName}_${i + 1}`,
               description: f.properties?.description || '',
-              color: '#3388ff',
+              ...getDefaultFeatureStyle(shapeType),
               shapeType,
               layerId,
             },
@@ -277,7 +304,7 @@ export default function Toolbar() {
               id: crypto.randomUUID(),
               name: f.properties?.name || f.properties?.NAME || `${layerName}_${i + 1}`,
               description: f.properties?.description || '',
-              color: f.properties?.stroke || '#3388ff',
+              ...getDefaultFeatureStyle(shapeType, f.properties?.stroke || '#3388ff'),
               shapeType,
               layerId,
             },
@@ -384,6 +411,17 @@ export default function Toolbar() {
             </option>
           ))}
         </select>
+      </div>
+
+      <div className="toolbar-group">
+        <button
+          className="toolbar-btn analysis-btn"
+          title="石河子农田地块识别示例"
+          onClick={handleFarmlandSegmentation}
+        >
+          <Sprout size={18} />
+          <span className="toolbar-label">农田</span>
+        </button>
       </div>
 
       <div className="toolbar-group">

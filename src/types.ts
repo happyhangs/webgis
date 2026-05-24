@@ -9,9 +9,15 @@ export interface FeatureProperties {
   name: string;
   description: string;
   color: string;
+  fillColor: string;
+  fillEnabled: boolean;
+  strokeStyle: StrokeStyle;
+  strokeWidth: number;
   shapeType: 'Marker' | 'Line' | 'Polygon' | 'Rectangle';
   layerId: string;
 }
+
+export type StrokeStyle = 'solid' | 'dashed' | 'dotted';
 
 export interface GeoJSONFeature {
   type: 'Feature';

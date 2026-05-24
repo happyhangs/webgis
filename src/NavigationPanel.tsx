@@ -18,12 +18,13 @@ interface RouteResult {
   duration: string;
   origin: AmapRoutePoint;
   destination: AmapRoutePoint;
+  points: [number, number][];
   steps: AmapRouteStep[];
 }
 
 export default function NavigationPanel() {
   const { dispatch } = useAppContext();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [originText, setOriginText] = useState('');
   const [destinationText, setDestinationText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -80,6 +81,10 @@ export default function NavigationPanel() {
             `来源：高德驾车路径规划`,
           ].join('\n'),
           color: '#d99a20',
+          fillColor: '#d99a20',
+          fillEnabled: false,
+          strokeStyle: 'solid',
+          strokeWidth: 5,
           shapeType: 'Line',
           layerId,
         },
@@ -93,6 +98,7 @@ export default function NavigationPanel() {
         duration,
         origin,
         destination,
+        points: route.points,
         steps: route.steps,
       });
       setTimeout(() => (window as any).__webgis?.flyToFeature?.(feature), 100);
@@ -105,14 +111,11 @@ export default function NavigationPanel() {
 
   if (collapsed) {
     return (
-      <div className="panel nav-panel collapsed">
-        <div className="panel-header panel-header-vertical nav-panel-collapsed">
-          <button className="panel-toggle" onClick={() => setCollapsed(false)} title="展开导航">
-            <ChevronsRight size={16} />
-          </button>
-          <span className="panel-title-vertical">导航</span>
-        </div>
-      </div>
+      <button className="nav-launcher" type="button" onClick={() => setCollapsed(false)} title="打开导航">
+        <Navigation size={18} />
+        <span>导航</span>
+        <ChevronsRight size={14} />
+      </button>
     );
   }
 
@@ -181,6 +184,8 @@ export default function NavigationPanel() {
           <span>{loading ? '规划中' : '开始导航'}</span>
         </button>
 
+        <RoutePreview result={result} />
+
         {result ? (
           <div className="nav-result">
             <div className="nav-summary">
@@ -227,6 +232,62 @@ export default function NavigationPanel() {
       </div>
     </aside>
   );
+}
+
+function RoutePreview({ result }: { result: RouteResult | null }) {
+  const preview = result ? buildPreviewGeometry(result.points) : null;
+  return (
+    <div className="nav-preview">
+      <div className="nav-preview-map">
+        <div className="nav-preview-road major a" />
+        <div className="nav-preview-road major b" />
+        <div className="nav-preview-road minor a" />
+        <div className="nav-preview-road minor b" />
+        {preview ? (
+          <svg className="nav-preview-svg" viewBox="0 0 260 118" aria-hidden="true">
+            <path className="nav-preview-route-shadow" d={preview.path} />
+            <path className="nav-preview-route" d={preview.path} />
+            <circle className="nav-preview-start" cx={preview.start[0]} cy={preview.start[1]} r="5" />
+            <circle className="nav-preview-end" cx={preview.end[0]} cy={preview.end[1]} r="5" />
+          </svg>
+        ) : (
+          <div className="nav-preview-empty">
+            <Route size={19} />
+            <span>路线缩略图</span>
+          </div>
+        )}
+      </div>
+      <div className="nav-preview-meta">
+        <span>{result ? result.distance : '输入起终点'}</span>
+        <strong>{result ? result.duration : '生成导航路线'}</strong>
+      </div>
+    </div>
+  );
+}
+
+function buildPreviewGeometry(points: [number, number][]): { path: string; start: [number, number]; end: [number, number] } | null {
+  if (points.length < 2) return null;
+  const lngs = points.map((p) => p[0]);
+  const lats = points.map((p) => p[1]);
+  const minLng = Math.min(...lngs);
+  const maxLng = Math.max(...lngs);
+  const minLat = Math.min(...lats);
+  const maxLat = Math.max(...lats);
+  const lngSpan = maxLng - minLng || 1;
+  const latSpan = maxLat - minLat || 1;
+  const coords = points.map(([lng, lat]) => {
+    const x = 18 + ((lng - minLng) / lngSpan) * 224;
+    const y = 104 - ((lat - minLat) / latSpan) * 90;
+    return [x, y] as [number, number];
+  });
+  const path = coords
+    .map(([x, y], index) => `${index === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`)
+    .join(' ');
+  return {
+    path,
+    start: coords[0],
+    end: coords[coords.length - 1],
+  };
 }
 
 function formatStepMeta(distance: number, duration: number): string {

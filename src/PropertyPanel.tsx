@@ -2,6 +2,17 @@ import { useState } from 'react';
 import { ChevronsRight, ChevronsLeft, Info } from 'lucide-react';
 import { useAppContext } from './AppContext';
 import { getFeatureMeasurement } from './utils/measure';
+import { isAreaShape, STROKE_STYLE_OPTIONS } from './utils/featureStyle';
+
+const shapeLabel = (shapeType: string) => {
+  switch (shapeType) {
+    case 'Marker': return '点';
+    case 'Line': return '线';
+    case 'Polygon': return '面';
+    case 'Rectangle': return '矩形';
+    default: return shapeType;
+  }
+};
 
 export default function PropertyPanel() {
   const { state, dispatch } = useAppContext();
@@ -39,6 +50,8 @@ export default function PropertyPanel() {
 
   const p = feature.properties;
   const measurement = getFeatureMeasurement(feature);
+  const supportsStroke = p.shapeType !== 'Marker';
+  const supportsFill = isAreaShape(p.shapeType);
 
   return (
     <div className="panel property-panel">
@@ -71,7 +84,7 @@ export default function PropertyPanel() {
         </label>
 
         <label className="prop-field">
-          <span>颜色</span>
+          <span>{supportsStroke ? '边框颜色' : '颜色'}</span>
           <div className="prop-color-row">
             <input type="color" value={p.color}
               onChange={(e) => dispatch({ type: 'UPDATE_FEATURE', id: p.id, updates: { color: e.target.value } })} />
@@ -79,9 +92,105 @@ export default function PropertyPanel() {
           </div>
         </label>
 
+        {supportsStroke && (
+          <>
+            {supportsFill && (
+              <div className="prop-field">
+                <div className="prop-switch-row">
+                  <span>填充</span>
+                  <label className="prop-switch">
+                    <input
+                      type="checkbox"
+                      checked={p.fillEnabled}
+                      onChange={(e) =>
+                        dispatch({ type: 'UPDATE_FEATURE', id: p.id, updates: { fillEnabled: e.target.checked } })
+                      }
+                    />
+                    <span>{p.fillEnabled ? '开启' : '仅边框'}</span>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {supportsFill && p.fillEnabled && (
+              <label className="prop-field">
+                <span>填充颜色</span>
+                <div className="prop-color-row">
+                  <input type="color" value={p.fillColor}
+                    onChange={(e) => dispatch({ type: 'UPDATE_FEATURE', id: p.id, updates: { fillColor: e.target.value } })} />
+                  <span className="prop-color-value">{p.fillColor}</span>
+                </div>
+              </label>
+            )}
+
+            <div className="prop-field">
+              <span>线条样式</span>
+              <div className="stroke-style-options" role="group" aria-label="线条样式">
+                {STROKE_STYLE_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className={`stroke-style-option ${p.strokeStyle === option.value ? 'active' : ''}`}
+                    title={option.label}
+                    aria-pressed={p.strokeStyle === option.value}
+                    onClick={() =>
+                      dispatch({
+                        type: 'UPDATE_FEATURE',
+                        id: p.id,
+                        updates: { strokeStyle: option.value },
+                      })
+                    }
+                  >
+                    <svg className="stroke-style-preview" viewBox="0 0 72 18" aria-hidden="true">
+                      <line
+                        x1="5"
+                        y1="9"
+                        x2="67"
+                        y2="9"
+                        stroke={p.color}
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        strokeDasharray={
+                          option.value === 'solid' ? undefined : option.value === 'dashed' ? '12 8' : '1 8'
+                        }
+                      />
+                    </svg>
+                    <span>{option.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <label className="prop-field">
+              <span>线宽</span>
+              <div className="prop-range-row">
+                <input
+                  type="range"
+                  min="1"
+                  max="12"
+                  value={p.strokeWidth}
+                  onChange={(e) =>
+                    dispatch({ type: 'UPDATE_FEATURE', id: p.id, updates: { strokeWidth: Number(e.target.value) } })
+                  }
+                />
+                <input
+                  className="prop-number-input"
+                  type="number"
+                  min="1"
+                  max="12"
+                  value={p.strokeWidth}
+                  onChange={(e) =>
+                    dispatch({ type: 'UPDATE_FEATURE', id: p.id, updates: { strokeWidth: Number(e.target.value) } })
+                  }
+                />
+              </div>
+            </label>
+          </>
+        )}
+
         <div className="prop-field">
           <span>类型</span>
-          <span className="prop-static">{p.shapeType}</span>
+          <span className="prop-static">{shapeLabel(p.shapeType)}</span>
         </div>
 
         <button className="prop-delete-btn" onClick={() => dispatch({ type: 'DELETE_FEATURE', id: p.id })}>

@@ -1,4 +1,5 @@
 import type { GeoJSONFeature } from '../types';
+import { getDefaultFeatureStyle } from './featureStyle';
 
 export interface BuiltinLayerDef {
   key: string;
@@ -60,7 +61,7 @@ export async function fetchBuiltinLayer(
           f.properties?.FULL_NAME ||
           `${def.name}_${i + 1}`,
         description: f.properties?.description || '',
-        color: def.color,
+        ...getDefaultFeatureStyle(shapeTypeFromGeom(f.geometry.type), def.color),
         shapeType: shapeTypeFromGeom(f.geometry.type),
         layerId,
       },

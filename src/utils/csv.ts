@@ -1,4 +1,5 @@
 import { GeoJSONFeature } from '../types';
+import { getDefaultFeatureStyle } from './featureStyle';
 
 function escapeCSV(s: string): string {
   if (s.includes(',') || s.includes('"') || s.includes('\n')) {
@@ -49,7 +50,7 @@ export function importCSV(raw: string): GeoJSONFeature[] {
           id: crypto.randomUUID(),
           name: nameIdx >= 0 ? cols[nameIdx] || `CSV点 ${i + 1}` : `CSV点 ${i + 1}`,
           description: descIdx >= 0 ? cols[descIdx] || '' : '',
-          color: colorIdx >= 0 ? cols[colorIdx] || '#3388ff' : '#3388ff',
+          ...getDefaultFeatureStyle('Marker', colorIdx >= 0 ? cols[colorIdx] || '#3388ff' : '#3388ff'),
           shapeType: 'Marker' as const,
           layerId: '__default__',
         },

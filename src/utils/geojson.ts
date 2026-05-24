@@ -1,4 +1,5 @@
 import { GeoJSONFeature } from '../types';
+import { normalizeFeatureStyle } from './featureStyle';
 
 export function exportGeoJSON(features: GeoJSONFeature[]): string {
   return JSON.stringify({ type: 'FeatureCollection', features }, null, 2);
@@ -40,7 +41,7 @@ export function importGeoJSON(raw: string): GeoJSONFeature[] {
           id: f.properties?.id || crypto.randomUUID(),
           name: f.properties?.name || defaultName,
           description: f.properties?.description || '',
-          color: f.properties?.color || '#3388ff',
+          ...normalizeFeatureStyle(f.properties, shapeType),
           shapeType,
           layerId: f.properties?.layerId || '__default__',
         },

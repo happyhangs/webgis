@@ -7,6 +7,7 @@ import { useAppContext } from './AppContext';
 import { getBasemapConfig } from './basemaps';
 import { getFeatureMeasurement } from './utils/measure';
 import { wgs2gcj, gcj2wgs } from './utils/coord';
+import { getDashArray, getDefaultFeatureStyle, isAreaShape } from './utils/featureStyle';
 import type { GeoJSONFeature, BasemapConfig } from './types';
 
 const SHAPE_LABELS: Record<string, string> = {
@@ -33,7 +34,7 @@ function buildFeature(geojson: any, shape: string, layerId: string): GeoJSONFeat
       id: crypto.randomUUID(),
       name: `未命名${label}`,
       description: '',
-      color: '#3388ff',
+      ...getDefaultFeatureStyle(shapeType as GeoJSONFeature['properties']['shapeType']),
       shapeType: shapeType as GeoJSONFeature['properties']['shapeType'],
       layerId,
     },
@@ -41,21 +42,24 @@ function buildFeature(geojson: any, shape: string, layerId: string): GeoJSONFeat
 }
 
 function applyStyle(layer: any, feature: GeoJSONFeature, selected: boolean) {
-  const c = feature.properties.color;
-  if (feature.properties.shapeType === 'Marker') {
+  const p = feature.properties;
+  if (p.shapeType === 'Marker') {
     layer.setStyle({
       radius: selected ? 10 : 8,
-      fillColor: c,
+      fillColor: p.color,
       color: selected ? '#ff0' : '#fff',
       weight: selected ? 4 : 2,
       fillOpacity: 0.9,
     });
   } else {
+    const weight = selected ? p.strokeWidth + 2 : p.strokeWidth;
     layer.setStyle({
-      color: c,
-      fillColor: c,
-      weight: selected ? 5 : 3,
-      fillOpacity: selected ? 0.4 : 0.2,
+      color: p.color,
+      fillColor: p.fillColor,
+      weight,
+      dashArray: getDashArray(p.strokeStyle, weight),
+      lineCap: p.strokeStyle === 'dotted' ? 'round' : 'butt',
+      fillOpacity: isAreaShape(p.shapeType) && p.fillEnabled ? (selected ? 0.45 : 0.26) : 0,
     });
   }
 }
@@ -334,12 +338,17 @@ export default function MapView() {
             weight: 2,
             fillOpacity: 0.9,
           }),
-        style: () => ({
-          color: feature.properties.color,
-          fillColor: feature.properties.color,
-          fillOpacity: 0.2,
-          weight: 3,
-        }),
+        style: () => {
+          const p = feature.properties;
+          return {
+            color: p.color,
+            fillColor: p.fillColor,
+            fillOpacity: isAreaShape(p.shapeType) && p.fillEnabled ? 0.26 : 0,
+            weight: p.strokeWidth,
+            dashArray: getDashArray(p.strokeStyle, p.strokeWidth),
+            lineCap: p.strokeStyle === 'dotted' ? 'round' : 'butt',
+          };
+        },
         onEachFeature: (_f: any, layer: L.Layer) => {
           (layer as any).feature = feature;
           updateTooltip(layer, feature);
@@ -386,6 +395,10 @@ export default function MapView() {
       if (
         prev &&
         (prev.properties.color !== f.properties.color ||
+          prev.properties.fillColor !== f.properties.fillColor ||
+          prev.properties.fillEnabled !== f.properties.fillEnabled ||
+          prev.properties.strokeStyle !== f.properties.strokeStyle ||
+          prev.properties.strokeWidth !== f.properties.strokeWidth ||
           prev.properties.name !== f.properties.name ||
           prev.properties.layerId !== f.properties.layerId)
       ) {
@@ -472,6 +485,8 @@ export default function MapView() {
       currentLayerIdRef.current,
     );
     feature.properties.name = name;
+    feature.properties.color = '#e63946';
+    feature.properties.fillColor = '#e63946';
     const marker = L.circleMarker([lat, lng], {
       radius: 10,
       fillColor: '#e63946',

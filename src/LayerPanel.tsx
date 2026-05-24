@@ -32,6 +32,16 @@ const shapeIcon = (shapeType: string) => {
   }
 };
 
+const shapeLabel = (shapeType: string) => {
+  switch (shapeType) {
+    case 'Marker': return '点';
+    case 'Line': return '线';
+    case 'Polygon': return '面';
+    case 'Rectangle': return '矩形';
+    default: return shapeType;
+  }
+};
+
 export default function LayerPanel() {
   const { state, dispatch } = useAppContext();
   const [expandedLayers, setExpandedLayers] = useState<Set<string>>(
@@ -79,7 +89,6 @@ export default function LayerPanel() {
       const features = await fetchBuiltinLayer(def, layerId);
       dispatch({ type: 'ADD_LAYER', layer: { id: layerId, name: def.name, visible: true } });
       dispatch({ type: 'BATCH_ADD_FEATURES', features });
-      setExpandedLayers((prev) => new Set(prev).add(layerId));
     } catch { alert(`加载 ${def.name} 失败`); }
     finally { setLoadingBuiltin(null); }
   };
@@ -166,7 +175,7 @@ export default function LayerPanel() {
                       <span className="layer-color" style={{ backgroundColor: f.properties.color }} />
                       <span className="layer-icon">{shapeIcon(f.properties.shapeType)}</span>
                       <span className="layer-name">{f.properties.name}</span>
-                      <span className="layer-type">{f.properties.shapeType}</span>
+                      <span className="layer-type">{shapeLabel(f.properties.shapeType)}</span>
                     </div>
                   ))}
                 </div>

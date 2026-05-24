@@ -1,5 +1,6 @@
 import { PersistedState } from './types';
 import { normalizeBasemapKey } from './basemaps';
+import { normalizeFeatureStyle } from './utils/featureStyle';
 
 const STORAGE_KEY = 'webgis_state';
 
@@ -16,6 +17,7 @@ export function loadState(): PersistedState | null {
       ...f,
       properties: {
         ...f.properties,
+        ...normalizeFeatureStyle(f.properties, f.properties.shapeType),
         layerId: f.properties.layerId || '__default__',
       },
     }));
