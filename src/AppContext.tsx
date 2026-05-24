@@ -88,18 +88,13 @@ function reducer(state: AppState, action: Action): AppState {
     case 'DELETE_LAYER': {
       if (action.id === DEFAULT_LAYER_ID) return state; // Cannot delete default
       const newLayers = state.layers.filter((l) => l.id !== action.id);
-      const fallbackId = DEFAULT_LAYER_ID;
-      // Move orphaned features to default layer
-      const newFeatures = state.features.map((f) =>
-        f.properties.layerId === action.id
-          ? { ...f, properties: { ...f.properties, layerId: fallbackId } }
-          : f,
-      );
+      const newFeatures = state.features.filter((f) => f.properties.layerId !== action.id);
       return {
         ...state,
         layers: newLayers,
         features: newFeatures,
-        currentLayerId: state.currentLayerId === action.id ? fallbackId : state.currentLayerId,
+        selectedFeatureId: null,
+        currentLayerId: state.currentLayerId === action.id ? DEFAULT_LAYER_ID : state.currentLayerId,
       };
     }
 

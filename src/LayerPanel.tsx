@@ -186,7 +186,7 @@ export default function LayerPanel() {
                     className="layer-action-btn danger"
                     title="删除图层"
                     onClick={() => {
-                      if (confirm(`确定删除图层「${layer.name}」？所含标注将移至默认图层。`)) {
+                      if (confirm(`确定删除图层「${layer.name}」及其全部 ${features.length} 个标注？此操作不可撤销。`)) {
                         dispatch({ type: 'DELETE_LAYER', id: layer.id });
                       }
                     }}
