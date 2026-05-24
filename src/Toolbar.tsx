@@ -37,8 +37,6 @@ export default function Toolbar() {
 
   const api = () => (window as any).__webgis;
 
-  const AMAP_KEY = 'fcfdf69df521f74f022e6cc53cb1d8b9';
-
   const handleSearch = useCallback(async () => {
     const q = searchText.trim();
     if (!q) return;
@@ -67,20 +65,16 @@ export default function Toolbar() {
       return;
     }
 
-    // 2) Geocode via Amap API
+    // 2) Geocode via Amap API (with signature)
     try {
-      const resp = await fetch(
-        `https://restapi.amap.com/v3/geocode/geo?key=${AMAP_KEY}&address=${encodeURIComponent(q)}`,
-      );
-      const data = await resp.json();
-      if (data.status !== '1' || !data.geocodes?.length) {
-        alert(`未找到「${q}」，状态码: ${data.status}，请尝试更具体的名称。`);
+      const { geocodeAmap } = await import('./utils/amap');
+      const result = await geocodeAmap(q);
+      if (!result) {
+        alert(`未找到「${q}」，请尝试更具体的名称。`);
         return;
       }
-      const [lng, lat] = data.geocodes[0].location.split(',').map(Number);
-      const name = data.geocodes[0].formatted_address || q;
-      a.flyTo(lat, lng);
-      a.placeMarker(lat, lng, name);
+      a.flyTo(result.lat, result.lng);
+      a.placeMarker(result.lat, result.lng, result.name);
       setSearchText('');
     } catch (e: any) {
       alert('搜索失败: ' + (e?.message || '网络异常'));
