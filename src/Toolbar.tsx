@@ -43,7 +43,10 @@ export default function Toolbar() {
     const q = searchText.trim();
     if (!q) return;
     const a = api();
-    if (!a) return;
+    if (!a) {
+      alert('地图尚未就绪，请稍后再试。');
+      return;
+    }
 
     // 1) Try "lat, lng" coordinates
     const coordMatch = q.match(/^(-?\d+\.?\d*)\s*[,，\s]\s*(-?\d+\.?\d*)$/);
@@ -54,9 +57,13 @@ export default function Toolbar() {
         alert('坐标范围错误：纬度 -90~90，经度 -180~180');
         return;
       }
-      a.flyTo(lat, lng);
-      a.placeMarker(lat, lng, `${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-      setSearchText('');
+      try {
+        a.flyTo(lat, lng);
+        a.placeMarker(lat, lng, `${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+        setSearchText('');
+      } catch (e: any) {
+        alert('定位失败: ' + (e?.message || ''));
+      }
       return;
     }
 
@@ -67,7 +74,7 @@ export default function Toolbar() {
       );
       const data = await resp.json();
       if (data.status !== '1' || !data.geocodes?.length) {
-        alert(`未找到「${q}」，请尝试更具体的名称或使用坐标。`);
+        alert(`未找到「${q}」，状态码: ${data.status}，请尝试更具体的名称。`);
         return;
       }
       const [lng, lat] = data.geocodes[0].location.split(',').map(Number);
@@ -75,8 +82,8 @@ export default function Toolbar() {
       a.flyTo(lat, lng);
       a.placeMarker(lat, lng, name);
       setSearchText('');
-    } catch {
-      alert('搜索失败，请检查网络。');
+    } catch (e: any) {
+      alert('搜索失败: ' + (e?.message || '网络异常'));
     }
   }, [searchText]);
 
