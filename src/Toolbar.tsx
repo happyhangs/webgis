@@ -34,9 +34,10 @@ export default function Toolbar() {
   const shpInputRef = useRef<HTMLInputElement>(null);
   const [importType, setImportType] = useState<'geojson' | 'csv'>('geojson');
   const [searchText, setSearchText] = useState('');
-  const [amapKey, setAmapKey] = useState(() => localStorage.getItem('webgis_amap_key') || '');
 
   const api = () => (window as any).__webgis;
+
+  const AMAP_KEY = 'fcfdf69df521f74f022e6cc53cb1d8b9';
 
   const handleSearch = useCallback(async () => {
     const q = searchText.trim();
@@ -60,14 +61,9 @@ export default function Toolbar() {
     }
 
     // 2) Geocode via Amap API
-    if (!amapKey) {
-      alert('地名搜索需要高德 API Key。\n\n免费获取：https://lbs.amap.com → 创建应用 → 添加 Web服务 API\n然后将 Key 粘贴到搜索框左侧的 🔑 输入框。');
-      return;
-    }
-
     try {
       const resp = await fetch(
-        `https://restapi.amap.com/v3/geocode/geo?key=${encodeURIComponent(amapKey)}&address=${encodeURIComponent(q)}`,
+        `https://restapi.amap.com/v3/geocode/geo?key=${AMAP_KEY}&address=${encodeURIComponent(q)}`,
       );
       const data = await resp.json();
       if (data.status !== '1' || !data.geocodes?.length) {
@@ -80,14 +76,9 @@ export default function Toolbar() {
       a.placeMarker(lat, lng, name);
       setSearchText('');
     } catch {
-      alert('搜索失败，请检查网络或 Key 是否正确。');
+      alert('搜索失败，请检查网络。');
     }
-  }, [searchText, amapKey]);
-
-  const saveAmapKey = (key: string) => {
-    setAmapKey(key);
-    localStorage.setItem('webgis_amap_key', key);
-  };
+  }, [searchText]);
 
   const handleToolClick = useCallback(
     (tool: ActiveTool) => {
@@ -229,30 +220,10 @@ export default function Toolbar() {
   return (
     <div className="toolbar">
       <div className="toolbar-group search-group">
-        {!amapKey && (
-          <input
-            className="key-input"
-            type="text"
-            placeholder="高德Key"
-            title="高德Web服务API Key，免费申请：lbs.amap.com"
-            defaultValue={amapKey}
-            onBlur={(e) => saveAmapKey(e.target.value.trim())}
-            onKeyDown={(e) => { if (e.key === 'Enter') saveAmapKey((e.target as HTMLInputElement).value.trim()); }}
-          />
-        )}
-        {amapKey && (
-          <button
-            className="toolbar-btn"
-            title="已配置高德Key，点击清除"
-            onClick={() => { saveAmapKey(''); }}
-          >
-            🔑
-          </button>
-        )}
         <input
           className="search-input"
           type="text"
-          placeholder={amapKey ? '地名或坐标，如 北京 / 39.9,116.4' : '输入坐标，如 39.9042, 116.4074'}
+          placeholder="地名或坐标，如 北京 / 39.9,116.4"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
