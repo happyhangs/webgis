@@ -11,6 +11,7 @@ import {
   Table,
   Layers,
   Package,
+  Crosshair,
 } from 'lucide-react';
 import { useAppContext } from './AppContext';
 import { BASEMAP_OPTIONS } from './basemaps';
@@ -307,7 +308,7 @@ export default function Toolbar() {
           定位
         </button>
         <button className="toolbar-btn" onClick={handleLocate} title="我的位置 (GPS)">
-          <MapPin size={16} color="#e63946" />
+          <Crosshair size={16} />
         </button>
       </div>
 
