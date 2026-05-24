@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@geoman-io/leaflet-geoman-free": "^2.18.0",
+    "@tmcw/togeojson": "^7.1.2",
     "@turf/area": "^7.1.0",
     "@turf/length": "^7.1.0",
     "leaflet": "^1.9.4",

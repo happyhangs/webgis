@@ -1,0 +1,1849 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<kml xmlns='http://www.opengis.net/kml/2.2' xmlns:gx='http://www.google.com/kml/ext/2.2'>
+<Document>
+<name>北屯150</name>
+<Placemark>
+<styleUrl>#41f1a56f-c65e-150d-f408-197cde987b3e</styleUrl>
+<name>北屯150</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>87.87736270,46.76736048,0.0 87.87710084,46.76711792,0.0 87.87707938,46.76652510,0.0 87.87710799,46.76456044,0.0 87.87710980,46.76161612,0.0 87.87888940,46.76181490,0.0 87.87890600,46.76730239,0.0 87.87745926,46.76740580,0.0 87.87736270,46.76736048,0.0 87.87736270,46.76736048,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>85556.38</value></Data>
+<Data name="面积(亩)"><value>128.335</value></Data>
+<Data name="begin_time"><value>2026-04-21 11:38:12</value></Data>
+<Data name="end_time"><value>2026-04-21 11:38:12</value></Data>
+<Data name="mi"><value>1514.3</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='41f1a56f-c65e-150d-f408-197cde987b3e'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>2.0</width>
+</LineStyle>
+<PolyStyle>
+<color>4C6F9F4F</color>
+</PolyStyle>
+</Style>
+<name>北屯150</name>
+<Placemark>
+<styleUrl>#e5d53b9b-a0cc-426d-aa6a-dd79553b90ca</styleUrl>
+<name>北屯150</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>87.87736270,46.76736048,0.0 87.87710084,46.76711792,0.0 87.87707938,46.76652510,0.0 87.87710799,46.76456044,0.0 87.87710980,46.76161612,0.0 87.87888940,46.76181490,0.0 87.87890600,46.76730239,0.0 87.87745926,46.76740580,0.0 87.87736270,46.76736048,0.0 87.87736270,46.76736048,0.0 87.87736270,46.76736048,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>85556.38</value></Data>
+<Data name="面积(亩)"><value>128.335</value></Data>
+<Data name="begin_time"><value>2026-04-21 11:38:12</value></Data>
+<Data name="end_time"><value>2026-04-21 11:38:12</value></Data>
+<Data name="mi"><value>1514.3</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='e5d53b9b-a0cc-426d-aa6a-dd79553b90ca'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>2.0</width>
+</LineStyle>
+<PolyStyle>
+<color>4CF6F9F4</color>
+</PolyStyle>
+</Style>
+<name>北屯</name>
+<Placemark>
+<name>北屯</name>
+<description><![CDATA[:: {"名称":"北屯","纬经度":"87.87807341,46.76440037,0","照片":"","时间":"2026-04-21 14:09:14","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":0,"精度":0}]]></description>
+<visibility></visibility>
+<Point>
+<coordinates>87.87807341,46.76440037,0</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>0</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>0</value></Data>
+<Data name="saveTime"><value>2026-04-21 14:09:14</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>北屯</name>
+<Placemark>
+<name>北屯</name>
+<description><![CDATA[:: {"名称":"北屯","纬经度":"87.87807341,46.76440037,0","照片":"","时间":"2026-04-21 14:09:14","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":0,"精度":"0"}]]></description>
+<Point>
+<coordinates>87.87807341,46.76440037,0</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>0</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>0</value></Data>
+<Data name="saveTime"><value>2026-04-21 14:09:14</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>300</name>
+<Placemark>
+<styleUrl>#48e0e756-540f-4d32-98e3-67b7969b409f</styleUrl>
+<name>300</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>89.46927300,44.10685601,0.0 89.47549573,44.10580315,0.0 89.47620483,44.10182822,0.0 89.46991773,44.10306092,0.0 89.46927300,44.10685601,0.0 89.46927300,44.10685601,0.0 89.46927300,44.10685601,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>208883.05</value></Data>
+<Data name="面积(亩)"><value>313.325</value></Data>
+<Data name="begin_time"><value>2026-04-21 16:37:51</value></Data>
+<Data name="end_time"><value>2026-04-21 16:37:51</value></Data>
+<Data name="mi"><value>1903.7</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='48e0e756-540f-4d32-98e3-67b7969b409f'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>300</name>
+<Placemark>
+<styleUrl>#736ea2db-6b80-93f3-ca0d-64fd49c6d812</styleUrl>
+<name>300</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>89.46927300,44.10685601,0.0 89.47549573,44.10580315,0.0 89.47620483,44.10182822,0.0 89.46991773,44.10306092,0.0 89.46927300,44.10685601,0.0 89.46927300,44.10685601,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>208883.05</value></Data>
+<Data name="面积(亩)"><value>313.325</value></Data>
+<Data name="begin_time"><value>2026-04-21 16:37:51</value></Data>
+<Data name="end_time"><value>2026-04-21 16:37:51</value></Data>
+<Data name="mi"><value>1903.7</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='736ea2db-6b80-93f3-ca0d-64fd49c6d812'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>000000FF</color>
+</PolyStyle>
+</Style>
+<name>奇台</name>
+<Placemark>
+<styleUrl>#68f4df4f-551e-4cff-b10f-5ce68eb0d28b</styleUrl>
+<name>奇台</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>89.48388900,44.10453927,0.0 89.48322774,44.10048436,0.0 89.48729917,44.09968091,0.0 89.48695539,44.10380428,0.0 89.48388900,44.10453927,0.0 89.48388900,44.10453927,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>130271.3</value></Data>
+<Data name="面积(亩)"><value>195.407</value></Data>
+<Data name="begin_time"><value>2026-04-02 14:30:04</value></Data>
+<Data name="end_time"><value>2026-04-02 14:30:04</value></Data>
+<Data name="mi"><value>1510.3</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='68f4df4f-551e-4cff-b10f-5ce68eb0d28b'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>100</name>
+<Placemark>
+<styleUrl>#48111b03-1413-4ea1-84bd-91291c61befa</styleUrl>
+<name>100</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>89.48394291,44.10460240,0.0 89.48525898,44.10429424,0.0 89.48597424,44.10900896,0.0 89.48467247,44.10921439,0.0 89.48394291,44.10460240,0.0 89.48394291,44.10460240,0.0 89.48394291,44.10460240,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>55838.68</value></Data>
+<Data name="面积(亩)"><value>83.758</value></Data>
+<Data name="begin_time"><value>2026-04-21 14:24:57</value></Data>
+<Data name="end_time"><value>2026-04-21 14:24:57</value></Data>
+<Data name="mi"><value>1261.8</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='48111b03-1413-4ea1-84bd-91291c61befa'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>奇台</name>
+<Placemark>
+<name>奇台</name>
+<description><![CDATA[:: {"名称":"奇台","纬经度":"89.48535107,44.10237081,0","照片":"","时间":"2026-04-21 14:23:07","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":0,"精度":"0"}]]></description>
+<Point>
+<coordinates>89.48535107,44.10237081,0</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>0</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>0</value></Data>
+<Data name="saveTime"><value>2026-04-21 14:23:07</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>奇台</name>
+<Placemark>
+<name>奇台</name>
+<description><![CDATA[:: {"名称":"奇台","纬经度":"89.48535107,44.10237081,0","照片":"","时间":"2026-04-21 14:23:07","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":0,"精度":0}]]></description>
+<visibility></visibility>
+<Point>
+<coordinates>89.48535107,44.10237081,0</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>0</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>0</value></Data>
+<Data name="saveTime"><value>2026-04-21 14:23:07</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>100</name>
+<Placemark>
+<styleUrl>#b33a2802-083b-4a3f-aee3-04a65aaba75d</styleUrl>
+<name>100</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>89.48137319,44.10482876,0.0 89.48090112,44.10095607,0.0 89.48311842,44.10050407,0.0 89.48354757,44.10447951,0.0 89.48137319,44.10482876,0.0 89.48137319,44.10482876,0.0 89.48137319,44.10482876,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>78107.51</value></Data>
+<Data name="面积(亩)"><value>117.161</value></Data>
+<Data name="begin_time"><value>2026-04-21 14:27:18</value></Data>
+<Data name="end_time"><value>2026-04-21 14:27:18</value></Data>
+<Data name="mi"><value>1239.0</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='b33a2802-083b-4a3f-aee3-04a65aaba75d'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>葫芦100</name>
+<Placemark>
+<styleUrl>#cdf55169-78e8-4a4f-b9ad-4c8b2de914f6</styleUrl>
+<name>葫芦100</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>89.46041440,44.12471289,0.0 89.46183061,44.12115986,0.0 89.46537828,44.11599422,0.0 89.46615075,44.11613800,0.0 89.46283197,44.12135497,0.0 89.46122979,44.12517498,0.0 89.46041440,44.12471289,0.0 89.46041440,44.12471289,0.0 89.46041440,44.12471289,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>80156.88</value></Data>
+<Data name="面积(亩)"><value>120.235</value></Data>
+<Data name="begin_time"><value>2026-04-21 14:29:59</value></Data>
+<Data name="end_time"><value>2026-04-21 14:29:59</value></Data>
+<Data name="mi"><value>2281.9</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='cdf55169-78e8-4a4f-b9ad-4c8b2de914f6'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>2.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>葫芦100</name>
+<Placemark>
+<styleUrl>#d492dd14-4933-9b5c-c930-21dc839b3ff1</styleUrl>
+<name>葫芦100</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>89.46041440,44.12471289,0.0 89.46183061,44.12115986,0.0 89.46537828,44.11599422,0.0 89.46615075,44.11613800,0.0 89.46283197,44.12135497,0.0 89.46122979,44.12517498,0.0 89.46041440,44.12471289,0.0 89.46041440,44.12471289,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>80156.88</value></Data>
+<Data name="面积(亩)"><value>120.235</value></Data>
+<Data name="begin_time"><value>2026-04-21 14:29:59</value></Data>
+<Data name="end_time"><value>2026-04-21 14:29:59</value></Data>
+<Data name="mi"><value>2281.9</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='d492dd14-4933-9b5c-c930-21dc839b3ff1'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>2.0</width>
+</LineStyle>
+<PolyStyle>
+<color>000000FF</color>
+</PolyStyle>
+</Style>
+<name>葫芦200</name>
+<Placemark>
+<styleUrl>#d6cb5652-27e4-4422-9567-51f1bc14957f</styleUrl>
+<name>葫芦200</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>89.46122979,44.12517498,0.0 89.46283197,44.12135497,0.0 89.46615075,44.11613800,0.0 89.46842501,44.11660185,0.0 89.46496318,44.12177770,0.0 89.46409056,44.12164420,0.0 89.46254561,44.12497130,0.0 89.46203063,44.12549499,0.0 89.46122979,44.12517498,0.0 89.46122979,44.12517498,0.0 89.46122979,44.12517498,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>159332.56</value></Data>
+<Data name="面积(亩)"><value>238.999</value></Data>
+<Data name="begin_time"><value>2026-04-21 14:31:03</value></Data>
+<Data name="end_time"><value>2026-04-21 14:31:03</value></Data>
+<Data name="mi"><value>2516.9</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='d6cb5652-27e4-4422-9567-51f1bc14957f'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>2.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>葫芦200</name>
+<Placemark>
+<styleUrl>#af07f698-0189-4e36-9164-71a910ec717f</styleUrl>
+<name>葫芦200</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>89.46122979,44.12517498,0.0 89.46283197,44.12135497,0.0 89.46615075,44.11613800,0.0 89.46855376,44.11664293,0.0 89.46499179,44.12175716,0.0 89.46394751,44.12162366,0.0 89.46257422,44.12505345,0.0 89.46195910,44.12551553,0.0 89.46122979,44.12517498,0.0 89.46122979,44.12517498,0.0 89.46122979,44.12517498,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>162010.7</value></Data>
+<Data name="面积(亩)"><value>243.016</value></Data>
+<Data name="begin_time"><value>2026-04-21 14:31:31</value></Data>
+<Data name="end_time"><value>2026-04-21 14:31:31</value></Data>
+<Data name="mi"><value>2541.9</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='af07f698-0189-4e36-9164-71a910ec717f'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>2.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>300李人工棉花</name>
+<Placemark>
+<styleUrl>#ecb1dd22-8833-491d-8f67-c9d35ad17172</styleUrl>
+<name>300李人工棉花</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.95269009,44.40308548,0.0 85.95912024,44.40117940,0.0 85.95869824,44.39760215,0.0 85.95228239,44.39955433,0.0 85.95269009,44.40308548,0.0 85.95269009,44.40308548,0.0 85.95269009,44.40308548,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>208736.1</value></Data>
+<Data name="面积(亩)"><value>313.104</value></Data>
+<Data name="begin_time"><value>2026-04-21 14:49:23</value></Data>
+<Data name="end_time"><value>2026-04-21 14:49:23</value></Data>
+<Data name="mi"><value>1902.4</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='ecb1dd22-8833-491d-8f67-c9d35ad17172'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>300李人工棉花</name>
+<Placemark>
+<styleUrl>#83abfe38-2b95-d1bd-48f9-2a708f3fccfa</styleUrl>
+<name>300李人工棉花</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.95269009,44.40308548,0.0 85.95912024,44.40117940,0.0 85.95869824,44.39760215,0.0 85.95228239,44.39955433,0.0 85.95269009,44.40308548,0.0 85.95269009,44.40308548,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>208736.1</value></Data>
+<Data name="面积(亩)"><value>313.104</value></Data>
+<Data name="begin_time"><value>2026-04-21 14:49:23</value></Data>
+<Data name="end_time"><value>2026-04-21 14:49:23</value></Data>
+<Data name="mi"><value>1902.4</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='83abfe38-2b95-d1bd-48f9-2a708f3fccfa'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>000000FF</color>
+</PolyStyle>
+</Style>
+<name>190</name>
+<Placemark>
+<styleUrl>#b8c2c003-1953-464c-9a47-5809343696eb</styleUrl>
+<name>190</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.95486745,44.39875534,0.0 85.95526186,44.40237769,0.0 85.95912691,44.40119552,0.0 85.95869646,44.39761540,0.0 85.95491828,44.39873413,0.0 85.95486745,44.39875534,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>127305.56</value></Data>
+<Data name="面积(亩)"><value>190.958</value></Data>
+<Data name="begin_time"><value>2026-04-12 10:14:46</value></Data>
+<Data name="end_time"><value>2026-04-12 10:14:46</value></Data>
+<Data name="mi"><value>1468.8</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='b8c2c003-1953-464c-9a47-5809343696eb'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>000000FF</color>
+</PolyStyle>
+</Style>
+<name>190</name>
+<Placemark>
+<styleUrl>#9b3ccd08-a567-437c-bc7a-e492de9673c0</styleUrl>
+<name>190</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.95486745,44.39875534,0.0 85.95526186,44.40237769,0.0 85.95912691,44.40119552,0.0 85.95869646,44.39761540,0.0 85.95491828,44.39873413,0.0 85.95486745,44.39875534,0.0 85.95486745,44.39875534,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>127305.56</value></Data>
+<Data name="面积(亩)"><value>190.958</value></Data>
+<Data name="begin_time"><value>2026-04-12 10:14:46</value></Data>
+<Data name="end_time"><value>2026-04-12 10:14:46</value></Data>
+<Data name="mi"><value>1468.8</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='9b3ccd08-a567-437c-bc7a-e492de9673c0'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>120</name>
+<Placemark>
+<styleUrl>#0486998a-bfac-4bbb-8598-4e81bc27a8ff</styleUrl>
+<name>120</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.95225376,44.39955959,0.0 85.95475109,44.39883995,0.0 85.95522976,44.40234805,0.0 85.95267096,44.40305149,0.0 85.95225376,44.39955959,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>81341.97</value></Data>
+<Data name="面积(亩)"><value>122.013</value></Data>
+<Data name="begin_time"><value>2026-04-13 16:48:25</value></Data>
+<Data name="end_time"><value>2026-04-13 16:48:25</value></Data>
+<Data name="mi"><value>1214.7</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='0486998a-bfac-4bbb-8598-4e81bc27a8ff'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>000000FF</color>
+</PolyStyle>
+</Style>
+<name>50</name>
+<Placemark>
+<styleUrl>#48380439-6434-441b-b3c4-d862867d4d56</styleUrl>
+<name>50</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.95297602,44.40683195,0.0 85.95484999,44.40626988,0.0 85.95495013,44.40827287,0.0 85.95303324,44.40882471,0.0 85.95297602,44.40683195,0.0 85.95297602,44.40683195,0.0 85.95297602,44.40683195,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>33835.49</value></Data>
+<Data name="面积(亩)"><value>50.753</value></Data>
+<Data name="begin_time"><value>2026-04-21 14:59:41</value></Data>
+<Data name="end_time"><value>2026-04-21 14:59:41</value></Data>
+<Data name="mi"><value>771.0</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='48380439-6434-441b-b3c4-d862867d4d56'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>120</name>
+<Placemark>
+<styleUrl>#482af05d-fd00-4d9c-8ac9-882b43700525</styleUrl>
+<name>120</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.95225376,44.39955959,0.0 85.95475109,44.39883995,0.0 85.95522976,44.40234805,0.0 85.95267096,44.40305149,0.0 85.95225376,44.39955959,0.0 85.95225376,44.39955959,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>81341.97</value></Data>
+<Data name="面积(亩)"><value>122.013</value></Data>
+<Data name="begin_time"><value>2026-04-13 16:48:25</value></Data>
+<Data name="end_time"><value>2026-04-13 16:48:25</value></Data>
+<Data name="mi"><value>1214.7</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='482af05d-fd00-4d9c-8ac9-882b43700525'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>450</name>
+<Placemark>
+<styleUrl>#92902527-2209-489d-bb0d-12cd2c9798ad</styleUrl>
+<name>450</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.95184323,44.39635209,0.0 85.95198754,44.40014005,0.0 85.94246485,44.40053647,0.0 85.94233783,44.39765049,0.0 85.94471997,44.39752247,0.0 85.94475347,44.39661750,0.0 85.95184323,44.39635209,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>302765.3</value></Data>
+<Data name="面积(亩)"><value>454.148</value></Data>
+<Data name="begin_time"><value>2026-04-13 16:48:01</value></Data>
+<Data name="end_time"><value>2026-04-13 16:48:01</value></Data>
+<Data name="mi"><value>2357.4</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='92902527-2209-489d-bb0d-12cd2c9798ad'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>000000FF</color>
+</PolyStyle>
+</Style>
+<name>石河子</name>
+<Placemark>
+<name>石河子</name>
+<description><![CDATA[:: {"名称":"石河子","纬经度":"85.94621100,44.39729700,331.85","照片":"","时间":"2026-04-13 19:02:49","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":85,"精度":"3.79"}]]></description>
+<Point>
+<coordinates>85.94621100,44.39729700,331.85</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>85</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>3.79</value></Data>
+<Data name="saveTime"><value>2026-04-13 19:02:49</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>北泉</name>
+<Placemark>
+<name>北泉</name>
+<description><![CDATA[:: {"名称":"北泉","纬经度":"85.95162900,44.40029300,336.82","照片":"","时间":"2026-04-11 09:58:06","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":75,"精度":"3.79"}]]></description>
+<Point>
+<coordinates>85.95162900,44.40029300,336.82</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>75</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>3.79</value></Data>
+<Data name="saveTime"><value>2026-04-11 09:58:06</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>150</name>
+<Placemark>
+<styleUrl>#5c41d142-be85-485b-8ae2-44deb07ddb27</styleUrl>
+<name>150</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.95197300,44.39609778,0.0 85.95643666,44.39649516,0.0 85.95683720,44.39739462,0.0 85.95713761,44.39800788,0.0 85.95590737,44.39843109,0.0 85.95228587,44.39948951,0.0 85.95199173,44.39608624,0.0 85.95197300,44.39609778,0.0 85.95197300,44.39609778,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>103944.66</value></Data>
+<Data name="面积(亩)"><value>155.917</value></Data>
+<Data name="begin_time"><value>2026-04-12 10:19:14</value></Data>
+<Data name="end_time"><value>2026-04-12 10:19:14</value></Data>
+<Data name="mi"><value>1336.5</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='5c41d142-be85-485b-8ae2-44deb07ddb27'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>000000FF</color>
+</PolyStyle>
+</Style>
+<name>石河子</name>
+<Placemark>
+<name>石河子</name>
+<description><![CDATA[:: {"名称":"石河子","纬经度":"85.94621100,44.39729700,331.85","照片":"","时间":"2026-04-13 19:02:49","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":85,"精度":"3.79"}]]></description>
+<Point>
+<coordinates>85.94621100,44.39729700,331.85</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>85</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>3.79</value></Data>
+<Data name="saveTime"><value>2026-04-13 19:02:49</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>北泉</name>
+<Placemark>
+<name>北泉</name>
+<description><![CDATA[:: {"名称":"北泉","纬经度":"85.95162900,44.40029300,336.82","照片":"","时间":"2026-04-11 09:58:06","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":75,"精度":"3.79"}]]></description>
+<Point>
+<coordinates>85.95162900,44.40029300,336.82</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>75</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>3.79</value></Data>
+<Data name="saveTime"><value>2026-04-11 09:58:06</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>150</name>
+<Placemark>
+<styleUrl>#1627796f-3f2a-45a0-b50e-31c9550ca048</styleUrl>
+<name>150</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.95197300,44.39609778,0.0 85.95643666,44.39649516,0.0 85.95683720,44.39739462,0.0 85.95713761,44.39800788,0.0 85.95590737,44.39843109,0.0 85.95228587,44.39948951,0.0 85.95199173,44.39608624,0.0 85.95197300,44.39609778,0.0 85.95197300,44.39609778,0.0 85.95197300,44.39609778,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>103944.66</value></Data>
+<Data name="面积(亩)"><value>155.917</value></Data>
+<Data name="begin_time"><value>2026-04-12 10:19:14</value></Data>
+<Data name="end_time"><value>2026-04-12 10:19:14</value></Data>
+<Data name="mi"><value>1336.5</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='1627796f-3f2a-45a0-b50e-31c9550ca048'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>120左加厚60，右普通60</name>
+<Placemark>
+<styleUrl>#b78819cc-6d11-4053-973b-8bdeb33cd61f</styleUrl>
+<name>120左加厚60，右普通60</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.93192588,44.37636307,0.0 85.92992233,44.37726231,0.0 85.93030119,44.38127003,0.0 85.93157748,44.38132014,0.0 85.93234080,44.38147252,0.0 85.93193391,44.37640141,0.0 85.93192588,44.37636307,0.0 85.93192588,44.37636307,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>82344.22</value></Data>
+<Data name="面积(亩)"><value>123.516</value></Data>
+<Data name="begin_time"><value>2026-04-14 16:57:04</value></Data>
+<Data name="end_time"><value>2026-04-14 16:57:04</value></Data>
+<Data name="mi"><value>1369.9</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='b78819cc-6d11-4053-973b-8bdeb33cd61f'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>全生命周期2</name>
+<Placemark>
+<name>全生命周期2</name>
+<description><![CDATA[:: <a href="全生命周期2/f55086d49a138802ae1dfaee94a9fdea.jpg" target="_balnk"><img src="全生命周期2/f55086d49a138802ae1dfaee94a9fdea.jpg" width="300"/></a><br/><a href="全生命周期2/531b28bc0ed420055e81731adbe27409.jpg" target="_balnk"><img src="全生命周期2/531b28bc0ed420055e81731adbe27409.jpg" width="300"/></a><br/>{"名称":"全生命周期2","纬经度":"85.93946000,44.39516300,332.59","照片":"f55086d49a138802ae1dfaee94a9fdea.jpg;531b28bc0ed420055e81731adbe27409.jpg","时间":"2026-05-10 10:29:28","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":62,"精度":"3.79"}]]></description>
+<Point>
+<coordinates>85.93946000,44.39516300,332.59</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>62</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>3.79</value></Data>
+<Data name="memo"><value>f55086d49a138802ae1dfaee94a9fdea.jpg;531b28bc0ed420055e81731adbe27409.jpg</value></Data>
+<Data name="saveTime"><value>2026-05-10 10:29:28</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>全生命周期4</name>
+<Placemark>
+<name>全生命周期4</name>
+<description><![CDATA[:: <a href="全生命周期4/e1717d107329d68f815f92e7134f5949.jpg" target="_balnk"><img src="全生命周期4/e1717d107329d68f815f92e7134f5949.jpg" width="300"/></a><br/><a href="全生命周期4/859f29409657a19378a680b34a14d25e.jpg" target="_balnk"><img src="全生命周期4/859f29409657a19378a680b34a14d25e.jpg" width="300"/></a><br/>{"名称":"全生命周期4","纬经度":"85.93801000,44.39521700,333.22","照片":"e1717d107329d68f815f92e7134f5949.jpg;859f29409657a19378a680b34a14d25e.jpg","时间":"2026-05-10 10:48:00","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":64,"精度":"3.79"}]]></description>
+<Point>
+<coordinates>85.93801000,44.39521700,333.22</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>64</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>3.79</value></Data>
+<Data name="memo"><value>e1717d107329d68f815f92e7134f5949.jpg;859f29409657a19378a680b34a14d25e.jpg</value></Data>
+<Data name="saveTime"><value>2026-05-10 10:48:00</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>全生命周期7</name>
+<Placemark>
+<name>全生命周期7</name>
+<description><![CDATA[:: <a href="全生命周期7/bb400b3bcfcdbd7a6014e5773f4aef58.jpg" target="_balnk"><img src="全生命周期7/bb400b3bcfcdbd7a6014e5773f4aef58.jpg" width="300"/></a><br/><a href="全生命周期7/c6dacff320177032ff139f887c317e16.jpg" target="_balnk"><img src="全生命周期7/c6dacff320177032ff139f887c317e16.jpg" width="300"/></a><br/>{"名称":"全生命周期7","纬经度":"85.93699500,44.39524900,335.69","照片":"bb400b3bcfcdbd7a6014e5773f4aef58.jpg;c6dacff320177032ff139f887c317e16.jpg","时间":"2026-05-10 12:26:24","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":71,"精度":"3.79"}]]></description>
+<Point>
+<coordinates>85.93699500,44.39524900,335.69</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>71</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>3.79</value></Data>
+<Data name="memo"><value>bb400b3bcfcdbd7a6014e5773f4aef58.jpg;c6dacff320177032ff139f887c317e16.jpg</value></Data>
+<Data name="saveTime"><value>2026-05-10 12:26:24</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>全生命周期9</name>
+<Placemark>
+<name>全生命周期9</name>
+<description><![CDATA[:: <a href="全生命周期9/bdfbfefab05145e5d6c2f72c993d2b4a.jpg" target="_balnk"><img src="全生命周期9/bdfbfefab05145e5d6c2f72c993d2b4a.jpg" width="300"/></a><br/><a href="全生命周期9/31eb77f83d7a3f7485d6d1b72684139b.jpg" target="_balnk"><img src="全生命周期9/31eb77f83d7a3f7485d6d1b72684139b.jpg" width="300"/></a><br/>{"名称":"全生命周期9","纬经度":"85.93573100,44.39530400,332.96","照片":"bdfbfefab05145e5d6c2f72c993d2b4a.jpg;31eb77f83d7a3f7485d6d1b72684139b.jpg","时间":"2026-05-10 12:48:37","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":76,"精度":"3.79"}]]></description>
+<Point>
+<coordinates>85.93573100,44.39530400,332.96</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>76</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>3.79</value></Data>
+<Data name="memo"><value>bdfbfefab05145e5d6c2f72c993d2b4a.jpg;31eb77f83d7a3f7485d6d1b72684139b.jpg</value></Data>
+<Data name="saveTime"><value>2026-05-10 12:48:37</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>辣子100</name>
+<Placemark>
+<styleUrl>#617344ef-3d4d-469a-bda2-f07ba9217c97</styleUrl>
+<name>辣子100</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.94998116,44.40685647,0.0 85.94965214,44.40035656,0.0 85.95092529,44.40030546,0.0 85.95132584,44.40678494,0.0 85.94998116,44.40685647,0.0 85.94998116,44.40685647,0.0 85.94998116,44.40685647,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>75233.09</value></Data>
+<Data name="面积(亩)"><value>112.850</value></Data>
+<Data name="begin_time"><value>2026-04-21 14:37:46</value></Data>
+<Data name="end_time"><value>2026-04-21 14:37:46</value></Data>
+<Data name="mi"><value>1654.7</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='617344ef-3d4d-469a-bda2-f07ba9217c97'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>辣子100</name>
+<Placemark>
+<styleUrl>#fc79ef67-a046-40f9-86cb-e9515fe601fa</styleUrl>
+<name>辣子100</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.95132584,44.40678494,0.0 85.95092529,44.40030546,0.0 85.95195526,44.40025532,0.0 85.95258469,44.40674502,0.0 85.95132584,44.40678494,0.0 85.95132584,44.40678494,0.0 85.95132584,44.40678494,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>65758.11</value></Data>
+<Data name="面积(亩)"><value>98.637</value></Data>
+<Data name="begin_time"><value>2026-04-21 14:38:08</value></Data>
+<Data name="end_time"><value>2026-04-21 14:38:08</value></Data>
+<Data name="mi"><value>1628.5</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='fc79ef67-a046-40f9-86cb-e9515fe601fa'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>辣子100</name>
+<Placemark>
+<styleUrl>#9134a4c7-93db-1306-1d8b-ec75717fda32</styleUrl>
+<name>辣子100</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.95132584,44.40678494,0.0 85.95092529,44.40030546,0.0 85.95195526,44.40025532,0.0 85.95258469,44.40674502,0.0 85.95132584,44.40678494,0.0 85.95132584,44.40678494,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>65758.11</value></Data>
+<Data name="面积(亩)"><value>98.637</value></Data>
+<Data name="begin_time"><value>2026-04-21 14:38:08</value></Data>
+<Data name="end_time"><value>2026-04-21 14:38:08</value></Data>
+<Data name="mi"><value>1628.5</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='9134a4c7-93db-1306-1d8b-ec75717fda32'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>000000FF</color>
+</PolyStyle>
+</Style>
+<name>50</name>
+<Placemark>
+<styleUrl>#0db6e840-3d3f-5cb2-7554-78558ca186c3</styleUrl>
+<name>50</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.95297602,44.40683195,0.0 85.95484999,44.40626988,0.0 85.95495013,44.40827287,0.0 85.95303324,44.40882471,0.0 85.95297602,44.40683195,0.0 85.95297602,44.40683195,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>33835.49</value></Data>
+<Data name="面积(亩)"><value>50.753</value></Data>
+<Data name="begin_time"><value>2026-04-21 14:59:41</value></Data>
+<Data name="end_time"><value>2026-04-21 14:59:41</value></Data>
+<Data name="mi"><value>771.0</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='0db6e840-3d3f-5cb2-7554-78558ca186c3'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>000000FF</color>
+</PolyStyle>
+</Style>
+<name>460</name>
+<Placemark>
+<styleUrl>#52b6fda7-6302-4c2e-8c4e-7d45e0af8a90</styleUrl>
+<name>460</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.94978808,44.40409370,0.0 85.94978808,44.40409370,0.0 85.94965045,44.40034338,0.0 85.94026178,44.40077228,0.0 85.94005817,44.40435643,0.0 85.94982287,44.40407446,0.0 85.94978808,44.40409370,0.0 85.94978808,44.40409370,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>310033.5</value></Data>
+<Data name="面积(亩)"><value>465.050</value></Data>
+<Data name="begin_time"><value>2026-04-11 11:38:15</value></Data>
+<Data name="end_time"><value>2026-04-11 11:38:15</value></Data>
+<Data name="mi"><value>2345.9</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='52b6fda7-6302-4c2e-8c4e-7d45e0af8a90'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>460</name>
+<Placemark>
+<styleUrl>#2eb6aca9-194b-4389-9f9a-f9e5b7eba58a</styleUrl>
+<name>460</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.94978808,44.40409370,0.0 85.94978808,44.40409370,0.0 85.94965045,44.40034338,0.0 85.94026178,44.40077228,0.0 85.94005817,44.40435643,0.0 85.94982287,44.40407446,0.0 85.94978808,44.40409370,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>310033.5</value></Data>
+<Data name="面积(亩)"><value>465.050</value></Data>
+<Data name="begin_time"><value>2026-04-11 11:38:15</value></Data>
+<Data name="end_time"><value>2026-04-11 11:38:15</value></Data>
+<Data name="mi"><value>2345.9</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='2eb6aca9-194b-4389-9f9a-f9e5b7eba58a'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>000000FF</color>
+</PolyStyle>
+</Style>
+<name>450</name>
+<Placemark>
+<styleUrl>#5b702034-4622-4277-9134-b6c6b1936d3c</styleUrl>
+<name>450</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.95184323,44.39635209,0.0 85.95198754,44.40014005,0.0 85.94246485,44.40053647,0.0 85.94233783,44.39765049,0.0 85.94471997,44.39752247,0.0 85.94475347,44.39661750,0.0 85.95184323,44.39635209,0.0 85.95184323,44.39635209,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>302765.3</value></Data>
+<Data name="面积(亩)"><value>454.148</value></Data>
+<Data name="begin_time"><value>2026-04-13 16:48:01</value></Data>
+<Data name="end_time"><value>2026-04-13 16:48:01</value></Data>
+<Data name="mi"><value>2357.4</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='5b702034-4622-4277-9134-b6c6b1936d3c'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>370</name>
+<Placemark>
+<styleUrl>#478711ce-6ba9-48ba-a1fb-5517ae13631f</styleUrl>
+<name>370</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.95262800,44.40678475,0.0 85.95329383,44.41381669,0.0 85.94923513,44.41382529,0.0 85.94874843,44.40693761,0.0 85.95262800,44.40678475,0.0 85.95262800,44.40678475,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>245465.16</value></Data>
+<Data name="面积(亩)"><value>368.198</value></Data>
+<Data name="begin_time"><value>2026-04-13 16:44:42</value></Data>
+<Data name="end_time"><value>2026-04-13 16:44:42</value></Data>
+<Data name="mi"><value>2184.0</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='478711ce-6ba9-48ba-a1fb-5517ae13631f'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>370</name>
+<Placemark>
+<styleUrl>#dff8fe2f-17e3-4d8c-a070-e9dfc2277d7a</styleUrl>
+<name>370</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.95262800,44.40678475,0.0 85.95329383,44.41381669,0.0 85.94923513,44.41382529,0.0 85.94874843,44.40693761,0.0 85.95262800,44.40678475,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>245465.16</value></Data>
+<Data name="面积(亩)"><value>368.198</value></Data>
+<Data name="begin_time"><value>2026-04-13 16:44:42</value></Data>
+<Data name="end_time"><value>2026-04-13 16:44:42</value></Data>
+<Data name="mi"><value>2184.0</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='dff8fe2f-17e3-4d8c-a070-e9dfc2277d7a'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>000000FF</color>
+</PolyStyle>
+</Style>
+<name>辣子100</name>
+<Placemark>
+<styleUrl>#42eb9de7-137b-a1f6-e103-f3fe0fa19902</styleUrl>
+<name>辣子100</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.94998116,44.40685647,0.0 85.94965214,44.40035656,0.0 85.95092529,44.40030546,0.0 85.95132584,44.40678494,0.0 85.94998116,44.40685647,0.0 85.94998116,44.40685647,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>75233.09</value></Data>
+<Data name="面积(亩)"><value>112.850</value></Data>
+<Data name="begin_time"><value>2026-04-21 14:37:46</value></Data>
+<Data name="end_time"><value>2026-04-21 14:37:46</value></Data>
+<Data name="mi"><value>1654.7</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='42eb9de7-137b-a1f6-e103-f3fe0fa19902'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>000000FF</color>
+</PolyStyle>
+</Style>
+<name>全生命周期6</name>
+<Placemark>
+<name>全生命周期6</name>
+<description><![CDATA[:: <a href="全生命周期6/20d75d5ca8c4218921a8bd739723e188.jpg" target="_balnk"><img src="全生命周期6/20d75d5ca8c4218921a8bd739723e188.jpg" width="300"/></a><br/><a href="全生命周期6/4fefd2898cb5952f44de84e29c3a60de.jpg" target="_balnk"><img src="全生命周期6/4fefd2898cb5952f44de84e29c3a60de.jpg" width="300"/></a><br/>{"名称":"全生命周期6","纬经度":"85.93687900,44.39411700,334.93","照片":"20d75d5ca8c4218921a8bd739723e188.jpg;4fefd2898cb5952f44de84e29c3a60de.jpg","时间":"2026-05-10 12:14:43","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":69,"精度":"3.79"}]]></description>
+<Point>
+<coordinates>85.93687900,44.39411700,334.93</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>69</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>3.79</value></Data>
+<Data name="memo"><value>20d75d5ca8c4218921a8bd739723e188.jpg;4fefd2898cb5952f44de84e29c3a60de.jpg</value></Data>
+<Data name="saveTime"><value>2026-05-10 12:14:43</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>全生命周期10</name>
+<Placemark>
+<name>全生命周期10</name>
+<description><![CDATA[:: <a href="全生命周期10/b42b2bb5db400af8b074aa8541fd2b06.jpg" target="_balnk"><img src="全生命周期10/b42b2bb5db400af8b074aa8541fd2b06.jpg" width="300"/></a><br/><a href="全生命周期10/8e72433296c6818ceba95416ed638017.jpg" target="_balnk"><img src="全生命周期10/8e72433296c6818ceba95416ed638017.jpg" width="300"/></a><br/>{"名称":"全生命周期10","纬经度":"85.93564400,44.39419000,334.01","照片":"b42b2bb5db400af8b074aa8541fd2b06.jpg;8e72433296c6818ceba95416ed638017.jpg","时间":"2026-05-10 12:58:15","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":76,"精度":"3.79"}]]></description>
+<Point>
+<coordinates>85.93564400,44.39419000,334.01</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>76</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>3.79</value></Data>
+<Data name="memo"><value>b42b2bb5db400af8b074aa8541fd2b06.jpg;8e72433296c6818ceba95416ed638017.jpg</value></Data>
+<Data name="saveTime"><value>2026-05-10 12:58:15</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>全生命周期3</name>
+<Placemark>
+<name>全生命周期3</name>
+<description><![CDATA[:: <a href="全生命周期3/e98795818807d298b9df4f06105e992c.jpg" target="_balnk"><img src="全生命周期3/e98795818807d298b9df4f06105e992c.jpg" width="300"/></a><br/>{"名称":"全生命周期3","纬经度":"85.93871500,44.39468600,332.97","照片":"e98795818807d298b9df4f06105e992c.jpg","时间":"2026-05-10 10:44:31","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":62,"精度":"3.79"}]]></description>
+<Point>
+<coordinates>85.93871500,44.39468600,332.97</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>62</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>3.79</value></Data>
+<Data name="memo"><value>e98795818807d298b9df4f06105e992c.jpg</value></Data>
+<Data name="saveTime"><value>2026-05-10 10:44:31</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>全生命周期8</name>
+<Placemark>
+<name>全生命周期8</name>
+<description><![CDATA[:: <a href="全生命周期8/d5bcfc7de7c03deebc3c0b011f05dd80.jpg" target="_balnk"><img src="全生命周期8/d5bcfc7de7c03deebc3c0b011f05dd80.jpg" width="300"/></a><br/><a href="全生命周期8/952e7889d6a4f6d115024845ea49d910.jpg" target="_balnk"><img src="全生命周期8/952e7889d6a4f6d115024845ea49d910.jpg" width="300"/></a><br/>{"名称":"全生命周期8","纬经度":"85.93642000,44.39475200,336.82","照片":"d5bcfc7de7c03deebc3c0b011f05dd80.jpg;952e7889d6a4f6d115024845ea49d910.jpg","时间":"2026-05-10 12:37:10","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":74,"精度":"3.79"}]]></description>
+<Point>
+<coordinates>85.93642000,44.39475200,336.82</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>74</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>3.79</value></Data>
+<Data name="memo"><value>d5bcfc7de7c03deebc3c0b011f05dd80.jpg;952e7889d6a4f6d115024845ea49d910.jpg</value></Data>
+<Data name="saveTime"><value>2026-05-10 12:37:10</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>500</name>
+<Placemark>
+<styleUrl>#c10ee3ec-af90-4a74-b047-5279d4d9289e</styleUrl>
+<name>500</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.93999307,44.39299279,0.0 85.94034495,44.39649215,0.0 85.95200243,44.39600282,0.0 85.95301907,44.39559321,0.0 85.95275569,44.39240246,0.0 85.93986591,44.39295274,0.0 85.93999307,44.39299279,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>400997.3</value></Data>
+<Data name="面积(亩)"><value>601.496</value></Data>
+<Data name="begin_time"><value>2026-04-12 10:12:59</value></Data>
+<Data name="end_time"><value>2026-04-12 10:12:59</value></Data>
+<Data name="mi"><value>2806.2</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='c10ee3ec-af90-4a74-b047-5279d4d9289e'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>000000FF</color>
+</PolyStyle>
+</Style>
+<name>500</name>
+<Placemark>
+<styleUrl>#b670a556-9a71-4c45-9655-0cac5538a722</styleUrl>
+<name>500</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.93999307,44.39299279,0.0 85.94034495,44.39649215,0.0 85.95200243,44.39600282,0.0 85.95301907,44.39559321,0.0 85.95275569,44.39240246,0.0 85.93986591,44.39295274,0.0 85.93999307,44.39299279,0.0 85.93999307,44.39299279,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>400997.3</value></Data>
+<Data name="面积(亩)"><value>601.496</value></Data>
+<Data name="begin_time"><value>2026-04-12 10:12:59</value></Data>
+<Data name="end_time"><value>2026-04-12 10:12:59</value></Data>
+<Data name="mi"><value>2806.2</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='b670a556-9a71-4c45-9655-0cac5538a722'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>200</name>
+<Placemark>
+<styleUrl>#59dd288b-e451-4e9f-9ef3-0e5fd5b1733d</styleUrl>
+<name>200</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.93991142,44.39300635,0.0 85.94015222,44.39607165,0.0 85.93472231,44.39631416,0.0 85.93457114,44.39330812,0.0 85.93991141,44.39306578,0.0 85.93991142,44.39300635,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>144011.6</value></Data>
+<Data name="面积(亩)"><value>216.017</value></Data>
+<Data name="begin_time"><value>2026-04-12 10:07:13</value></Data>
+<Data name="end_time"><value>2026-04-12 10:07:13</value></Data>
+<Data name="mi"><value>1541.6</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='59dd288b-e451-4e9f-9ef3-0e5fd5b1733d'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>000000FF</color>
+</PolyStyle>
+</Style>
+<name>200</name>
+<Placemark>
+<styleUrl>#b510d87a-528d-43df-8161-45c3b62d867d</styleUrl>
+<name>200</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.93991142,44.39300635,0.0 85.94015222,44.39607165,0.0 85.93472231,44.39631416,0.0 85.93457114,44.39330812,0.0 85.93991141,44.39306578,0.0 85.93991142,44.39300635,0.0 85.93991142,44.39300635,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>144011.6</value></Data>
+<Data name="面积(亩)"><value>216.017</value></Data>
+<Data name="begin_time"><value>2026-04-12 10:07:13</value></Data>
+<Data name="end_time"><value>2026-04-12 10:07:13</value></Data>
+<Data name="mi"><value>1541.6</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='b510d87a-528d-43df-8161-45c3b62d867d'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>全生命周期1</name>
+<Placemark>
+<name>全生命周期1</name>
+<description><![CDATA[:: <a href="全生命周期1/35cd892cda87da865b59d0da8d3e57c8.jpg" target="_balnk"><img src="全生命周期1/35cd892cda87da865b59d0da8d3e57c8.jpg" width="300"/></a><br/><a href="全生命周期1/8004c815af9ab038f5437f259911a0ff.jpg" target="_balnk"><img src="全生命周期1/8004c815af9ab038f5437f259911a0ff.jpg" width="300"/></a><br/><a href="全生命周期1/b6d349b8791eebe50d8b3fdd43d6ec6b.jpg" target="_balnk"><img src="全生命周期1/b6d349b8791eebe50d8b3fdd43d6ec6b.jpg" width="300"/></a><br/><a href="全生命周期1/1e020967f5a9aeb6e5774d8b48a7a0d4.jpg" target="_balnk"><img src="全生命周期1/1e020967f5a9aeb6e5774d8b48a7a0d4.jpg" width="300"/></a><br/><a href="全生命周期1/f9583c46d122936204429f01907f57a0.jpg" target="_balnk"><img src="全生命周期1/f9583c46d122936204429f01907f57a0.jpg" width="300"/></a><br/><a href="全生命周期1/2568a458023b4407c5f8a9a4e6ef84a4.jpg" target="_balnk"><img src="全生命周期1/2568a458023b4407c5f8a9a4e6ef84a4.jpg" width="300"/></a><br/><a href="全生命周期1/810998dc53e312b4905dcf409f56b74b.jpg" target="_balnk"><img src="全生命周期1/810998dc53e312b4905dcf409f56b74b.jpg" width="300"/></a><br/>{"名称":"全生命周期1","纬经度":"85.93936100,44.39400400,334.08","照片":"35cd892cda87da865b59d0da8d3e57c8.jpg;8004c815af9ab038f5437f259911a0ff.jpg;b6d349b8791eebe50d8b3fdd43d6ec6b.jpg;1e020967f5a9aeb6e5774d8b48a7a0d4.jpg;f9583c46d122936204429f01907f57a0.jpg;2568a458023b4407c5f8a9a4e6ef84a4.jpg;810998dc53e312b4905dcf409f56b74b.jpg","时间":"2026-05-10 10:09:58","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":68,"精度":"3.79"}]]></description>
+<Point>
+<coordinates>85.93936100,44.39400400,334.08</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>68</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>3.79</value></Data>
+<Data name="memo"><value>35cd892cda87da865b59d0da8d3e57c8.jpg;8004c815af9ab038f5437f259911a0ff.jpg;b6d349b8791eebe50d8b3fdd43d6ec6b.jpg;1e020967f5a9aeb6e5774d8b48a7a0d4.jpg;f9583c46d122936204429f01907f57a0.jpg;2568a458023b4407c5f8a9a4e6ef84a4.jpg;810998dc53e312b4905dcf409f56b74b.jpg</value></Data>
+<Data name="saveTime"><value>2026-05-10 10:09:58</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>全生命周期5</name>
+<Placemark>
+<name>全生命周期5</name>
+<description><![CDATA[:: <a href="全生命周期5/1b4e833c1890ab74feb24063db8a6ca9.jpg" target="_balnk"><img src="全生命周期5/1b4e833c1890ab74feb24063db8a6ca9.jpg" width="300"/></a><br/>{"名称":"全生命周期5","纬经度":"85.93790100,44.39405300,333.57","照片":"1b4e833c1890ab74feb24063db8a6ca9.jpg","时间":"2026-05-10 11:00:08","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":64,"精度":"3.79"}]]></description>
+<Point>
+<coordinates>85.93790100,44.39405300,333.57</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>64</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>3.79</value></Data>
+<Data name="memo"><value>1b4e833c1890ab74feb24063db8a6ca9.jpg</value></Data>
+<Data name="saveTime"><value>2026-05-10 11:00:08</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>80</name>
+<Placemark>
+<styleUrl>#affaf9fe-e916-436b-bcbc-e5195acfe1f5</styleUrl>
+<name>80</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.92946828,44.37747768,0.0 85.92993285,44.38191102,0.0 85.92848094,44.38228869,0.0 85.92820921,44.37812649,0.0 85.92946828,44.37747768,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>53314.44</value></Data>
+<Data name="面积(亩)"><value>79.972</value></Data>
+<Data name="begin_time"><value>2026-04-14 16:57:48</value></Data>
+<Data name="end_time"><value>2026-04-14 16:57:48</value></Data>
+<Data name="mi"><value>1205.2</value></Data>
+<Data name="desc"><value>加厚</value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='affaf9fe-e916-436b-bcbc-e5195acfe1f5'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>000000FF</color>
+</PolyStyle>
+</Style>
+<name>加厚棉花</name>
+<Placemark>
+<name>加厚棉花</name>
+<description><![CDATA[:: {"名称":"加厚棉花","纬经度":"85.92902282,44.37995097,0","照片":"","时间":"2026-04-14 16:57:48","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":0,"精度":"0"}]]></description>
+<Point>
+<coordinates>85.92902282,44.37995097,0</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>0</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>0</value></Data>
+<Data name="saveTime"><value>2026-04-14 16:57:48</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>120左加厚60，右普通60</name>
+<Placemark>
+<styleUrl>#a9d08c9d-2a46-467c-ae2f-acb4fcf9dd84</styleUrl>
+<name>120左加厚60，右普通60</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.93192588,44.37636307,0.0 85.92992233,44.37726231,0.0 85.93030119,44.38127003,0.0 85.93157748,44.38132014,0.0 85.93234080,44.38147252,0.0 85.93193391,44.37640141,0.0 85.93192588,44.37636307,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>82344.22</value></Data>
+<Data name="面积(亩)"><value>123.516</value></Data>
+<Data name="begin_time"><value>2026-04-14 16:57:04</value></Data>
+<Data name="end_time"><value>2026-04-14 16:57:04</value></Data>
+<Data name="mi"><value>1369.9</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='a9d08c9d-2a46-467c-ae2f-acb4fcf9dd84'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>000000FF</color>
+</PolyStyle>
+</Style>
+<name>加厚棉花左，右普通</name>
+<Placemark>
+<name>加厚棉花左，右普通</name>
+<description><![CDATA[:: {"名称":"加厚棉花左，右普通","纬经度":"85.93133360,44.37901491,0","照片":"","时间":"2026-04-14 16:57:04","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":0,"精度":"0"}]]></description>
+<Point>
+<coordinates>85.93133360,44.37901491,0</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>0</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>0</value></Data>
+<Data name="saveTime"><value>2026-04-14 16:57:04</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>加厚棉花左，右普通</name>
+<Placemark>
+<name>加厚棉花左，右普通</name>
+<description><![CDATA[:: {"名称":"加厚棉花左，右普通","纬经度":"85.93133360,44.37901491,0","照片":"","时间":"2026-04-14 16:57:04","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":0,"精度":"0"}]]></description>
+<Point>
+<coordinates>85.93133360,44.37901491,0</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>0</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>0</value></Data>
+<Data name="saveTime"><value>2026-04-14 16:57:04</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>加厚棉花</name>
+<Placemark>
+<name>加厚棉花</name>
+<description><![CDATA[:: {"名称":"加厚棉花","纬经度":"85.92902282,44.37995097,0","照片":"","时间":"2026-04-14 16:57:48","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":0,"精度":"0"}]]></description>
+<Point>
+<coordinates>85.92902282,44.37995097,0</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>0</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>0</value></Data>
+<Data name="saveTime"><value>2026-04-14 16:57:48</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>80</name>
+<Placemark>
+<styleUrl>#9017777d-cca5-457c-b250-2d61225855a1</styleUrl>
+<name>80</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.92946828,44.37747768,0.0 85.92993285,44.38191102,0.0 85.92848094,44.38228869,0.0 85.92820921,44.37812649,0.0 85.92946828,44.37747768,0.0 85.92946828,44.37747768,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>53314.44</value></Data>
+<Data name="面积(亩)"><value>79.972</value></Data>
+<Data name="begin_time"><value>2026-04-14 16:57:48</value></Data>
+<Data name="end_time"><value>2026-04-14 16:57:48</value></Data>
+<Data name="mi"><value>1205.2</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='9017777d-cca5-457c-b250-2d61225855a1'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>50亩可降解</name>
+<Placemark>
+<styleUrl>#642f6b14-dfb0-4820-b5f0-3d73041e1df6</styleUrl>
+<name>50亩可降解</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.90841886,44.40316162,0.0 85.90833307,44.40218974,0.0 85.91290811,44.40691500,0.0 85.91237582,44.40720758,0.0 85.90841886,44.40316162,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>32535.56</value></Data>
+<Data name="面积(亩)"><value>48.803</value></Data>
+<Data name="begin_time"><value>2026-04-14 18:17:52</value></Data>
+<Data name="end_time"><value>2026-04-14 18:17:52</value></Data>
+<Data name="mi"><value>1350.8</value></Data>
+<Data name="desc"><value>25复合肥、有机肥</value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='642f6b14-dfb0-4820-b5f0-3d73041e1df6'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>000000FF</color>
+</PolyStyle>
+</Style>
+<name>50亩可降解</name>
+<Placemark>
+<styleUrl>#aa3ff67c-9a5a-401c-a564-8d96fa9e4d00</styleUrl>
+<name>50亩可降解</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.90841886,44.40316162,0.0 85.90833307,44.40218974,0.0 85.91290811,44.40691500,0.0 85.91237582,44.40720758,0.0 85.90841886,44.40316162,0.0 85.90841886,44.40316162,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>32535.56</value></Data>
+<Data name="面积(亩)"><value>48.803</value></Data>
+<Data name="begin_time"><value>2026-04-14 18:17:52</value></Data>
+<Data name="end_time"><value>2026-04-14 18:17:52</value></Data>
+<Data name="mi"><value>1350.8</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='aa3ff67c-9a5a-401c-a564-8d96fa9e4d00'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>玉米有机肥</name>
+<Placemark>
+<name>玉米有机肥</name>
+<description><![CDATA[:: {"名称":"玉米有机肥","纬经度":"85.91050896,44.40486849,0","照片":"","时间":"2026-04-14 18:17:52","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":0,"精度":"0"}]]></description>
+<Point>
+<coordinates>85.91050896,44.40486849,0</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>0</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>0</value></Data>
+<Data name="saveTime"><value>2026-04-14 18:17:52</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>玉米有机肥</name>
+<Placemark>
+<name>玉米有机肥</name>
+<description><![CDATA[:: {"名称":"玉米有机肥","纬经度":"85.91050896,44.40486849,0","照片":"","时间":"2026-04-14 18:17:52","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":0,"精度":"0"}]]></description>
+<Point>
+<coordinates>85.91050896,44.40486849,0</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>0</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>0</value></Data>
+<Data name="saveTime"><value>2026-04-14 18:17:52</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>加厚、普通7+7</name>
+<Placemark>
+<styleUrl>#5e3988f0-f415-ba56-d3f2-f4dd7e3dd838</styleUrl>
+<name>加厚、普通7+7</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.92600324,44.41021128,0.0 85.92796305,44.40988939,0.0 85.92744806,44.40485126,0.0 85.92554548,44.40523961,0.0 85.92600324,44.41021128,0.0 85.92600324,44.41021128,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>86898.79</value></Data>
+<Data name="面积(亩)"><value>130.348</value></Data>
+<Data name="begin_time"><value>2026-04-21 16:27:25</value></Data>
+<Data name="end_time"><value>2026-04-21 16:27:25</value></Data>
+<Data name="mi"><value>1434.2</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='5e3988f0-f415-ba56-d3f2-f4dd7e3dd838'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>000000FF</color>
+</PolyStyle>
+</Style>
+<name>加厚、普通77</name>
+<Placemark>
+<styleUrl>#de15ef67-f7fa-4383-8d7b-73c0c3825366</styleUrl>
+<name>加厚、普通77</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>85.92600324,44.41021128,0.0 85.92796305,44.40988939,0.0 85.92744806,44.40485126,0.0 85.92554548,44.40523961,0.0 85.92600324,44.41021128,0.0 85.92600324,44.41021128,0.0 85.92600324,44.41021128,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>86898.79</value></Data>
+<Data name="面积(亩)"><value>130.348</value></Data>
+<Data name="begin_time"><value>2026-04-21 16:27:25</value></Data>
+<Data name="end_time"><value>2026-04-21 16:27:25</value></Data>
+<Data name="mi"><value>1434.3</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='de15ef67-f7fa-4383-8d7b-73c0c3825366'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>新源900亩</name>
+<Placemark>
+<styleUrl>#421960c7-2318-4229-a2d0-8da73d8ef496</styleUrl>
+<name>新源900亩</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>83.29364359,43.49722572,0.0 83.29212487,43.49247358,0.0 83.29323609,43.49206233,0.0 83.30478599,43.48797615,0.0 83.30659316,43.49260899,0.0 83.29360478,43.49732794,0.0 83.29364359,43.49722572,0.0 83.29364359,43.49722572,0.0 83.29364359,43.49722572,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>613036.4</value></Data>
+<Data name="面积(亩)"><value>919.555</value></Data>
+<Data name="begin_time"><value>2026-04-07 17:39:00</value></Data>
+<Data name="end_time"><value>2026-04-07 17:39:00</value></Data>
+<Data name="mi"><value>3402.4</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='421960c7-2318-4229-a2d0-8da73d8ef496'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+<name>新源900亩</name>
+<Placemark>
+<styleUrl>#ce11e3fc-10c9-476d-a9e2-335ecf9e160d</styleUrl>
+<name>新源900亩</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>83.29364359,43.49722572,0.0 83.29212487,43.49247358,0.0 83.29323609,43.49206233,0.0 83.30478599,43.48797615,0.0 83.30659316,43.49260899,0.0 83.29360478,43.49732794,0.0 83.29364359,43.49722572,0.0 83.29364359,43.49722572,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>613036.39</value></Data>
+<Data name="面积(亩)"><value>919.555</value></Data>
+<Data name="begin_time"><value>2026-04-07 17:39:00</value></Data>
+<Data name="end_time"><value>2026-04-07 17:39:00</value></Data>
+<Data name="mi"><value>3402.4</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='ce11e3fc-10c9-476d-a9e2-335ecf9e160d'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>000000FF</color>
+</PolyStyle>
+</Style>
+<name>100</name>
+<Placemark>
+<styleUrl>#96caa0ea-9c67-8759-44f0-8b888807334f</styleUrl>
+<name>100</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>83.29363236,43.49726643,0.0 83.29210171,43.49247205,0.0 83.29271683,43.49222298,0.0 83.29330762,43.49205195,0.0 83.29453786,43.49493694,0.0 83.29528530,43.49668552,0.0 83.29363236,43.49726643,0.0 83.29363236,43.49726643,0.0 83.29363236,43.49726643,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>68478.86</value></Data>
+<Data name="面积(亩)"><value>102.718</value></Data>
+<Data name="begin_time"><value>2026-04-21 15:40:56</value></Data>
+<Data name="end_time"><value>2026-04-21 15:40:56</value></Data>
+<Data name="mi"><value>1344.4</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='96caa0ea-9c67-8759-44f0-8b888807334f'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>000000FF</color>
+</PolyStyle>
+</Style>
+<name>新源县71</name>
+<Placemark>
+<name>新源县71</name>
+<description><![CDATA[:: {"名称":"新源县71","纬经度":"83.29899066,43.49272747,0","照片":"","时间":"2026-04-21 14:19:37","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":0,"精度":0}]]></description>
+<visibility></visibility>
+<Point>
+<coordinates>83.29899066,43.49272747,0</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>0</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>0</value></Data>
+<Data name="saveTime"><value>2026-04-21 14:19:37</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>新源县71</name>
+<Placemark>
+<name>新源县71</name>
+<description><![CDATA[:: {"名称":"新源县71","纬经度":"83.29899066,43.49272747,0","照片":"","时间":"2026-04-21 14:19:37","标记样式":0,"分类":"","描述":"","描述2":"","描述3":"","卫星数":0,"精度":"0"}]]></description>
+<Point>
+<coordinates>83.29899066,43.49272747,0</coordinates>
+</Point>
+<ExtendedData>
+<Data name="satelliteCount"><value>0</value></Data>
+<Data name="markerStyle"><value>0</value></Data>
+<Data name="accuracy"><value>0</value></Data>
+<Data name="saveTime"><value>2026-04-21 14:19:37</value></Data>
+<Data name="type"><value>0</value></Data>
+<Data name="desc"><value></value></Data>
+<Data name="desc2"><value></value></Data>
+<Data name="desc3"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<name>100</name>
+<Placemark>
+<styleUrl>#f81a1d9f-9e1d-4d03-b781-8fcba5213a1a</styleUrl>
+<name>100</name>
+<Polygon>
+<outerBoundaryIs>
+<LinearRing>
+<coordinates>83.29363236,43.49726643,0.0 83.29210171,43.49247205,0.0 83.29271683,43.49222298,0.0 83.29330762,43.49205195,0.0 83.29453786,43.49493694,0.0 83.29528530,43.49668552,0.0 83.29363236,43.49726643,0.0 83.29363236,43.49726643,0.0 83.29363236,43.49726643,0.0 83.29363236,43.49726643,0.0</coordinates>
+</LinearRing>
+</outerBoundaryIs>
+</Polygon>
+<ExtendedData>
+<Data name="area"><value>68478.86</value></Data>
+<Data name="面积(亩)"><value>102.718</value></Data>
+<Data name="begin_time"><value>2026-04-21 15:40:56</value></Data>
+<Data name="end_time"><value>2026-04-21 15:40:56</value></Data>
+<Data name="mi"><value>1344.4</value></Data>
+<Data name="desc"><value></value></Data>
+</ExtendedData>
+</Placemark>
+<Style id='f81a1d9f-9e1d-4d03-b781-8fcba5213a1a'>
+<LineStyle>
+<color>FF0000FF</color>
+<width>3.0</width>
+</LineStyle>
+<PolyStyle>
+<color>337F48E3</color>
+</PolyStyle>
+</Style>
+</Document>
+</kml>

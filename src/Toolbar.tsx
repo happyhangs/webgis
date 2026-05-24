@@ -32,6 +32,7 @@ export default function Toolbar() {
   const [activeTool, setActiveTool] = useState<ActiveTool>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const shpInputRef = useRef<HTMLInputElement>(null);
+  const kmlInputRef = useRef<HTMLInputElement>(null);
   const [importType, setImportType] = useState<'geojson' | 'csv'>('geojson');
   const [searchText, setSearchText] = useState('');
 
@@ -218,6 +219,65 @@ export default function Toolbar() {
     e.target.value = '';
   };
 
+  const handleKmlImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(text, 'text/xml');
+      const errNode = xml.querySelector('parsererror');
+      if (errNode) throw new Error('XML 解析失败');
+
+      const { default: toGeoJSON } = await import('@tmcw/togeojson');
+      const geojson: any = toGeoJSON.kml(xml);
+
+      const items: any[] =
+        geojson.type === 'FeatureCollection'
+          ? geojson.features
+          : Array.isArray(geojson)
+            ? geojson
+            : geojson.type === 'Feature'
+              ? [geojson]
+              : [];
+
+      if (items.length === 0) {
+        alert('KML 文件中未找到有效要素');
+        return;
+      }
+
+      const layerId = crypto.randomUUID();
+      const layerName = file.name.replace(/\.kml$/i, '');
+      const features: GeoJSONFeature[] = items
+        .filter((f: any) => f?.geometry)
+        .map((f: any, i: number) => {
+          const gt = f.geometry.type;
+          let shapeType: GeoJSONFeature['properties']['shapeType'] = 'Polygon';
+          if (gt === 'Point' || gt === 'MultiPoint') shapeType = 'Marker';
+          else if (gt === 'LineString' || gt === 'MultiLineString') shapeType = 'Line';
+
+          return {
+            ...f,
+            properties: {
+              id: crypto.randomUUID(),
+              name: f.properties?.name || f.properties?.NAME || `${layerName}_${i + 1}`,
+              description: f.properties?.description || '',
+              color: f.properties?.stroke || '#3388ff',
+              shapeType,
+              layerId,
+            },
+          };
+        });
+
+      dispatch({ type: 'ADD_LAYER', layer: { id: layerId, name: layerName, visible: true } });
+      dispatch({ type: 'BATCH_ADD_FEATURES', features });
+      alert(`成功导入 KML: ${features.length} 个要素 → 图层「${layerName}」`);
+    } catch (err: any) {
+      alert(`KML 解析失败: ${err.message || '未知错误'}`);
+    }
+    e.target.value = '';
+  };
+
   return (
     <div className="toolbar">
       <div className="toolbar-group search-group">
@@ -303,6 +363,13 @@ export default function Toolbar() {
       <div className="toolbar-group">
         <button
           className="toolbar-btn"
+          title="导入 KML"
+          onClick={() => kmlInputRef.current?.click()}
+        >
+          <span className="toolbar-label">KML</span>
+        </button>
+        <button
+          className="toolbar-btn"
           title="导入 SHP (ZIP)"
           onClick={() => shpInputRef.current?.click()}
         >
@@ -346,6 +413,13 @@ export default function Toolbar() {
         </button>
       </div>
 
+      <input
+        ref={kmlInputRef}
+        type="file"
+        accept=".kml"
+        style={{ display: 'none' }}
+        onChange={handleKmlImport}
+      />
       <input
         ref={shpInputRef}
         type="file"
