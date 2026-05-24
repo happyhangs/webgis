@@ -181,6 +181,19 @@ export default function LayerPanel() {
                   <Pencil size={12} />
                 </button>
 
+                {isDefault && features.length > 0 && (
+                  <button
+                    className="layer-action-btn danger"
+                    title="清空默认图层"
+                    onClick={() => {
+                      if (confirm(`确定清空默认图层全部 ${features.length} 个标注？此操作不可撤销。`)) {
+                        dispatch({ type: 'CLEAR_LAYER_FEATURES', layerId: DEFAULT_LAYER_ID });
+                      }
+                    }}
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                )}
                 {!isDefault && (
                   <button
                     className="layer-action-btn danger"

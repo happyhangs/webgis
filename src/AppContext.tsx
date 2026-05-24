@@ -31,7 +31,8 @@ type Action =
   | { type: 'TOGGLE_LAYER'; id: string }
   | { type: 'SET_CURRENT_LAYER'; id: string }
   | { type: 'MOVE_FEATURE'; featureId: string; layerId: string }
-  | { type: 'BATCH_ADD_FEATURES'; features: GeoJSONFeature[] };
+  | { type: 'BATCH_ADD_FEATURES'; features: GeoJSONFeature[] }
+  | { type: 'CLEAR_LAYER_FEATURES'; layerId: string };
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
@@ -122,6 +123,13 @@ function reducer(state: AppState, action: Action): AppState {
 
     case 'BATCH_ADD_FEATURES':
       return { ...state, features: [...state.features, ...action.features] };
+
+    case 'CLEAR_LAYER_FEATURES':
+      return {
+        ...state,
+        features: state.features.filter((f) => f.properties.layerId !== action.layerId),
+        selectedFeatureId: null,
+      };
 
     case 'MOVE_FEATURE':
       return {
