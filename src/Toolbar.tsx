@@ -38,6 +38,20 @@ export default function Toolbar() {
 
   const api = () => (window as any).__webgis;
 
+  const handleLocate = useCallback(() => {
+    if (!navigator.geolocation) { alert('浏览器不支持GPS定位'); return; }
+    const a = api();
+    if (!a) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        a.flyTo(pos.coords.latitude, pos.coords.longitude, 16);
+        a.placeMarker(pos.coords.latitude, pos.coords.longitude, `我的位置 (${pos.coords.accuracy.toFixed(0)}m 精度)`);
+      },
+      (err) => { alert('定位失败: ' + err.message); },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  }, []);
+
   const handleSearch = useCallback(async () => {
     const q = searchText.trim();
     if (!q) return;
@@ -291,6 +305,9 @@ export default function Toolbar() {
         />
         <button className="toolbar-btn search-btn" onClick={handleSearch}>
           定位
+        </button>
+        <button className="toolbar-btn" onClick={handleLocate} title="我的位置 (GPS)">
+          <MapPin size={16} color="#e63946" />
         </button>
       </div>
 
