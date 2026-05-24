@@ -168,6 +168,8 @@ export default function MapView() {
     const tileLayer = L.tileLayer(cfg.url, getTileLayerOptions(cfg)).addTo(map);
     tileLayerRef.current = tileLayer;
 
+    L.control.scale({ metric: true, imperial: false, position: 'bottomleft' }).addTo(map);
+
     if (cfg.overlayUrl) {
       const ol = L.tileLayer(cfg.overlayUrl, {
         attribution: '',
