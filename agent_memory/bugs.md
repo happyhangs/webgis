@@ -1,5 +1,9 @@
 # Bugs And Risks
 
+## 2026-08-07 模型精度
+- Resolved: 新数据集（139 张多区域）训练出的 `xinjiang_v1_20260807_150321.pt` 使验证指标从旧模型的 0.0% 提升到最佳 mAP50 50.7% / mAP50-95 26.1%；默认置信度 0.25 下真实推理可检出地块（7 vs 真实 6，最高置信度 0.80）。
+- Active: 最终 epoch（100）指标低于中期最佳（mAP50 28.4% vs 50.7%），存在后期过拟合/小验证集波动；当前保存的 `best.pt` 为训练过程最优，实际使用以最佳指标为准。进一步稳定精度需更多跨区域/跨时相数据。
+
 ## 2026-08-07 CLI 训练入口
 - Resolved: `python -m farmland_segmenter train` 此前因 `train.py` 缺少 `main()` 直接 ImportError；已补充 CLI 入口（支持 `--zip/--dataset/--epochs/--device` 等）。
 
