@@ -1,5 +1,11 @@
 # Task Progress
 
+## 2026-08-07 仓库落盘与部署说明
+- Goal: 修复“项目未落盘 / 部署缺失”两项不完善。
+- Completed: 清理陈旧 git index.lock；`.gitignore` 增加 `backend/data/`；分组提交代码（`74f549b`，89 文件）与文档（`b1440ab`，5 文件）；未跟踪文件归零；README 补充部署章节。
+- Validation: `git status` 仅剩 `重点研发/` 待决策项；`.env`、`backend/data/`、`public/data/counties/` 均被忽略。
+- Blocked: 模型精度提升仍等待用户坐标外发授权；照片删除等待用户确认。
+
 ## 2026-08-07 审视风险修复（密钥与本地数据）
 - Goal: 修复审视发现的提交前风险：start.bat 硬编码 AMAP_KEY、counties 大目录未忽略。
 - Completed: 创建 `.env`（含本地 AMAP_KEY）并加入 `.gitignore`；`start.bat` 改为从 `.env` 读取并给出缺失提示；`scripts/start-all.mjs` 增加最小 `.env` 加载（不引入依赖）；`public/data/counties/` 加入 `.gitignore`；README 同步更新数据与密钥说明。

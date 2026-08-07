@@ -3,7 +3,8 @@
 ## 2026-08-07 项目审视新增风险
 - Resolved: `start.bat` 硬编码高德 `AMAP_KEY` 已迁移到本地 `.env`（已加入 `.gitignore`）；`start.bat` 与 `scripts/start-all.mjs` 均会读取 `.env`，不再把密钥写进仓库。
 - Resolved: `public/data/counties/`（约 228MB / 309 文件）已加入 `.gitignore`，`git add -A` 不再入库。
-- Active: 工作树含 370 个未跟踪文件与 58 个已跟踪文件改动（+6557/-5301），其中删除 24 张现场照片；提交前需按功能分组审查，避免误提交本地数据。
+- Resolved: 全部代码/配置/文档已按功能分组提交（`74f549b`、`b1440ab`），未跟踪文件归零；`.env`、`backend/data/`、`public/data/counties/` 均不入库。
+- Active: `重点研发/` 下 24 张现场照片的删除与 1 个 KML 修改仍未提交，等待用户确认删除或恢复。
 
 ## 2026-07-15 手动标注吸附
 - Resolved: 手动地块标注不再自动吸附已有顶点或边中点，连续完成一个地块后也不会恢复默认吸附配置。

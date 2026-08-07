@@ -134,6 +134,29 @@ public/
 - 农田识别面板里的“直接训练”会在浏览器内临时生成 ZIP 并上传后端，不需要先下载文件。
 - “备份 ZIP”下载出的文件通常由浏览器保存到系统“下载/Downloads”目录；从 `/train` 页面训练时，从任意位置选择该 ZIP 都可以。
 
+## 部署
+
+本地开发：
+
+```bash
+npm run dev:all
+```
+
+生产构建与运行：
+
+```bash
+npm run build
+python -m farmland_segmenter --serve   # 在 backend/ 目录下执行
+```
+
+将 `dist/` 用任意静态服务器（如 nginx）托管，前端请求固定指向 `http://127.0.0.1:8765/` 的后端；如后端地址变化，需同步修改前端中的后端地址配置。
+
+注意：
+
+- 后端是本地工具型 HTTP 服务，无认证，仅建议在本机或内网使用；对外暴露前应加反向代理与访问控制。
+- 高德 Key 通过环境变量 `AMAP_KEY` 注入（本地可写 `.env`），不要写入代码或提交仓库。
+- `public/data/counties/`、模型文件与训练数据集均不入库，部署环境需自行准备。
+
 ## 外部服务
 
 - 高德静态图代理（`/amap-static`）依赖高德 Web 服务，需配置 `AMAP_KEY`：本地开发可复制 `.env.example` 为 `.env` 并填写（`start.bat` 与 `npm run dev:all` 均会读取），生产环境通过环境变量注入。获取方式：https://console.amap.com/
