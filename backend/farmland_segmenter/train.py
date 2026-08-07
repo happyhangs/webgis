@@ -507,3 +507,33 @@ def train_from_directory(
         "model_name": dst.name,
         "epochs_done": epochs,
     }
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Train YOLOv11-seg on a farmland dataset")
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--zip", help="YOLO dataset ZIP path")
+    source.add_argument("--dataset", help="YOLO dataset directory path")
+    parser.add_argument("--model", default="yolo11n-seg.pt", help="base model name or path")
+    parser.add_argument("--output-name", default=None, help="output model stem")
+    parser.add_argument("--epochs", type=int, default=100)
+    parser.add_argument("--batch", type=int, default=8)
+    parser.add_argument("--imgsz", type=int, default=640)
+    parser.add_argument("--lr", type=float, default=0.001)
+    parser.add_argument("--device", default="auto", help="auto, cpu, or cuda device index")
+    parser.add_argument("--output-dir", default=None, help="model output directory")
+    args = parser.parse_args(argv)
+
+    result = train_from_directory(
+        dataset_dir=args.zip or args.dataset,
+        model_name=args.model,
+        output_name=args.output_name,
+        epochs=args.epochs,
+        batch=args.batch,
+        imgsz=args.imgsz,
+        lr=args.lr,
+        device=args.device,
+        output_dir=args.output_dir,
+    )
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    return 0

@@ -34,6 +34,7 @@ const args = parseArgs(process.argv.slice(2));
 const outputDir = path.resolve(rootDir, args.output ?? 'backend/datasets/xinjiang_multiregion_v1');
 const backendUrl = (args.backend ?? 'http://127.0.0.1:8765').replace(/\/$/, '');
 const dryRun = args['dry-run'] === true;
+const resume = args.resume === true;
 const limit = args.limit ? Number(args.limit) : undefined;
 
 const annotationPaths = args.annotations
@@ -48,10 +49,12 @@ validatePlan(parcels);
 printInventory(parcels, annotationPaths);
 if (dryRun) process.exit(0);
 if (fs.existsSync(outputDir)) {
-  throw new Error(`输出目录已存在，请换一个 --output 路径：${outputDir}`);
+  if (!resume) throw new Error(`输出目录已存在，请换一个 --output 路径：${outputDir}`);
+} else {
+  fs.mkdirSync(outputDir, { recursive: true });
 }
 
-await buildDataset(selectedParcels, parcels, outputDir, backendUrl);
+await buildDataset(selectedParcels, parcels, outputDir, backendUrl, resume);
 
 function parseArgs(values: string[]): Record<string, string | true> {
   const parsed: Record<string, string | true> = {};
@@ -218,7 +221,7 @@ function validatePlan(parcels: Parcel[]): void {
   }
 }
 
-async function buildDataset(targets: Parcel[], allParcels: Parcel[], destination: string, serverUrl: string): Promise<void> {
+async function buildDataset(targets: Parcel[], allParcels: Parcel[], destination: string, serverUrl: string, resume: boolean): Promise<void> {
   const directories = ['images/train', 'images/val', 'labels/train', 'labels/val'];
   for (const directory of directories) fs.mkdirSync(path.join(destination, directory), { recursive: true });
   const zip = new JSZip();
@@ -236,6 +239,20 @@ async function buildDataset(targets: Parcel[], allParcels: Parcel[], destination
   zip.file('data.yaml', yaml);
 
   let cursor = 0;
+  if (resume) {
+    const done = directories
+      .filter((directory) => directory.startsWith('images/'))
+      .reduce((sum, directory) => sum + fs.readdirSync(path.join(destination, directory)).filter((file) => file.endsWith('.jpg')).length, 0);
+    cursor = done;
+    for (const directory of directories) {
+      const absolute = path.join(destination, directory);
+      if (!fs.existsSync(absolute)) continue;
+      for (const file of fs.readdirSync(absolute)) {
+        if (file.startsWith('.')) continue;
+        zip.file(`${directory}/${file}`, fs.readFileSync(path.join(absolute, file)));
+      }
+    }
+  }
   const workers = Array.from({ length: Math.min(2, targets.length) }, async () => {
     while (cursor < targets.length) {
       const targetIndex = cursor;
@@ -272,6 +289,28 @@ async function buildDataset(targets: Parcel[], allParcels: Parcel[], destination
     }
   });
   await Promise.all(workers);
+
+  if (resume) {
+    for (let index = 0; index < cursor; index += 1) {
+      const target = targets[index];
+      const padded = padBounds(ringBounds(target.points), 0.2);
+      const fit = fitAmapStaticToWgsBounds(padded);
+      const stem = `${target.split}_${target.region}_${String(index + 1).padStart(3, '0')}`;
+      const labelPath = path.join(destination, 'labels', target.split, `${stem}.txt`);
+      if (!fs.existsSync(labelPath)) continue;
+      const labelCount = fs.readFileSync(labelPath, 'utf8').trim().split('\n').filter(Boolean).length;
+      metadata.samples[index] = {
+        id: target.id,
+        split: target.split,
+        source: target.source,
+        region: target.region,
+        aliases: target.aliases,
+        zoom: fit.zoom,
+        bounds: fit.bounds,
+        labelCount,
+      };
+    }
+  }
 
   const metadataText = `${JSON.stringify(metadata, null, 2)}\n`;
   fs.writeFileSync(path.join(destination, 'metadata.json'), metadataText);

@@ -1,5 +1,12 @@
 # Task Progress
 
+## 2026-08-07 多区域训练数据集生成与训练启动
+- Goal: 用户授权坐标外发后，生成新疆多区域农田分割数据集并重新训练，对比 mAP50/Recall。
+- Completed: 修复 `train.py` 缺失的 CLI `main()`（`python -m farmland_segmenter train --zip ...` 可用）；为数据集生成器增加 `--resume` 续跑；单张样本校验通过（影像正常、标签对齐）；全量生成 139 张（119 train / 20 val，zip 9.5MB，zoom 14-17）。
+- In Progress: 训练已通过 HTTP `/train` 启动（datasetId `89677aeeacc7adef`，epochs=100，output `xinjiang_v1`，CPU），SSE 日志 `backend/train-xinjiang-v1.log`。
+- Validation: 数据集完整性校验通过（images/labels 一一对应，metadata 139 条）；`/train/status` 返回 running。
+- Next: 训练完成后对比 mAP50/mAP50-95/Recall 与旧模型（0.0% / 13.9%），并在训练中心验证。
+
 ## 2026-08-07 仓库落盘与部署说明
 - Goal: 修复“项目未落盘 / 部署缺失”两项不完善。
 - Completed: 清理陈旧 git index.lock；`.gitignore` 增加 `backend/data/`；分组提交代码（`74f549b`，89 文件）与文档（`b1440ab`，5 文件）；未跟踪文件归零；README 补充部署章节。

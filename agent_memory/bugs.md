@@ -1,5 +1,8 @@
 # Bugs And Risks
 
+## 2026-08-07 CLI 训练入口
+- Resolved: `python -m farmland_segmenter train` 此前因 `train.py` 缺少 `main()` 直接 ImportError；已补充 CLI 入口（支持 `--zip/--dataset/--epochs/--device` 等）。
+
 ## 2026-08-07 项目审视新增风险
 - Resolved: `start.bat` 硬编码高德 `AMAP_KEY` 已迁移到本地 `.env`（已加入 `.gitignore`）；`start.bat` 与 `scripts/start-all.mjs` 均会读取 `.env`，不再把密钥写进仓库。
 - Resolved: `public/data/counties/`（约 228MB / 309 文件）已加入 `.gitignore`，`git add -A` 不再入库。
