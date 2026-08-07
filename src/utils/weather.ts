@@ -1,16 +1,17 @@
-// Open-Meteo free weather API — no key required
-// https://open-meteo.com/
-
 const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast';
-const ARCHIVE_URL = 'https://archive-api.open-meteo.com/v1/archive';
+const GEOCODE_URL = 'https://geocoding-api.open-meteo.com/v1/search';
+
+export interface WeatherLocation {
+  lat: number;
+  lng: number;
+  name: string;
+}
 
 export interface CurrentWeather {
   temp: number;
   humidity: number;
   windSpeed: number;
-  weatherCode: number;
   weatherText: string;
-  weatherIcon: string;
 }
 
 export interface DayWeather {
@@ -18,9 +19,7 @@ export interface DayWeather {
   tempMax: number;
   tempMin: number;
   precip: number;
-  weatherCode: number;
   weatherText: string;
-  weatherIcon: string;
 }
 
 export interface WeatherResult {
@@ -28,20 +27,56 @@ export interface WeatherResult {
   forecast: DayWeather[];
 }
 
-// WMO weather codes → text + icon
-function wmoInfo(code: number): { text: string; icon: string } {
-  if (code === 0) return { text: '晴', icon: '☀️' };
-  if (code === 1) return { text: '少云', icon: '🌤️' };
-  if (code === 2) return { text: '多云', icon: '⛅' };
-  if (code === 3) return { text: '阴', icon: '☁️' };
-  if (code >= 45 && code <= 48) return { text: '雾', icon: '🌫️' };
-  if (code >= 51 && code <= 55) return { text: '毛毛雨', icon: '🌦️' };
-  if (code >= 61 && code <= 65) return { text: '雨', icon: '🌧️' };
-  if (code >= 71 && code <= 77) return { text: '雪', icon: '❄️' };
-  if (code >= 80 && code <= 82) return { text: '阵雨', icon: '🌦️' };
-  if (code >= 85 && code <= 86) return { text: '阵雪', icon: '🌨️' };
-  if (code >= 95 && code <= 99) return { text: '雷暴', icon: '⛈️' };
-  return { text: '未知', icon: '❓' };
+export const DEFAULT_WEATHER_LOCATION: WeatherLocation = {
+  lat: 44.3061,
+  lng: 86.0806,
+  name: '石河子',
+};
+
+function wmoText(code: number): string {
+  if (code === 0) return '晴';
+  if (code === 1) return '少云';
+  if (code === 2) return '多云';
+  if (code === 3) return '阴';
+  if (code >= 45 && code <= 48) return '雾';
+  if (code >= 51 && code <= 57) return '毛毛雨';
+  if (code >= 61 && code <= 67) return '雨';
+  if (code >= 71 && code <= 77) return '雪';
+  if (code >= 80 && code <= 82) return '阵雨';
+  if (code >= 85 && code <= 86) return '阵雪';
+  if (code >= 95 && code <= 99) return '雷暴';
+  return '未知';
+}
+
+export async function resolveWeatherLocation(query: string): Promise<WeatherLocation> {
+  const text = query.trim();
+  if (!text || text === DEFAULT_WEATHER_LOCATION.name) return DEFAULT_WEATHER_LOCATION;
+
+  const coord = text.match(/^(-?\d+(?:\.\d+)?)\s*[,，\s]\s*(-?\d+(?:\.\d+)?)$/);
+  if (coord) {
+    const lat = Number(coord[1]);
+    const lng = Number(coord[2]);
+    if (Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
+      return { lat, lng, name: `${lat.toFixed(4)}, ${lng.toFixed(4)}` };
+    }
+  }
+
+  const params = new URLSearchParams({
+    name: text,
+    count: '1',
+    language: 'zh',
+    format: 'json',
+  });
+  const response = await fetch(`${GEOCODE_URL}?${params}`, { signal: AbortSignal.timeout(8000) });
+  if (!response.ok) throw new Error(`地名查询失败 HTTP ${response.status}`);
+  const data = await response.json();
+  const first = data?.results?.[0];
+  if (!first) throw new Error(`未找到地点：${text}`);
+  return {
+    lat: Number(first.latitude),
+    lng: Number(first.longitude),
+    name: [first.name, first.admin1, first.country].filter(Boolean).join(' '),
+  };
 }
 
 export async function fetchWeather(lat: number, lng: number): Promise<WeatherResult> {
@@ -53,80 +88,27 @@ export async function fetchWeather(lat: number, lng: number): Promise<WeatherRes
     timezone: 'Asia/Shanghai',
     forecast_days: '7',
   });
+  const response = await fetch(`${FORECAST_URL}?${params}`, { signal: AbortSignal.timeout(8000) });
+  if (!response.ok) throw new Error(`天气查询失败 HTTP ${response.status}`);
+  const data = await response.json();
+  const currentCode = Number(data.current?.weather_code ?? 0);
+  const current = data.current ? {
+    temp: Math.round(Number(data.current.temperature_2m)),
+    humidity: Math.round(Number(data.current.relative_humidity_2m)),
+    windSpeed: Math.round(Number(data.current.wind_speed_10m)),
+    weatherText: wmoText(currentCode),
+  } : null;
 
-  const resp = await fetch(`${FORECAST_URL}?${params}`);
-  const data = await resp.json();
-
-  const currentCode = data.current?.weather_code ?? 0;
-  const info = wmoInfo(currentCode);
-
-  const current: CurrentWeather | null = data.current
-    ? {
-        temp: Math.round(data.current.temperature_2m),
-        humidity: data.current.relative_humidity_2m,
-        windSpeed: Math.round(data.current.wind_speed_10m),
-        weatherCode: currentCode,
-        weatherText: info.text,
-        weatherIcon: info.icon,
-      }
-    : null;
-
-  const forecast: DayWeather[] = (data.daily?.time || []).map((date: string, i: number) => {
-    const code = data.daily.weather_code[i];
-    const fInfo = wmoInfo(code);
+  const forecast: DayWeather[] = (data.daily?.time || []).map((date: string, index: number) => {
+    const code = Number(data.daily.weather_code?.[index] ?? 0);
     return {
       date,
-      tempMax: Math.round(data.daily.temperature_2m_max[i]),
-      tempMin: Math.round(data.daily.temperature_2m_min[i]),
-      precip: data.daily.precipitation_sum[i],
-      weatherCode: code,
-      weatherText: fInfo.text,
-      weatherIcon: fInfo.icon,
+      tempMax: Math.round(Number(data.daily.temperature_2m_max?.[index] ?? 0)),
+      tempMin: Math.round(Number(data.daily.temperature_2m_min?.[index] ?? 0)),
+      precip: Number(data.daily.precipitation_sum?.[index] ?? 0),
+      weatherText: wmoText(code),
     };
   });
 
   return { current, forecast };
-}
-
-export interface HistoryDay {
-  date: string;
-  tempMax: number;
-  tempMin: number;
-  precip: number;
-  weatherCode: number;
-  weatherText: string;
-  weatherIcon: string;
-}
-
-export async function fetchHistory(
-  lat: number,
-  lng: number,
-  startDate: string,
-  endDate: string,
-): Promise<HistoryDay[]> {
-  const params = new URLSearchParams({
-    latitude: lat.toFixed(4),
-    longitude: lng.toFixed(4),
-    start_date: startDate,
-    end_date: endDate,
-    daily: 'temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code',
-    timezone: 'Asia/Shanghai',
-  });
-
-  const resp = await fetch(`${ARCHIVE_URL}?${params}`);
-  const data = await resp.json();
-
-  return (data.daily?.time || []).map((date: string, i: number) => {
-    const code = data.daily.weather_code[i] ?? 0;
-    const info = wmoInfo(code);
-    return {
-      date,
-      tempMax: Math.round(data.daily.temperature_2m_max[i]),
-      tempMin: Math.round(data.daily.temperature_2m_min[i]),
-      precip: data.daily.precipitation_sum[i] ?? 0,
-      weatherCode: code,
-      weatherText: info.text,
-      weatherIcon: info.icon,
-    };
-  });
 }

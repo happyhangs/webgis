@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 import {
   MapPin,
   Minus,
@@ -7,18 +7,18 @@ import {
   Pencil,
   Trash2,
   Download,
-  FileJson,
-  Table,
+  Upload,
   Layers,
-  Package,
   Crosshair,
-  Search,
+  Network,
+  Loader2,
 } from 'lucide-react';
 import { useAppContext } from './AppContext';
-import { BASEMAP_OPTIONS } from './basemaps';
+import { BASEMAP_OPTIONS, CUSTOM_BASEMAP_KEY, saveCustomBasemap, loadCustomBasemap, clearCustomBasemap } from './basemaps';
 import { exportGeoJSON, importGeoJSON } from './utils/geojson';
 import { exportCSV, importCSV } from './utils/csv';
 import { getDefaultFeatureStyle } from './utils/featureStyle';
+import { getXmlParserError, validateKmlSource } from './utils/kml';
 import type { GeoJSONFeature } from './types';
 
 type ActiveTool =
@@ -30,7 +30,60 @@ type ActiveTool =
   | 'Remove'
   | null;
 
-export default function Toolbar() {
+const SHP_SIDECAR_EXTS = new Set(['shp', 'dbf', 'prj', 'cpg']);
+
+type ShpFileGroup = {
+  stem: string;
+  files: Partial<Record<'shp' | 'dbf' | 'prj' | 'cpg', File>>;
+};
+
+function collectGeoJSONFeatures(input: any): any[] {
+  if (!input) return [];
+  if (Array.isArray(input)) return input.flatMap(collectGeoJSONFeatures);
+  if (input.type === 'FeatureCollection') return Array.isArray(input.features) ? input.features : [];
+  if (input.type === 'Feature') return [input];
+  return [];
+}
+
+function getFileExt(file: File) {
+  const dot = file.name.lastIndexOf('.');
+  return dot >= 0 ? file.name.slice(dot + 1).toLowerCase() : '';
+}
+
+function getFileStem(file: File) {
+  const dot = file.name.lastIndexOf('.');
+  return dot >= 0 ? file.name.slice(0, dot) : file.name;
+}
+
+function groupShpSidecarFiles(files: File[]) {
+  const groups = new Map<string, ShpFileGroup>();
+  for (const file of files) {
+    const ext = getFileExt(file);
+    if (!SHP_SIDECAR_EXTS.has(ext)) continue;
+    const stem = getFileStem(file);
+    const key = stem.toLowerCase();
+    const group = groups.get(key) || { stem, files: {} };
+    group.files[ext as keyof ShpFileGroup['files']] = file;
+    groups.set(key, group);
+  }
+  return Array.from(groups.values()).filter((group) => group.files.shp);
+}
+
+function formatShpImportError(err: any) {
+  const message = String(err?.message || err || '').trim();
+  if (/but-unzip~1/.test(message)) {
+    return 'SHP 解析失败：ZIP 使用了暂不支持的压缩方式。请重新压缩为普通 ZIP，或把同名 .shp、.dbf、.prj、.cpg 文件一起选中导入。';
+  }
+  if (/but-unzip~[23]/.test(message)) {
+    return 'SHP 解析失败：当前文件不是可读取的普通 SHP ZIP，或 ZIP 结构不兼容。请直接选中同名 .shp、.dbf、.prj、.cpg 文件导入，或重新压缩为普通 ZIP 后再试。';
+  }
+  if (/no layers founds/i.test(message)) {
+    return 'SHP 解析失败：文件中没有找到 .shp 图层，请确认 ZIP 内包含同名 .shp/.dbf/.prj 文件。';
+  }
+  return `SHP 解析失败：${message || '未知错误'}`;
+}
+
+export default function Toolbar({ onOpenTraining, visible }: { onOpenTraining?: () => void; visible?: boolean }) {
   const { state, dispatch } = useAppContext();
   const [activeTool, setActiveTool] = useState<ActiveTool>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -38,6 +91,53 @@ export default function Toolbar() {
   const kmlInputRef = useRef<HTMLInputElement>(null);
   const [importType, setImportType] = useState<'geojson' | 'csv'>('geojson');
   const [searchText, setSearchText] = useState('');
+  const [locating, setLocating] = useState(false);
+  const [importMenuOpen, setImportMenuOpen] = useState(false);
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
+  const [customFormOpen, setCustomFormOpen] = useState(false);
+  const [customName, setCustomName] = useState('');
+  const [customUrl, setCustomUrl] = useState('');
+  const [customAttr, setCustomAttr] = useState('');
+  const [customMaxZoom, setCustomMaxZoom] = useState('');
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const handler = () => {
+      setImportMenuOpen(false);
+      setExportMenuOpen(false);
+    };
+    if (importMenuOpen || exportMenuOpen) {
+      document.addEventListener('click', handler);
+      return () => document.removeEventListener('click', handler);
+    }
+  }, [importMenuOpen, exportMenuOpen]);
+
+  // Reset activeTool when component becomes visible again (e.g. returning from TrainingPage)
+  useEffect(() => {
+    if (visible) {
+      const a = api();
+      a?.disableDraw();
+      a?.disableEdit();
+      a?.disableRemoval();
+      setActiveTool(null);
+    }
+  }, [visible]);
+
+  // Auto-disable drawing tools when label mode is activated externally
+  useEffect(() => {
+    const checkLabelMode = () => {
+      if ((window as any).__webgis_labelMode && activeTool) {
+        const a = api();
+        a?.disableDraw();
+        a?.disableEdit();
+        a?.disableRemoval();
+        setActiveTool(null);
+      }
+    };
+    // Poll for label mode changes (set via FieldDetectPanel)
+    const interval = setInterval(checkLabelMode, 500);
+    return () => clearInterval(interval);
+  }, [activeTool]);
 
   const api = () => (window as any).__webgis;
 
@@ -45,15 +145,45 @@ export default function Toolbar() {
     if (!navigator.geolocation) { alert('浏览器不支持GPS定位'); return; }
     const a = api();
     if (!a) return;
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        a.flyTo(pos.coords.latitude, pos.coords.longitude, 16);
-        a.placeMarker(pos.coords.latitude, pos.coords.longitude, `我的位置 (${pos.coords.accuracy.toFixed(0)}m 精度)`);
+
+    setLocating(true);
+
+    let bestPos: GeolocationPosition | null = null;
+    let resolved = false;
+
+    const done = () => {
+      setLocating(false);
+      navigator.geolocation.clearWatch(watchId);
+    };
+
+    const tryResolve = (pos: GeolocationPosition) => {
+      if (bestPos && pos.coords.accuracy >= bestPos.coords.accuracy) return;
+      bestPos = pos;
+      a.flyTo(pos.coords.latitude, pos.coords.longitude, 16);
+      a.placeMarker(
+        pos.coords.latitude,
+        pos.coords.longitude,
+        `我的位置 (${pos.coords.accuracy.toFixed(0)}m 精度)`,
+      );
+      if (pos.coords.accuracy < 30) {
+        resolved = true;
+        done();
+      }
+    };
+
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => tryResolve(pos),
+      (err) => {
+        if (!bestPos) alert('定位失败: ' + err.message);
+        done();
       },
-      (err) => { alert('定位失败: ' + err.message); },
-      { enableHighAccuracy: true, timeout: 10000 },
+      { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 },
     );
-  }, []);
+
+    setTimeout(() => {
+      if (!resolved) done();
+    }, 15000);
+  }, [api]);
 
   const handleSearch = useCallback(async () => {
     const q = searchText.trim();
@@ -83,20 +213,7 @@ export default function Toolbar() {
       return;
     }
 
-    // 2) Geocode via Amap API (with signature)
-    try {
-      const { geocodeAmap } = await import('./utils/amap');
-      const result = await geocodeAmap(q);
-      if (!result) {
-        alert(`未找到「${q}」，请尝试更具体的名称。`);
-        return;
-      }
-      a.flyTo(result.lat, result.lng);
-      a.placeMarker(result.lat, result.lng, result.name);
-      setSearchText('');
-    } catch (e: any) {
-      alert('搜索失败: ' + (e?.message || '网络异常'));
-    }
+    alert(`未找到「${q}」，请输入有效坐标（如 39.9,116.4）。`);
   }, [searchText]);
 
   const handleToolClick = useCallback(
@@ -126,10 +243,14 @@ export default function Toolbar() {
           a.enableDraw('Line');
           break;
         case 'Polygon':
-          a.enableDraw('Polygon');
-          break;
         case 'Rectangle':
-          a.enableDraw('Rectangle');
+          if ((window as any).__webgis_labelMode) {
+            alert('当前处于标注模式，请先退出标注再使用绘制工具。');
+            return;
+          }
+          a.enableDraw(
+            tool === 'Polygon' ? 'Polygon' : 'Rectangle',
+          );
           break;
         case 'Edit':
           if (!state.selectedFeatureId) {
@@ -148,14 +269,16 @@ export default function Toolbar() {
   );
 
   const handleExportGeoJSON = () => {
-    const blob = new Blob([exportGeoJSON(state.features)], {
+    const exportFeatures = state.features.filter(f => !f.properties.farmlandId);
+    const blob = new Blob([exportGeoJSON(exportFeatures)], {
       type: 'application/geo+json',
     });
     downloadBlob(blob, 'webgis-export.geojson');
   };
 
   const handleExportCSV = () => {
-    const blob = new Blob([exportCSV(state.features)], { type: 'text/csv' });
+    const exportFeatures = state.features.filter(f => !f.properties.farmlandId);
+    const blob = new Blob([exportCSV(exportFeatures)], { type: 'text/csv' });
     downloadBlob(blob, 'webgis-points.csv');
   };
 
@@ -190,21 +313,45 @@ export default function Toolbar() {
   };
 
   const handleShpImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
     try {
-      const shp = await import('shpjs');
-      const buf = await file.arrayBuffer();
-      const geojson: any = await shp.default(buf);
-      const items: any[] =
-        geojson.type === 'FeatureCollection'
-          ? geojson.features
-          : Array.isArray(geojson)
-            ? geojson
-            : [geojson];
+      const shp: any = await import('shpjs');
+      const zipFiles = files.filter((file) => getFileExt(file) === 'zip');
+      const geojsonResults: any[] = [];
+      let layerName = '';
+
+      if (zipFiles.length > 0) {
+        for (const file of zipFiles) {
+          const buf = await file.arrayBuffer();
+          geojsonResults.push(await shp.default(buf));
+        }
+        layerName = zipFiles.length === 1 ? getFileStem(zipFiles[0]) : `SHP导入_${zipFiles.length}个压缩包`;
+      } else {
+        const groups = groupShpSidecarFiles(files);
+        if (groups.length === 0) {
+          throw new Error('请选择 .zip，或至少选择一个 .shp 文件。建议同时选择同名 .dbf/.prj/.cpg 文件。');
+        }
+
+        for (const group of groups) {
+          geojsonResults.push(
+            await (shp.default as any)({
+              shp: await group.files.shp!.arrayBuffer(),
+              dbf: group.files.dbf ? await group.files.dbf.arrayBuffer() : undefined,
+              prj: group.files.prj ? await group.files.prj.arrayBuffer() : undefined,
+              cpg: group.files.cpg ? await group.files.cpg.arrayBuffer() : undefined,
+            }),
+          );
+        }
+        layerName = groups.length === 1 ? groups[0].stem : `SHP导入_${groups.length}个图层`;
+      }
+
+      const items = geojsonResults.flatMap(collectGeoJSONFeatures);
+      if (items.length === 0) {
+        throw new Error('未找到可导入的几何要素。');
+      }
 
       const layerId = crypto.randomUUID();
-      const layerName = file.name.replace(/\.(zip|shp)$/i, '');
       const features: GeoJSONFeature[] = items
         .filter((f: any) => f?.geometry)
         .map((f: any, i: number) => {
@@ -212,13 +359,15 @@ export default function Toolbar() {
           let shapeType: GeoJSONFeature['properties']['shapeType'] = 'Polygon';
           if (gt === 'Point' || gt === 'MultiPoint') shapeType = 'Marker';
           else if (gt === 'LineString' || gt === 'MultiLineString') shapeType = 'Line';
+          const sourceProperties = f.properties || {};
 
           return {
             ...f,
             properties: {
+              ...sourceProperties,
               id: crypto.randomUUID(),
-              name: f.properties?.NAME || f.properties?.name || `${layerName}_${i + 1}`,
-              description: f.properties?.description || '',
+              name: sourceProperties.NAME || sourceProperties.name || `${layerName}_${i + 1}`,
+              description: sourceProperties.description || '',
               ...getDefaultFeatureStyle(shapeType),
               shapeType,
               layerId,
@@ -228,22 +377,87 @@ export default function Toolbar() {
 
       dispatch({ type: 'ADD_LAYER', layer: { id: layerId, name: layerName, visible: true } });
       dispatch({ type: 'BATCH_ADD_FEATURES', features });
-      alert(`成功导入 SHP: ${features.length} 个要素 → 图层「${layerName}」`);
+      alert(`成功导入 SHP: ${features.length} 个要素 → 图层&quot;${layerName}&quot;`);
     } catch (err: any) {
-      alert(`SHP 解析失败: ${err.message || '未知错误'}`);
+      console.error(err);
+      alert(formatShpImportError(err));
     }
     e.target.value = '';
   };
+
+  const handleBasemapChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const value = e.target.value;
+      if (value === CUSTOM_BASEMAP_KEY) {
+        const existing = loadCustomBasemap();
+        if (existing) {
+          setCustomName(existing.name);
+          setCustomUrl(existing.url);
+          setCustomAttr(existing.attribution || '');
+          setCustomMaxZoom(existing.maxZoom ? String(existing.maxZoom) : '');
+        } else {
+          setCustomName('');
+          setCustomUrl('');
+          setCustomAttr('');
+          setCustomMaxZoom('');
+        }
+        setCustomFormOpen(true);
+        return;
+      }
+      dispatch({ type: 'SET_BASEMAP', basemap: value });
+    },
+    [dispatch],
+  );
+
+  const handleCustomSubmit = useCallback(() => {
+    const name = customName.trim();
+    const url = customUrl.trim();
+    if (!name || !url) {
+      alert('请填写底图名称和瓦片 URL');
+      return;
+    }
+    if (!url.includes('{z}') && !url.includes('{x}') && !url.includes('{y}')) {
+      alert('URL 模板需包含 {z}/{x}/{y} 占位符');
+      return;
+    }
+    const attr = customAttr.trim();
+    const maxZoomNum = customMaxZoom.trim() ? parseInt(customMaxZoom, 10) : undefined;
+    const cfg = {
+      name,
+      url,
+      attribution: attr || undefined,
+      maxZoom: maxZoomNum && maxZoomNum > 0 ? maxZoomNum : undefined,
+    };
+    saveCustomBasemap(cfg);
+    dispatch({ type: 'SET_CUSTOM_BASEMAP', customBasemap: cfg });
+    dispatch({ type: 'SET_BASEMAP', basemap: CUSTOM_BASEMAP_KEY });
+    setCustomFormOpen(false);
+  }, [customName, customUrl, customAttr, customMaxZoom, dispatch]);
+
+  const handleCustomCancel = useCallback(() => {
+    setCustomFormOpen(false);
+  }, []);
+
+  const handleCustomRemove = useCallback(() => {
+    clearCustomBasemap();
+    dispatch({ type: 'SET_CUSTOM_BASEMAP', customBasemap: null });
+    dispatch({ type: 'SET_BASEMAP', basemap: 'osm' });
+    setCustomFormOpen(false);
+    setCustomName('');
+    setCustomUrl('');
+    setCustomAttr('');
+    setCustomMaxZoom('');
+  }, [dispatch]);
 
   const handleKmlImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
-      const text = await file.text();
+      const text = validateKmlSource(await file.text());
       const parser = new DOMParser();
       const xml = parser.parseFromString(text, 'text/xml');
-      const errNode = xml.querySelector('parsererror');
-      if (errNode) throw new Error('XML 解析失败');
+      const parserError = getXmlParserError(xml);
+      if (parserError) throw new Error(`XML 解析失败：${parserError}`);
 
       const { kml } = await import('@tmcw/togeojson');
       const geojson: any = kml(xml);
@@ -264,32 +478,77 @@ export default function Toolbar() {
 
       const layerId = crypto.randomUUID();
       const layerName = file.name.replace(/\.kml$/i, '');
-      const features: GeoJSONFeature[] = items
-        .filter((f: any) => f?.geometry)
-        .map((f: any, i: number) => {
-          const gt = f.geometry.type;
+      const features: GeoJSONFeature[] = [];
+      let featureIndex = 0;
+
+      for (const item of items) {
+        if (!item?.geometry) continue;
+        const gt = item.geometry.type;
+
+        if (gt === 'GeometryCollection') {
+          // KML MultiGeometry → GeoJSON GeometryCollection: split into individual features
+          const subGeoms: any[] = item.geometry.geometries || [];
+          for (const subGeom of subGeoms) {
+            const sgt = subGeom?.type;
+            if (!sgt) continue;
+            let shapeType: GeoJSONFeature['properties']['shapeType'] = 'Polygon';
+            if (sgt === 'Point' || sgt === 'MultiPoint') shapeType = 'Marker';
+            else if (sgt === 'LineString' || sgt === 'MultiLineString') shapeType = 'Line';
+            featureIndex++;
+            const subFeature: GeoJSONFeature = {
+              type: 'Feature',
+              geometry: subGeom,
+              properties: {
+                id: crypto.randomUUID(),
+                name: item.properties?.name || item.properties?.NAME
+                  ? `${item.properties.name || item.properties.NAME}_${featureIndex}`
+                  : `${layerName}_${featureIndex}`,
+                description: item.properties?.description || '',
+                ...getDefaultFeatureStyle(shapeType, item.properties?.stroke || '#3388ff'),
+                shapeType,
+                layerId,
+              },
+            };
+            features.push(subFeature);
+          }
+        } else {
           let shapeType: GeoJSONFeature['properties']['shapeType'] = 'Polygon';
           if (gt === 'Point' || gt === 'MultiPoint') shapeType = 'Marker';
           else if (gt === 'LineString' || gt === 'MultiLineString') shapeType = 'Line';
-
-          return {
-            ...f,
+          featureIndex++;
+          features.push({
+            ...item,
             properties: {
               id: crypto.randomUUID(),
-              name: f.properties?.name || f.properties?.NAME || `${layerName}_${i + 1}`,
-              description: f.properties?.description || '',
-              ...getDefaultFeatureStyle(shapeType, f.properties?.stroke || '#3388ff'),
+              name: item.properties?.name || item.properties?.NAME || `${layerName}_${featureIndex}`,
+              description: item.properties?.description || '',
+              ...getDefaultFeatureStyle(shapeType, item.properties?.stroke || '#3388ff'),
               shapeType,
               layerId,
             },
-          };
-        });
+          });
+        }
+      }
+
+      if (features.length === 0) {
+        if (items.length > 0) {
+          const sampleItem = items[0];
+          const hasGeom = !!sampleItem?.geometry;
+          const geomType = sampleItem?.geometry?.type;
+          alert(`KML 解析后未找到有效要素。文件包含 ${items.length} 个 Feature，首个要素: 有几何=${hasGeom}, 几何类型=${geomType || '无'}`);
+        } else {
+          alert('KML 文件中未找到有效要素');
+        }
+        return;
+      }
 
       dispatch({ type: 'ADD_LAYER', layer: { id: layerId, name: layerName, visible: true } });
       dispatch({ type: 'BATCH_ADD_FEATURES', features });
-      alert(`成功导入 KML: ${features.length} 个要素 → 图层「${layerName}」`);
+      alert(`成功导入 KML: ${features.length} 个要素 → 图层&quot;${layerName}&quot;`);
     } catch (err: any) {
-      alert(`KML 解析失败: ${err.message || '未知错误'}`);
+      console.error('[KML Import]', err);
+      const detail = err?.message || '未知错误';
+      alert(`KML 导入失败：${detail}`);
     }
     e.target.value = '';
   };
@@ -301,23 +560,30 @@ export default function Toolbar() {
           <img src="/point-tool-icon.svg" alt="" />
         </span>
         <span className="toolbar-brand-title">点位工具</span>
-        <span className="toolbar-brand-count">{state.features.length}</span>
+      </div>
+
+      <div className="toolbar-group">
+        <button className="toolbar-btn analysis-btn" type="button" onClick={onOpenTraining} title="打开训练中心">
+          <Network size={16} />
+          <span className="toolbar-label">训练中心</span>
+        </button>
       </div>
 
       <div className="toolbar-group search-group">
         <input
           className="search-input"
           type="text"
-          placeholder="地名或坐标，如 北京 / 39.9,116.4"
+          aria-label="坐标搜索"
+          placeholder="输入坐标，如 39.9,116.4"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
         />
-        <button className="toolbar-btn" onClick={handleSearch} title="搜索定位">
-          <Search size={16} />
+        <button className="toolbar-btn" onClick={handleSearch} title="坐标定位" aria-label="坐标定位">
+          <MapPin size={16} />
         </button>
-        <button className="toolbar-btn" onClick={handleLocate} title="我的位置 (GPS)">
-          <Crosshair size={16} />
+        <button className="toolbar-btn" onClick={handleLocate} disabled={locating} title={locating ? "定位中…" : "我的位置 (GPS)"} aria-label={locating ? '定位中' : '我的位置'}>
+          {locating ? <Loader2 size={16} className="spin" /> : <Crosshair size={16} />}
         </button>
       </div>
 
@@ -325,6 +591,7 @@ export default function Toolbar() {
         <button
           className={`toolbar-btn ${activeTool === 'Marker' ? 'active' : ''}`}
           title="绘制点"
+          aria-label="绘制点"
           onClick={() => handleToolClick('Marker')}
         >
           <MapPin size={18} />
@@ -332,6 +599,7 @@ export default function Toolbar() {
         <button
           className={`toolbar-btn ${activeTool === 'Line' ? 'active' : ''}`}
           title="绘制线"
+          aria-label="绘制线"
           onClick={() => handleToolClick('Line')}
         >
           <Minus size={18} />
@@ -339,6 +607,7 @@ export default function Toolbar() {
         <button
           className={`toolbar-btn ${activeTool === 'Polygon' ? 'active' : ''}`}
           title="绘制面"
+          aria-label="绘制面"
           onClick={() => handleToolClick('Polygon')}
         >
           <Hexagon size={18} />
@@ -346,6 +615,7 @@ export default function Toolbar() {
         <button
           className={`toolbar-btn ${activeTool === 'Rectangle' ? 'active' : ''}`}
           title="绘制矩形"
+          aria-label="绘制矩形"
           onClick={() => handleToolClick('Rectangle')}
         >
           <Square size={18} />
@@ -356,6 +626,7 @@ export default function Toolbar() {
         <button
           className={`toolbar-btn ${activeTool === 'Edit' ? 'active' : ''}`}
           title="编辑几何"
+          aria-label="编辑几何"
           onClick={() => handleToolClick('Edit')}
         >
           <Pencil size={18} />
@@ -363,6 +634,7 @@ export default function Toolbar() {
         <button
           className={`toolbar-btn danger ${activeTool === 'Remove' ? 'active' : ''}`}
           title="删除要素"
+          aria-label="删除要素"
           onClick={() => handleToolClick('Remove')}
         >
           <Trash2 size={18} />
@@ -374,73 +646,121 @@ export default function Toolbar() {
         <Layers size={15} className="toolbar-inline-icon" />
         <select
           className="basemap-select"
+          aria-label="选择底图"
           value={state.basemap}
-          onChange={(e) =>
-            dispatch({ type: 'SET_BASEMAP', basemap: e.target.value })
-          }
+          onChange={handleBasemapChange}
         >
           {BASEMAP_OPTIONS.map((b) => (
             <option key={b.key} value={b.key}>
               {b.name}
             </option>
           ))}
+          <option value={CUSTOM_BASEMAP_KEY}>
+            {state.customBasemap ? `自定义: ${state.customBasemap.name}` : '自定义瓦片…'}
+          </option>
         </select>
+        {customFormOpen && (
+          <div className="custom-basemap-overlay" onClick={handleCustomCancel}>
+            <div className="custom-basemap-dialog" onClick={(e) => e.stopPropagation()}>
+              <h3>自定义瓦片底图</h3>
+              <label>
+                底图名称 <span className="required">*</span>
+                <input
+                  type="text"
+                  placeholder="例如：我的无人机正射影像"
+                  value={customName}
+                  onChange={(e) => setCustomName(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleCustomSubmit(); }}
+                  autoFocus
+                />
+              </label>
+              <label>
+                瓦片 URL 模板 <span className="required">*</span>
+                <input
+                  type="text"
+                  placeholder="https://.../{z}/{x}/{y}.png"
+                  value={customUrl}
+                  onChange={(e) => setCustomUrl(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleCustomSubmit(); }}
+                />
+                <span className="hint">支持 {`{z}`}/{`{x}`}/{`{y}`} 和 {`{s}`} 子域占位符</span>
+              </label>
+              <label>
+                最大缩放级别
+                <input
+                  type="number"
+                  min="1"
+                  max="22"
+                  placeholder="默认 19"
+                  value={customMaxZoom}
+                  onChange={(e) => setCustomMaxZoom(e.target.value)}
+                />
+              </label>
+              <label>
+                版权标注
+                <input
+                  type="text"
+                  placeholder="例如：&copy; MyOrg"
+                  value={customAttr}
+                  onChange={(e) => setCustomAttr(e.target.value)}
+                />
+              </label>
+              <div className="custom-basemap-actions">
+                <button className="toolbar-btn primary" onClick={handleCustomSubmit}>
+                  确认添加
+                </button>
+                <button className="toolbar-btn" onClick={handleCustomCancel}>
+                  取消
+                </button>
+                {state.customBasemap && (
+                  <button className="toolbar-btn danger" onClick={handleCustomRemove}>
+                    移除自定义
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="toolbar-group">
       </div>
 
       <div className="toolbar-group">
-        <button
-          className="toolbar-btn"
-          title="导入 KML"
-          onClick={() => kmlInputRef.current?.click()}
-        >
-          <span className="toolbar-label">KML</span>
-        </button>
-        <button
-          className="toolbar-btn"
-          title="导入 SHP (ZIP)"
-          onClick={() => shpInputRef.current?.click()}
-        >
-          <Package size={18} />
-        </button>
-        <button
-          className="toolbar-btn"
-          title="导入 GeoJSON"
-          onClick={() => {
-            setImportType('geojson');
-            fileInputRef.current?.click();
-          }}
-        >
-          <FileJson size={18} />
-        </button>
-        <button
-          className="toolbar-btn"
-          title="导入 CSV"
-          onClick={() => {
-            setImportType('csv');
-            fileInputRef.current?.click();
-          }}
-        >
-          <Table size={18} />
-        </button>
-        <button
-          className="toolbar-btn"
-          title="导出 GeoJSON"
-          onClick={handleExportGeoJSON}
-        >
-          <Download size={18} />
-          <span className="toolbar-label">GEO</span>
-        </button>
-        <button
-          className="toolbar-btn"
-          title="导出 CSV（仅点位）"
-          onClick={handleExportCSV}
-        >
-          <Download size={18} />
-          <span className="toolbar-label">CSV</span>
-        </button>
+        <div className="toolbar-dropdown">
+          <button
+            className="toolbar-btn"
+            title="导入"
+            onClick={(e) => { e.stopPropagation(); setImportMenuOpen(!importMenuOpen); }}
+          >
+            <Upload size={18} />
+            <span className="toolbar-label">导入</span>
+          </button>
+          {importMenuOpen && (
+            <div className="toolbar-dropdown-menu">
+              <button onClick={(e) => { e.stopPropagation(); kmlInputRef.current?.click(); setImportMenuOpen(false); }}>KML</button>
+              <button onClick={(e) => { e.stopPropagation(); shpInputRef.current?.click(); setImportMenuOpen(false); }}>SHP (ZIP)</button>
+              <button onClick={(e) => { e.stopPropagation(); setImportType('geojson'); fileInputRef.current?.click(); setImportMenuOpen(false); }}>GeoJSON</button>
+              <button onClick={(e) => { e.stopPropagation(); setImportType('csv'); fileInputRef.current?.click(); setImportMenuOpen(false); }}>CSV</button>
+            </div>
+          )}
+        </div>
+        <div className="toolbar-dropdown">
+          <button
+            className="toolbar-btn"
+            title="导出"
+            onClick={(e) => { e.stopPropagation(); setExportMenuOpen(!exportMenuOpen); }}
+          >
+            <Download size={18} />
+            <span className="toolbar-label">导出</span>
+          </button>
+          {exportMenuOpen && (
+            <div className="toolbar-dropdown-menu">
+              <button onClick={(e) => { e.stopPropagation(); handleExportGeoJSON(); setExportMenuOpen(false); }}>GeoJSON</button>
+              <button onClick={(e) => { e.stopPropagation(); handleExportCSV(); setExportMenuOpen(false); }}>CSV</button>
+            </div>
+          )}
+        </div>
       </div>
 
       <input
@@ -453,7 +773,8 @@ export default function Toolbar() {
       <input
         ref={shpInputRef}
         type="file"
-        accept=".zip,.shp"
+        accept=".zip,.shp,.dbf,.prj,.cpg"
+        multiple
         style={{ display: 'none' }}
         onChange={handleShpImport}
       />

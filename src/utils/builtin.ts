@@ -7,19 +7,21 @@ export interface BuiltinLayerDef {
   path: string;
   color: string;
   category: string;
-  size: string; // Human-readable size
+  size: string;
 }
 
 export const BUILTIN_CATEGORIES: { key: string; label: string }[] = [
-  { key: '轻量边界', label: '轻量边界' },
-  { key: '轻量区划', label: '轻量区划' },
+  { key: '省级', label: '省级' },
+  { key: '地级市', label: '地级市' },
 ];
 
 export const BUILTIN_LAYERS: BuiltinLayerDef[] = [
-  { key: 'nanhaizhudao', name: '南海诸岛', path: '/data/南海诸岛.json', color: '#e76f51', category: '轻量边界', size: '65 KB' },
-  { key: 'nanhaijdx', name: '南海九段线', path: '/data/南海九段线.json', color: '#e76f51', category: '轻量边界', size: '9 KB' },
-  { key: 'nanhaibj', name: '南海边界', path: '/data/南海边界.json', color: '#e63946', category: '轻量边界', size: '612 KB' },
-  { key: 'jiuduanxian', name: '九段线', path: '/data/九段线.json', color: '#e76f51', category: '轻量区划', size: '10 KB' },
+  { key: 'beijing', name: '北京市', path: '/data/北京市.json', color: '#e76f51', category: '省级', size: '1 KB' },
+  { key: 'shanghai', name: '上海市', path: '/data/上海市.json', color: '#4572b9', category: '省级', size: '1 KB' },
+  { key: 'guangzhou', name: '广州市', path: '/data/广州市.json', color: '#5fb85f', category: '地级市', size: '1 KB' },
+  { key: 'chengdu', name: '成都市', path: '/data/成都市.json', color: '#d99a20', category: '地级市', size: '1 KB' },
+  { key: 'wuhan', name: '武汉市', path: '/data/武汉市.json', color: '#8b5cf6', category: '地级市', size: '1 KB' },
+  { key: 'xian', name: '西安市', path: '/data/西安市.json', color: '#e63946', category: '地级市', size: '1 KB' },
 ];
 
 function shapeTypeFromGeom(geomType: string): GeoJSONFeature['properties']['shapeType'] {

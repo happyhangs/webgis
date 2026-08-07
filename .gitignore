@@ -3,15 +3,32 @@ dist/
 *.tsbuildinfo
 .edge-cdp-profile/
 .edge-test-profile/
-全国shp/
+.claude/
+.idea/
+.env
+__pycache__/
+*.py[cod]
+*.log
 vite.out.log
 vite.err.log
 src/test.html
 webgis/
-重点研发/
 webgis.zip
+全国shp/
+重点研发/
 
-# 大型 GeoJSON（>50MB），本地运行 convert-shp.mjs 生成
+# Backend local outputs
+backend/models/
+backend/datasets/
+backend/data/
+backend/runs/
+backend/dist/
+backend/build/
+backend/*.pt
+*.egg-info/
+train/
+
+# Large GeoJSON generated locally from SHP data
 public/data/国界线.json
 public/data/省.json
 public/data/省界.json
@@ -28,3 +45,4 @@ public/data/二级河流(线).json
 public/data/二级河流(面).json
 public/data/四级河流.json
 public/data/五级河流.json
+public/data/counties/

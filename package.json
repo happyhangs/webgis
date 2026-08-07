@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite",
     "start": "vite",
+    "dev:all": "node scripts/start-all.mjs",
+    "start:all": "node scripts/start-all.mjs",
+    "dataset:xinjiang": "node scripts/build-xinjiang-training-dataset.ts",
     "build": "tsc -b && vite build",
     "preview": "vite preview"
   },
@@ -14,6 +17,8 @@
     "@tmcw/togeojson": "^7.1.2",
     "@turf/area": "^7.1.0",
     "@turf/length": "^7.1.0",
+    "geotiff": "^3.0.5",
+    "jszip": "^3.10.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.468.0",
     "react": "^18.3.1",
@@ -26,6 +31,7 @@
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
     "typescript": "~5.6.2",
-    "vite": "^6.0.0"
+    "vite": "^6.0.0",
+    "vitest": "^4.1.8"
   }
 }

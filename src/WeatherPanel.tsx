@@ -1,206 +1,128 @@
 import { useCallback, useEffect, useState } from 'react';
+import { CalendarDays, ChevronsLeft, CloudSun, Droplets, Loader2, MapPin, Search, Thermometer, Wind } from 'lucide-react';
+import { stopFloatingPanelButtonEvent, useFloatingPanels } from './FloatingPanelContext';
+import { useDraggablePanel } from './useDraggablePanel';
 import {
-  CloudSun,
-  ChevronsLeft,
-  ChevronsRight,
-  Calendar,
-  History,
-  Thermometer,
-  Droplets,
-  Wind,
-  Loader2,
-  MapPin,
-} from 'lucide-react';
-import { fetchWeather, fetchHistory } from './utils/weather';
-import type { CurrentWeather, DayWeather, HistoryDay } from './utils/weather';
-
-interface Loc {
-  lat: number;
-  lng: number;
-  name: string;
-}
-
-const DEFAULT_LOC: Loc = { lat: 44.3061, lng: 86.0806, name: '石河子 (默认)' };
+  DEFAULT_WEATHER_LOCATION,
+  fetchWeather,
+  resolveWeatherLocation,
+  type CurrentWeather,
+  type DayWeather,
+  type WeatherLocation,
+} from './utils/weather';
 
 export default function WeatherPanel() {
-  const [collapsed, setCollapsed] = useState(true);
-  const [loc, setLoc] = useState<Loc>(DEFAULT_LOC);
+  const { isPanelOpen, closePanel } = useFloatingPanels();
+  const { panelRef, panelStyle, dragging, dragHandleProps, resizeHandle } = useDraggablePanel();
+  const [query, setQuery] = useState(DEFAULT_WEATHER_LOCATION.name);
+  const [loc, setLoc] = useState<WeatherLocation>(DEFAULT_WEATHER_LOCATION);
   const [current, setCurrent] = useState<CurrentWeather | null>(null);
   const [forecast, setForecast] = useState<DayWeather[]>([]);
-  const [history, setHistory] = useState<HistoryDay[]>([]);
-  const [loadingCurrent, setLoadingCurrent] = useState(false);
-  const [loadingHistory, setLoadingHistory] = useState(false);
-  const [historyYear, setHistoryYear] = useState(() => new Date().getFullYear() - 1);
-  const [historyMonth, setHistoryMonth] = useState(() => new Date().getMonth() + 1);
-  const [tab, setTab] = useState<'current' | 'history'>('current');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
 
-  // Listen for map clicks
-  useEffect(() => {
-    const handler = async (e: Event) => {
-      const { lat, lng } = (e as CustomEvent).detail;
-      let name = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-      // Reverse geocode via Amap
-      try {
-        const resp = await fetch(
-          `https://restapi.amap.com/v3/geocode/regeo?key=fcfdf69df521f74f022e6cc53cb1d8b9&location=${lng},${lat}`,
-        );
-        const data = await resp.json();
-        if (data.status === '1' && data.regeocode) {
-          name = data.regeocode.formatted_address || name;
-        }
-      } catch { /* use coords as fallback */ }
-      setLoc({ lat, lng, name });
-      setCurrent(null);
-      setForecast([]);
-    };
-    window.addEventListener('weather-loc', handler);
-    return () => window.removeEventListener('weather-loc', handler);
-  }, []);
-
-  const loadCurrent = useCallback(async () => {
-    setLoadingCurrent(true);
+  const loadWeather = useCallback(async (nextQuery = query) => {
+    setLoading(true);
+    setMessage('');
     try {
-      const result = await fetchWeather(loc.lat, loc.lng);
+      const nextLoc = await resolveWeatherLocation(nextQuery);
+      const result = await fetchWeather(nextLoc.lat, nextLoc.lng);
+      setLoc(nextLoc);
+      setQuery(nextLoc.name);
       setCurrent(result.current);
       setForecast(result.forecast);
-    } catch { /* silent */ }
-    finally { setLoadingCurrent(false); }
-  }, [loc]);
-
-  const loadHistory = useCallback(async () => {
-    setLoadingHistory(true);
-    try {
-      const start = `${historyYear}-${String(historyMonth).padStart(2, '0')}-01`;
-      const lastDay = new Date(historyYear, historyMonth, 0).getDate();
-      const end = `${historyYear}-${String(historyMonth).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
-      const data = await fetchHistory(loc.lat, loc.lng, start, end);
-      setHistory(data);
-    } catch { /* silent */ }
-    finally { setLoadingHistory(false); }
-  }, [loc, historyYear, historyMonth]);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : '天气查询失败');
+    } finally {
+      setLoading(false);
+    }
+  }, [query]);
 
   useEffect(() => {
-    if (!collapsed && tab === 'current' && !current) loadCurrent();
-  }, [collapsed, tab, current, loadCurrent]);
+    if (isPanelOpen('weather') && !current && !loading) {
+      loadWeather(DEFAULT_WEATHER_LOCATION.name);
+    }
+  }, [current, isPanelOpen, loadWeather, loading]);
 
-  if (collapsed) {
-    return (
-      <button className="weather-launcher" type="button" onClick={() => setCollapsed(false)} title="天气查询">
-        <CloudSun size={18} />
-        <span>天气</span>
-        <ChevronsRight size={14} />
-      </button>
-    );
-  }
+  if (!isPanelOpen('weather')) return null;
 
   return (
-    <aside className="panel weather-panel">
-      <div className="weather-header">
-        <span className="weather-title">
-          <CloudSun size={16} />
-          <span>天气</span>
-        </span>
-        <div className="weather-tabs">
-          <button className={`weather-tab ${tab === 'current' ? 'active' : ''}`} onClick={() => setTab('current')}>
-            <Thermometer size={13} /> 实时
-          </button>
-          <button className={`weather-tab ${tab === 'history' ? 'active' : ''}`} onClick={() => setTab('history')}>
-            <History size={13} /> 历史
-          </button>
-        </div>
-        <button className="panel-toggle" onClick={() => setCollapsed(true)} title="最小化">
+    <aside ref={panelRef} className={`panel floating-panel weather-panel ${dragging ? 'is-dragging' : ''}`} style={panelStyle}>
+      <div className="weather-header floating-panel-drag-handle" {...dragHandleProps}>
+        <span className="weather-title"><CloudSun size={15} /> 天气查询</span>
+        <button
+          className="panel-toggle"
+          onPointerDown={stopFloatingPanelButtonEvent}
+          onClick={(event) => {
+            stopFloatingPanelButtonEvent(event);
+            closePanel('weather');
+          }}
+          title="最小化"
+          aria-label="最小化天气查询面板"
+        >
           <ChevronsLeft size={14} />
         </button>
       </div>
 
       <div className="weather-body">
-        <div className="weather-loc-info">
-          <MapPin size={12} />
-          <span>{loc.name}</span>
-          <button className="weather-refresh" onClick={loadCurrent} title="刷新天气">
-            {loadingCurrent ? <Loader2 size={12} className="builtin-spinner" /> : '🔄'}
+        <div className="weather-search">
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={(event) => { if (event.key === 'Enter') loadWeather(); }}
+            placeholder="城市或坐标，如 石河子 / 44.3061,86.0806"
+          />
+          <button type="button" onClick={() => loadWeather()} disabled={loading} title="查询天气" aria-label="查询天气">
+            {loading ? <Loader2 size={15} className="spin" /> : <Search size={15} />}
           </button>
         </div>
-        <div className="weather-hint-click">在地图上右键任意位置查询该地天气</div>
 
-        {tab === 'current' && (
-          <>
-            {loadingCurrent ? (
-              <div className="weather-loading"><Loader2 size={20} className="builtin-spinner" /> 加载中...</div>
-            ) : (
-              <>
-                {current && (
-                  <div className="weather-now">
-                    <div className="weather-now-main">
-                      <span className="weather-now-icon">{current.weatherIcon}</span>
-                      <span className="weather-now-temp">{current.temp}°C</span>
-                    </div>
-                    <div className="weather-now-text">{current.weatherText}</div>
-                    <div className="weather-now-detail">
-                      <span><Droplets size={13} /> {current.humidity}%</span>
-                      <span><Wind size={13} /> {current.windSpeed} km/h</span>
-                    </div>
-                  </div>
-                )}
+        <div className="weather-location">
+          <MapPin size={13} />
+          <span>{loc.name}</span>
+        </div>
 
-                <div className="weather-forecast">
-                  <div className="weather-section-title"><Calendar size={13} /> 7日预报</div>
-                  <div className="weather-days">
-                    {forecast.map((d) => (
-                      <div key={d.date} className="weather-day">
-                        <span className="weather-day-date">{d.date.slice(5)}</span>
-                        <span className="weather-day-icon">{d.weatherIcon}</span>
-                        <span className="weather-day-temps">
-                          <strong>{d.tempMax}°</strong> <span className="weather-day-low">{d.tempMin}°</span>
-                        </span>
-                        {d.precip > 0 && <span className="weather-day-rain">{d.precip}mm</span>}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-          </>
-        )}
+        {message && <div className="weather-message">{message}</div>}
 
-        {tab === 'history' && (
-          <>
-            <div className="weather-history-ctl">
-              <select value={historyYear} onChange={(e) => setHistoryYear(Number(e.target.value))}>
-                {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map((y) => (
-                  <option key={y} value={y}>{y}年</option>
-                ))}
-              </select>
-              <select value={historyMonth} onChange={(e) => setHistoryMonth(Number(e.target.value))}>
-                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                  <option key={m} value={m}>{m}月</option>
-                ))}
-              </select>
-              <button className="weather-query-btn" onClick={loadHistory} disabled={loadingHistory}>
-                {loadingHistory ? <Loader2 size={13} className="builtin-spinner" /> : '查询'}
-              </button>
+        {current && (
+          <div className="weather-now">
+            <div>
+              <span className="weather-now-label"><Thermometer size={14} /> 当前</span>
+              <strong>{current.temp}°C</strong>
             </div>
-
-            {history.length > 0 && (
-              <div className="weather-history-list">
-                {history.map((d) => (
-                  <div key={d.date} className="weather-day">
-                    <span className="weather-day-date">{d.date.slice(5)}</span>
-                    <span className="weather-day-icon">{d.weatherIcon}</span>
-                    <span className="weather-day-temps">
-                      <strong>{d.tempMax}°</strong> <span className="weather-day-low">{d.tempMin}°</span>
-                    </span>
-                    {d.precip > 0 && <span className="weather-day-rain">{d.precip}mm</span>}
-                  </div>
-                ))}
-              </div>
-            )}
-            {!loadingHistory && history.length === 0 && (
-              <div className="weather-empty">选择年月后点查询</div>
-            )}
-          </>
+            <span>{current.weatherText}</span>
+            <small><Droplets size={13} /> {current.humidity}%</small>
+            <small><Wind size={13} /> {current.windSpeed} km/h</small>
+          </div>
         )}
+
+        <div className="weather-forecast-title">
+          <CalendarDays size={14} />
+          <span>7 日预报</span>
+        </div>
+        <div className="weather-days">
+          {forecast.map((day) => (
+            <div className="weather-day" key={day.date}>
+              <span>{day.date.slice(5)}</span>
+              <strong>{day.tempMax}° / {day.tempMin}°</strong>
+              <span>{day.weatherText}</span>
+              <small>{day.precip > 0 ? `${day.precip} mm` : '少雨'}</small>
+            </div>
+          ))}
+          {!loading && forecast.length === 0 && !message && (
+            <div className="weather-empty">打开后自动查询石河子天气。</div>
+          )}
+        </div>
       </div>
+
+      <div {...resizeHandle('n')} />
+      <div {...resizeHandle('s')} />
+      <div {...resizeHandle('e')} />
+      <div {...resizeHandle('w')} />
+      <div {...resizeHandle('ne')} />
+      <div {...resizeHandle('nw')} />
+      <div {...resizeHandle('se')} />
+      <div {...resizeHandle('sw')} />
     </aside>
   );
 }

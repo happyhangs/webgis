@@ -1,0 +1,142 @@
+import L from 'leaflet';
+import { getDashArray, getDefaultFeatureStyle, isAreaShape } from './featureStyle';
+import type { GeoJSONFeature, BasemapConfig } from '../types';
+
+export const WEB_MERCATOR_WORLD_BOUNDS = L.latLngBounds(
+  [-85.05112878, -180],
+  [85.05112878, 180],
+);
+
+export const SHAPE_LABELS: Record<string, string> = {
+  Marker: '点',
+  Line: '线',
+  Polygon: '面',
+  Rectangle: '矩形',
+};
+
+// Track the manual label layer ID so buildFeature can skip the default name
+let _manualLabelLayerId: string | null = null;
+
+export function setManualLabelLayerId(id: string | null) {
+  _manualLabelLayerId = id;
+}
+
+function _isManualLabelLayerId(id: string) {
+  return id === _manualLabelLayerId;
+}
+
+// Track the path-drawn feature count per layer to auto-number even before the FieldDetectPanel effect runs
+let _layerDrawCounts: Record<string, number> = {};
+
+function _nextDrawIndex(layerId: string): number {
+  _layerDrawCounts[layerId] = (_layerDrawCounts[layerId] || 0) + 1;
+  return _layerDrawCounts[layerId];
+}
+
+export function buildFeature(geojson: any, shape: string, layerId: string): GeoJSONFeature {
+  const shapeType =
+    shape === 'Marker'
+      ? 'Marker'
+      : shape === 'Line'
+        ? 'Line'
+        : shape === 'Rectangle'
+          ? 'Rectangle'
+          : 'Polygon';
+
+  const isManualLabelLayer = layerId && _isManualLabelLayerId(layerId);
+  const label = isManualLabelLayer ? '' : (SHAPE_LABELS[shapeType] || '要素');
+  let defaultName = isManualLabelLayer ? '' : `未命名${label}`;
+
+  if (isManualLabelLayer) {
+    const idx = _nextDrawIndex(layerId);
+    const code = `MAN-${String(idx).padStart(3, '0')}`;
+    defaultName = `农田标定-${code}`;
+  }
+  return {
+    ...geojson,
+    properties: {
+      id: crypto.randomUUID(),
+      name: defaultName || `地块 ${SHAPE_LABELS[shapeType] || ''}`,
+      description: '',
+      ...getDefaultFeatureStyle(shapeType as GeoJSONFeature['properties']['shapeType']),
+      shapeType: shapeType as GeoJSONFeature['properties']['shapeType'],
+      layerId,
+      ...(isManualLabelLayer ? {
+        parcelRole: 'parcel' as const,
+        source: 'manual-farmland-label' as const,
+      } : {}),
+    },
+  };
+}
+
+export function emitFeatureClick(feature: GeoJSONFeature) {
+  window.dispatchEvent(new CustomEvent('webgis-feature-click', {
+    detail: { id: feature.properties.id },
+  }));
+}
+
+export function applyStyle(layer: any, feature: GeoJSONFeature, selected: boolean) {
+  const p = feature.properties;
+  if (p.shapeType === 'Marker') {
+    layer.setStyle({
+      radius: selected ? 10 : 8,
+      fillColor: p.color,
+      color: selected ? '#ff0' : '#fff',
+      weight: selected ? 4 : 2,
+      fillOpacity: 0.9,
+    });
+  } else {
+    const weight = selected ? p.strokeWidth + 2 : p.strokeWidth;
+    layer.setStyle({
+      color: p.color,
+      fillColor: p.fillColor,
+      weight,
+      dashArray: getDashArray(p.strokeStyle, weight),
+      lineCap: p.strokeStyle === 'dotted' ? 'round' : 'butt',
+      fillOpacity: isAreaShape(p.shapeType) && p.fillEnabled ? (selected ? 0.45 : 0.26) : 0,
+    });
+  }
+}
+
+export function clearLayerTooltip(layer: any) {
+  if (typeof layer.getTooltip === 'function' && layer.getTooltip()) {
+    layer.unbindTooltip();
+  }
+}
+
+export function getTileLayerOptions(cfg: BasemapConfig): L.TileLayerOptions {
+  const options: L.TileLayerOptions = {
+    attribution: cfg.attribution,
+    maxZoom: cfg.maxZoom ?? 19,
+    noWrap: true,
+    bounds: WEB_MERCATOR_WORLD_BOUNDS,
+    updateWhenZooming: false,
+    updateWhenIdle: true,
+    keepBuffer: 3,
+  };
+
+  if (cfg.subdomains?.length) {
+    options.subdomains = cfg.subdomains;
+  }
+
+  return options;
+}
+
+export function getOverlayTileLayerOptions(cfg: BasemapConfig): L.TileLayerOptions {
+  const options: L.TileLayerOptions = {
+    attribution: '',
+    maxZoom: cfg.maxZoom ?? 19,
+    noWrap: true,
+    bounds: WEB_MERCATOR_WORLD_BOUNDS,
+    opacity: cfg.overlayOpacity ?? 0.4,
+    updateWhenZooming: false,
+    updateWhenIdle: true,
+    keepBuffer: 3,
+  };
+
+  if (cfg.overlaySubdomains?.length) {
+    options.subdomains = cfg.overlaySubdomains;
+  }
+
+  return options;
+}

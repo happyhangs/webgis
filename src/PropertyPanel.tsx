@@ -3,6 +3,7 @@ import { ChevronsRight, ChevronsLeft, Info } from 'lucide-react';
 import { useAppContext } from './AppContext';
 import { getFeatureMeasurement } from './utils/measure';
 import { isAreaShape, STROKE_STYLE_OPTIONS } from './utils/featureStyle';
+import FloatingPanelDock from './FloatingPanelDock';
 
 const shapeLabel = (shapeType: string) => {
   switch (shapeType) {
@@ -16,18 +17,24 @@ const shapeLabel = (shapeType: string) => {
 
 export default function PropertyPanel() {
   const { state, dispatch } = useAppContext();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsedFor, setCollapsedFor] = useState<string | null>(null);
 
   const feature = state.features.find((f) => f.properties.id === state.selectedFeatureId);
+  const collapsed = feature
+    ? collapsedFor === feature.properties.id
+    : collapsedFor !== '__empty-expanded__';
+  const expandPanel = () => setCollapsedFor(feature ? null : '__empty-expanded__');
+  const collapsePanel = () => setCollapsedFor(feature?.properties.id ?? null);
 
   if (collapsed) {
     return (
       <div className="panel property-panel collapsed">
         <div className="panel-header panel-header-vertical">
-          <button className="panel-toggle" onClick={() => setCollapsed(false)} title="展开属性面板">
+          <button className="panel-toggle" onClick={expandPanel} title="展开属性面板" aria-label="展开属性面板">
             <ChevronsLeft size={16} />
           </button>
           <span className="panel-title-vertical">属性</span>
+          <FloatingPanelDock compact />
         </div>
       </div>
     );
@@ -39,8 +46,9 @@ export default function PropertyPanel() {
         <div className="panel-header">
           <Info size={15} />
           <span>属性</span>
-          <button className="panel-toggle" onClick={() => setCollapsed(true)} title="最小化"><ChevronsRight size={14} /></button>
+          <button className="panel-toggle" onClick={collapsePanel} title="最小化" aria-label="最小化属性面板"><ChevronsRight size={14} /></button>
         </div>
+        <FloatingPanelDock />
         <div className="panel-body">
           <div className="panel-empty">选中一个要素以查看和编辑属性。</div>
         </div>
@@ -58,10 +66,20 @@ export default function PropertyPanel() {
       <div className="panel-header">
         <Info size={15} />
         <span>属性</span>
-        <button className="panel-toggle" onClick={() => setCollapsed(true)} title="最小化"><ChevronsRight size={14} /></button>
+        <button className="panel-toggle" onClick={collapsePanel} title="最小化" aria-label="最小化属性面板"><ChevronsRight size={14} /></button>
       </div>
+      <FloatingPanelDock />
       <div className="panel-body">
         {measurement && <div className="prop-measurement">{measurement}</div>}
+        {p.parcelCode && (
+          <div className="prop-parcel-meta">
+            <span>编号：{p.parcelCode}</span>
+            {p.parcelGroup && <span>分区：{p.parcelGroup}</span>}
+            {typeof p.parcelAreaMu === 'number' && Number.isFinite(p.parcelAreaMu) && (
+              <span>面积：{p.parcelAreaMu.toFixed(1)} 亩</span>
+            )}
+          </div>
+        )}
 
         <label className="prop-field">
           <span>所属图层</span>
@@ -193,7 +211,9 @@ export default function PropertyPanel() {
           <span className="prop-static">{shapeLabel(p.shapeType)}</span>
         </div>
 
-        <button className="prop-delete-btn" onClick={() => dispatch({ type: 'DELETE_FEATURE', id: p.id })}>
+        <button className="prop-delete-btn" onClick={() => {
+          if (confirm(`确定删除「${p.name}」？`)) dispatch({ type: 'DELETE_FEATURE', id: p.id });
+        }}>
           删除此要素
         </button>
       </div>

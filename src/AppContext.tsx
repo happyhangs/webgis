@@ -1,8 +1,8 @@
 import { createContext, useContext, useReducer, useEffect, useRef, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import type { GeoJSONFeature, MapViewState, Layer } from './types';
-import { DEFAULT_BASEMAP, normalizeBasemapKey } from './basemaps';
-import { loadState, saveState } from './store';
+import type { GeoJSONFeature, MapViewState, Layer, CustomBasemapInput } from './types';
+import { DEFAULT_BASEMAP, normalizeBasemapKey, saveCustomBasemap } from './basemaps';
+import { loadRemoteState, loadState, saveRemoteState, saveState } from './store';
 
 const DEFAULT_LAYER_ID = '__default__';
 
@@ -13,10 +13,11 @@ interface AppState {
   currentLayerId: string;
   mapView: MapViewState;
   basemap: string;
+  customBasemap: CustomBasemapInput | null;
 }
 
-type Action =
-  | { type: 'SET_ALL'; layers: Layer[]; features: GeoJSONFeature[]; mapView: MapViewState; basemap: string }
+export type Action =
+  | { type: 'SET_ALL'; layers: Layer[]; features: GeoJSONFeature[]; mapView: MapViewState; basemap: string; customBasemap?: CustomBasemapInput | null }
   | { type: 'SET_FEATURES'; features: GeoJSONFeature[] }
   | { type: 'ADD_FEATURE'; feature: GeoJSONFeature }
   | { type: 'UPDATE_FEATURE'; id: string; updates: Partial<GeoJSONFeature['properties']> }
@@ -31,8 +32,10 @@ type Action =
   | { type: 'TOGGLE_LAYER'; id: string }
   | { type: 'SET_CURRENT_LAYER'; id: string }
   | { type: 'MOVE_FEATURE'; featureId: string; layerId: string }
+  | { type: 'COPY_FEATURE'; featureId: string; layerId: string }
   | { type: 'BATCH_ADD_FEATURES'; features: GeoJSONFeature[] }
-  | { type: 'CLEAR_LAYER_FEATURES'; layerId: string };
+  | { type: 'CLEAR_LAYER_FEATURES'; layerId: string }
+  | { type: 'SET_CUSTOM_BASEMAP'; customBasemap: CustomBasemapInput | null };
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
@@ -43,6 +46,7 @@ function reducer(state: AppState, action: Action): AppState {
         features: action.features,
         mapView: action.mapView,
         basemap: normalizeBasemapKey(action.basemap),
+        customBasemap: action.customBasemap ?? null,
         currentLayerId: action.layers[0]?.id || DEFAULT_LAYER_ID,
       };
 
@@ -141,6 +145,24 @@ function reducer(state: AppState, action: Action): AppState {
         ),
       };
 
+    case 'COPY_FEATURE': {
+      const source = state.features.find((f) => f.properties.id === action.featureId);
+      if (!source) return state;
+      const copy: GeoJSONFeature = {
+        ...JSON.parse(JSON.stringify(source)),
+        properties: {
+          ...JSON.parse(JSON.stringify(source.properties)),
+          id: crypto.randomUUID(),
+          name: `${source.properties.name} (副本)`,
+          layerId: action.layerId,
+        },
+      };
+      return { ...state, features: [...state.features, copy] };
+    }
+
+    case 'SET_CUSTOM_BASEMAP':
+      return { ...state, customBasemap: action.customBasemap };
+
     default:
       return state;
   }
@@ -164,39 +186,66 @@ export function AppProvider({ children }: { children: ReactNode }) {
     currentLayerId: DEFAULT_LAYER_ID,
     mapView: { center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM },
     basemap: DEFAULT_BASEMAP,
+    customBasemap: null,
   });
 
   const restored = useRef(false);
+  const readyToPersist = useRef(false);
   useEffect(() => {
     if (restored.current) return;
     restored.current = true;
-    const saved = loadState();
-    if (saved) {
+
+    const applySaved = (saved: NonNullable<ReturnType<typeof loadState>>) => {
       dispatch({
         type: 'SET_ALL',
         layers: saved.layers,
         features: saved.features,
         mapView: saved.mapView || { center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM },
         basemap: normalizeBasemapKey(saved.basemap),
+        customBasemap: saved.customBasemap ?? null,
       });
-    }
+      if (saved.customBasemap && saved.basemap === '__custom__') {
+        saveCustomBasemap(saved.customBasemap);
+      }
+    };
+
+    const local = loadState();
+    if (local) applySaved(local);
+
+    let cancelled = false;
+    loadRemoteState()
+      .then((remote) => {
+        if (cancelled) return;
+        if (remote && (!local || (remote.savedAt || 0) >= (local.savedAt || 0))) {
+          applySaved(remote);
+        } else if (local) {
+          saveRemoteState(local);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) readyToPersist.current = true;
+      });
+    return () => { cancelled = true; };
   }, []);
 
   const saveTimer = useRef<ReturnType<typeof setTimeout>>();
   const persist = useCallback(() => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
-      saveState({
+      const snapshot = {
         layers: state.layers,
         features: state.features,
         mapView: state.mapView,
         basemap: state.basemap,
-      });
+        customBasemap: state.customBasemap,
+      };
+      saveState(snapshot);
+      saveRemoteState(snapshot);
     }, 400);
-  }, [state.layers, state.features, state.mapView, state.basemap]);
+  }, [state.layers, state.features, state.mapView, state.basemap, state.customBasemap]);
 
   useEffect(() => {
-    if (restored.current) persist();
+    if (restored.current && readyToPersist.current) persist();
   }, [persist]);
 
   return (

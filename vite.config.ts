@@ -8,4 +8,18 @@ export default defineConfig({
     port: 5182,
     strictPort: true,
   },
+  envDir: '.',
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-leaflet': ['leaflet', '@geoman-io/leaflet-geoman-free'],
+          'vendor-icons': ['lucide-react'],
+          'vendor-geo': ['@turf/area', '@turf/length', 'geotiff', 'jszip'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600,
+  },
 });

@@ -127,3 +127,31 @@ export function convertFeatureCoords(feature: any, from: CoordSystem): any {
   }
   return f;
 }
+
+// ── Recursive coord shifting (generic, handles any nesting) ──
+
+/** Recursively shift all coords via a callback (lat, lng) => [lat, lng] */
+export function shiftCoords(coords: any, fn: (lat: number, lng: number) => [number, number]): any {
+  if (!Array.isArray(coords)) return coords;
+  if (typeof coords[0] === 'number') {
+    if (!Number.isFinite(coords[0]) || !Number.isFinite(coords[1])) return coords;
+    const [lat, lng] = fn(coords[1], coords[0]);
+    return [lng, lat];
+  }
+  return coords.map((c: any) => shiftCoords(c, fn));
+}
+
+/** Recursively shift feature geometry coordinates via callback */
+export function shiftFeatureCoords(feature: any, fn: (lat: number, lng: number) => [number, number]): any {
+  try {
+    return {
+      ...feature,
+      geometry: {
+        ...feature.geometry,
+        coordinates: shiftCoords(feature.geometry.coordinates, fn),
+      },
+    };
+  } catch {
+    return feature;
+  }
+}

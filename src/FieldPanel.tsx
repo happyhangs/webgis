@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
   ChevronsLeft,
-  ChevronsRight,
   Grid3x3,
   TrendingUp,
   Layers,
@@ -10,26 +9,45 @@ import {
 import area from '@turf/area';
 import { useAppContext } from './AppContext';
 import type { GeoJSONFeature } from './types';
+import { useDraggablePanel } from './useDraggablePanel';
+import { stopFloatingPanelButtonEvent, useFloatingPanels } from './FloatingPanelContext';
+
+function safeAreaMu(feature: GeoJSONFeature): number | null {
+  if (
+    typeof feature.properties.parcelAreaMu === 'number' &&
+    Number.isFinite(feature.properties.parcelAreaMu)
+  ) {
+    return feature.properties.parcelAreaMu;
+  }
+  try {
+    const value = area(feature) / 666.667;
+    return Number.isFinite(value) ? value : null;
+  } catch {
+    return null;
+  }
+}
 
 export default function FieldPanel() {
   const { state, dispatch } = useAppContext();
-  const [collapsed, setCollapsed] = useState(true);
+  const { isPanelOpen, closePanel } = useFloatingPanels();
   const [filterLayer, setFilterLayer] = useState<string>('__all__');
   const [sortBy, setSortBy] = useState<'name' | 'area'>('area');
+  const { panelRef, panelStyle, dragging, dragHandleProps, resizeHandle } = useDraggablePanel();
 
   const polygons = useMemo(() => {
     return state.features.filter((f) => {
       if (f.geometry.type !== 'Polygon' && f.geometry.type !== 'MultiPolygon') return false;
+      if (f.properties.parcelRole === 'boundary') return false;
       if (filterLayer !== '__all__' && f.properties.layerId !== filterLayer) return false;
       return true;
     });
   }, [state.features, filterLayer]);
 
   const sorted = useMemo(() => {
-    const list = polygons.map((f) => ({
-      feature: f,
-      areaMu: area(f) / 666.667, // m² → 亩
-    }));
+    const list = polygons.flatMap((f) => {
+      const areaMu = safeAreaMu(f);
+      return areaMu === null ? [] : [{ feature: f, areaMu }];
+    });
     if (sortBy === 'area') list.sort((a, b) => b.areaMu - a.areaMu);
     else list.sort((a, b) => a.feature.properties.name.localeCompare(b.feature.properties.name, 'zh'));
     return list;
@@ -38,16 +56,18 @@ export default function FieldPanel() {
   const totalMu = useMemo(() => sorted.reduce((s, f) => s + f.areaMu, 0), [sorted]);
 
   const layerStats = useMemo(() => {
-    const map = new Map<string, { name: string; count: number; mu: number }>();
+    const map = new Map<string, { id: string; name: string; count: number; mu: number }>();
     for (const f of state.features) {
       if (f.geometry.type !== 'Polygon' && f.geometry.type !== 'MultiPolygon') continue;
+      if (f.properties.parcelRole === 'boundary') continue;
       const lid = f.properties.layerId;
       const entry = map.get(lid);
-      const mu = area(f) / 666.667;
+      const mu = safeAreaMu(f);
+      if (mu === null) continue;
       if (entry) { entry.count++; entry.mu += mu; }
       else {
         const layer = state.layers.find((l) => l.id === lid);
-        map.set(lid, { name: layer?.name || '未知图层', count: 1, mu });
+        map.set(lid, { id: lid, name: layer?.name || '未知图层', count: 1, mu });
       }
     }
     return [...map.values()].sort((a, b) => b.mu - a.mu);
@@ -58,21 +78,26 @@ export default function FieldPanel() {
     (window as any).__webgis?.flyToFeature?.(feature);
   }, [dispatch]);
 
-  if (collapsed) {
-    return (
-      <button className="field-launcher" type="button" onClick={() => setCollapsed(false)} title="地块管理">
-        <Grid3x3 size={18} />
-        <span>地块</span>
-        <ChevronsRight size={14} />
-      </button>
-    );
-  }
+  if (!isPanelOpen('field')) return null;
 
   return (
-    <aside className="panel field-panel">
-      <div className="field-header">
+    <aside
+      ref={panelRef}
+      className={`panel floating-panel field-panel ${dragging ? 'is-dragging' : ''}`}
+      style={panelStyle}
+    >
+      <div className="field-header floating-panel-drag-handle" {...dragHandleProps}>
         <span className="field-title"><Grid3x3 size={15} /> 地块管理</span>
-        <button className="panel-toggle" onClick={() => setCollapsed(true)} title="最小化">
+        <button
+          className="panel-toggle"
+          onPointerDown={stopFloatingPanelButtonEvent}
+          onClick={(event) => {
+            stopFloatingPanelButtonEvent(event);
+            closePanel('field');
+          }}
+          title="最小化至属性栏"
+          aria-label="最小化地块管理面板"
+        >
           <ChevronsLeft size={14} />
         </button>
       </div>
@@ -92,8 +117,8 @@ export default function FieldPanel() {
         <div className="field-controls">
           <select className="field-select" value={filterLayer} onChange={(e) => setFilterLayer(e.target.value)}>
             <option value="__all__">所有图层</option>
-            {layerStats.map((s, i) => (
-              <option key={i} value={state.layers.find((l) => l.name === s.name)?.id || ''}>{s.name}</option>
+            {layerStats.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
             ))}
           </select>
           <button
@@ -134,13 +159,28 @@ export default function FieldPanel() {
                 title="点击定位到该地块"
               >
                 <span className="field-color" style={{ backgroundColor: feature.properties.color }} />
-                <span className="field-name">{feature.properties.name}</span>
+                <span className="field-name">
+                  {feature.properties.parcelCode && (
+                    <span className="field-code">{feature.properties.parcelCode}</span>
+                  )}
+                  <span className="field-name-text">
+                    {feature.properties.parcelGroup || feature.properties.name}
+                  </span>
+                </span>
                 <span className="field-mu">{areaMu.toFixed(1)} 亩</span>
               </div>
             ))}
           </div>
         )}
       </div>
+      <div {...resizeHandle('n')} />
+      <div {...resizeHandle('s')} />
+      <div {...resizeHandle('e')} />
+      <div {...resizeHandle('w')} />
+      <div {...resizeHandle('ne')} />
+      <div {...resizeHandle('nw')} />
+      <div {...resizeHandle('se')} />
+      <div {...resizeHandle('sw')} />
     </aside>
   );
 }
