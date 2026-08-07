@@ -1,154 +1,160 @@
 # 点位工具
 
-一个纯前端 WebGIS 点位与图形标注工作台，适合在本机进行地图浏览、点线面标注、测距测面、多图层管理，以及 GeoJSON/CSV/KML/SHP 数据导入导出。当前项目固定使用 `http://127.0.0.1:5182/` 作为本地开发入口。
+点位工具是一个本地 WebGIS 标注与农田地块识别工作台。前端使用 Vite、React、TypeScript、Leaflet 和 Geoman，适合在本机完成地图浏览、点线面标注、图层管理、轻量区划查看、农田分割结果查看和 YOLO 分割数据集导出。
 
-## 本次更新
+默认本地入口：
 
-- 界面改为更偏 GIS 工作台的审美：深色紧凑工具栏、浅色结构化面板、清晰的图层列表和属性编辑区。
-- 工具栏新增“点位工具”标识和当前要素数量徽标，绘制、编辑、删除、导入、导出、底图切换保持在首屏可见。
-- 面板统一 8px 圆角、细边框、状态色和滚动条样式，移动端会自动改为上下布局。
-- README 补充了启动方式、数据边界、导入格式、依赖和验证命令。
-- 补充 `shpjs` 到项目依赖，保证重新 clone 后 SHP 导入能力可复现。
-- 应用标题改为“点位工具”，并新增本地 SVG 图标 `public/point-tool-icon.svg`。
-- 内置图层删除最终 GeoJSON 超过 1MB 的数据文件，只保留轻量数据，避免误加载大文件导致卡顿。
-- 调用高德 Web 服务 API 增加地图内纵向悬浮导航面板：起点/终点支持地名或坐标，规划结果会生成一条可编辑、可导出的路线图层，并显示距离、耗时和步骤列表。
-- 新增“农田”工具按钮：以石河子为示例生成农田地块识别/划分图层，用于先跑通遥感图像分割后的 WebGIS 展示、编辑和导出流程。
+```text
+http://127.0.0.1:5182/
+```
 
-## 功能概览
+## 当前能力
 
-- 地图标注：支持点、线、面、矩形的新增、编辑、删除。
-- 属性编辑：可维护名称、描述、颜色、所属图层，并显示长度或面积。
-- 多图层管理：创建、重命名、删除图层，切换可见性，将标注移动到不同图层。
-- 底图切换：OpenStreetMap、高德标准、高德卫星、谷歌标准、谷歌卫星。
-- 搜索定位：支持 `39.9,116.4` 这类坐标输入，也支持通过高德地理编码搜索地名。
-- 驾车导航：在地图内纵向悬浮面板中输入起点和终点，调用高德路径规划接口生成路线，并显示距离、预计耗时和分步指引。
-- 农田识别示例：点击工具栏“农田”按钮，会自动定位到石河子并生成“石河子农田识别”图层，包含识别范围、地块边界、置信度和估算面积说明。
-- GPS 定位：调用浏览器 Geolocation，将当前位置落点到地图。
-- 内置数据：只保留最终 GeoJSON 小于 1MB 的轻量边界/区划数据，避免误加载大文件导致页面卡顿。
-- 数据导入：支持 GeoJSON、CSV 点位、KML、SHP ZIP。
-- 数据导出：支持导出 GeoJSON，以及点位 CSV。
-- 自动保存：通过 localStorage 保存地图视图、图层、底图和标注数据。
-
-## 技术栈
-
-| 类别 | 技术 |
-| --- | --- |
-| 框架 | Vite + React 18 + TypeScript |
-| 地图 | Leaflet |
-| 标注编辑 | @geoman-io/leaflet-geoman-free |
-| 空间计算 | Turf.js |
-| 图标 | lucide-react |
-| KML 解析 | @tmcw/togeojson |
-| SHP 解析 | shpjs |
+- 地图标注：新增、编辑、删除点、线、面和矩形，自动计算长度或面积。
+- 图层管理：创建、重命名、删除、隐藏、复制要素到其他图层，并按图层或要素名搜索。
+- 内置数据：提供北京市、上海市、广州市、成都市、武汉市、西安市轻量边界，以及 `public/data/counties/` 下的区县行政区划索引。
+- 数据导入导出：支持 GeoJSON、CSV 点位、KML 和 SHP ZIP 导入，支持 GeoJSON 和点位 CSV 导出。
+- 底图与定位：支持 OpenStreetMap、高德、谷歌、ESRI 卫星等底图，浏览器 GPS 可落点到地图。
+- 农田识别：前端面板可调用本地后端分割影像，生成 GeoJSON 地块图层；也可手工标定农田边界，直接上传后端训练，或备份 Ultralytics YOLO segmentation 数据集 ZIP。
+- 面积计算：支持地块面积自动计算与显示（m²/亩）。
+- 训练中心：`/train` 是二级训练页面，可手动上传已备份的 YOLO ZIP 并查看训练进度。
+- 自定义底图：支持 XYZ 瓦片模板自定义底图（WMS/WMTS 兼容）。
+- 视图截图分割：一键捕获当前地图视图并发送后端进行分割识别。
+- 浮窗系统：农田检测（FieldDetectPanel）、地块统计（FieldPanel）、属性编辑（PropertyPanel）从右侧属性栏停靠入口打开，支持拖动和最小化。
 
 ## 快速启动
 
-首次运行：
+前后端一起启动：
+
+```bash
+npm install
+npm run dev:all
+```
+
+或通过启动脚本：
+
+```bash
+node scripts/start-all.mjs
+```
+
+Windows 下也可以双击 `start.bat`，它会启动前端、后端并打开主界面。
+
+只启动前端：
 
 ```bash
 npm install
 npm start
 ```
 
-浏览器打开：
-
-```text
-http://127.0.0.1:5182/
-```
-
-Windows 下也可以双击 `start.bat`。脚本会先检查 5182 端口：如果服务已经在运行，就直接打开页面；如果服务未运行，就启动 Vite dev server 后再打开页面。
-
-## 常用命令
+后端农田分割服务可选启动：
 
 ```bash
-npm start
-npm run build
-npm run preview
+cd backend
+pip install -r requirements.txt
+python -m farmland_segmenter --serve
 ```
 
-`vite.config.ts` 已固定：
+后端默认地址：
+
+```text
+http://127.0.0.1:8765/
+```
+
+训练中心：
+
+```text
+http://127.0.0.1:5182/train
+```
+
+前端开发服务固定在 `vite.config.ts` 中：
 
 - `host: 127.0.0.1`
 - `port: 5182`
 - `strictPort: true`
 
-如果提示 `Port 5182 is already in use`，说明本机已有点位工具或其他服务占用该端口，先关闭对应进程后再启动。
+如果提示 `Port 5182 is already in use`，先关闭占用该端口的本地进程后再启动。
+
+## 常用命令
+
+```bash
+npm start
+npm run dev:all
+npm run build
+npm run preview
+```
+
+行政区划数据以 `public/data/counties/` 中的文件为准。
 
 ## 项目结构
 
 ```text
 src/
-├── main.tsx              # 入口，安装 DOM 安全修补
-├── App.tsx               # 主布局
-├── AppContext.tsx         # 全局状态管理
-├── MapView.tsx            # Leaflet + Geoman 地图核心
-├── Toolbar.tsx            # 工具栏、搜索、导入导出、底图切换
-├── NavigationPanel.tsx    # 高德驾车悬浮导航面板
-├── LayerPanel.tsx         # 图层面板 + 内置数据
-├── PropertyPanel.tsx      # 属性编辑面板
-├── basemaps.ts            # 底图配置
-├── domSafety.ts           # React + Leaflet DOM 冲突防护
-├── store.ts               # localStorage 读写
-├── types.ts               # TypeScript 类型
-├── index.css              # 全局界面样式
+├── main.tsx                 # React 入口和错误边界挂载
+├── App.tsx                  # 主布局：工具栏、图层栏、地图、属性栏
+├── TrainingPage.tsx         # /train 二级训练中心
+├── AppContext.tsx           # 全局状态 reducer 和 localStorage 持久化
+├── AppErrorBoundary.tsx     # 前端运行时错误兜底
+├── MapView.tsx              # Leaflet 地图、绘制编辑、坐标转换、地图 API 桥接
+├── Toolbar.tsx              # 绘制、搜索、导入导出、底图、GPS、自定义底图
+├── LayerPanel.tsx           # 图层管理、要素列表、行政区划加载
+├── PropertyPanel.tsx        # 要素属性编辑和浮窗停靠入口
+├── FieldDetectPanel.tsx     # 后端农田分割、人工标定、YOLO 导出与训练入口、视图截图分割
+├── FieldPanel.tsx           # 地块统计和定位浮窗
+├── FloatingPanelContext.tsx # 浮窗开关状态
+├── FloatingPanelDock.tsx    # 属性栏浮窗按钮条
+├── useDraggablePanel.ts     # 浮窗拖动 hook
+├── store.ts                 # localStorage 读写和旧数据归一化
+├── types.ts                 # 图层、要素、底图类型
+├── index.css                # 全局样式
 └── utils/
-    ├── amap.ts            # 高德地理编码搜索和驾车路径规划
-    ├── builtin.ts         # 内置图层定义
-    ├── farmland.ts        # 石河子农田地块识别示例生成器
-    ├── measure.ts         # 距离面积计算
-    ├── geojson.ts         # GeoJSON 导入导出
-    └── csv.ts             # CSV 导入导出
+    ├── builtin.ts           # 轻量内置图层定义
+    ├── coord.ts             # WGS84/GCJ02/BD09 坐标转换
+    ├── csv.ts               # CSV 导入导出
+    ├── featureStyle.ts      # 要素样式归一化
+    ├── geojson.ts           # GeoJSON 导入导出
+    ├── mapAPI.ts            # 地图 API 类型定义
+    ├── measure.ts           # 距离面积计算
+    └── yoloDataset.ts       # 浏览器端 YOLO 数据集导出
+
+backend/
+└── farmland_segmenter/      # Python YOLOv11-seg HTTP API、训练入口
+
+public/
+├── data/                    # 轻量城市边界和区县数据
+└── manifest.json            # PWA manifest
 ```
 
 ## 数据说明
 
-内置面板只保留最终 GeoJSON 小于 1MB 的轻量图层：
+- `public/data/*.json` 保留轻量示例边界。
+- `public/data/counties/_index_county.json` 是行政区划索引，当前覆盖 34 个省级条目，区县数据拆分为多个 JSON 文件按需加载。
+- `public/data/counties/` 为本地生成的行政区划拆分数据（体量较大），已被 `.gitignore` 忽略，不入库；新环境需本地生成或另行分发。
+- 大型 SHP 和转换结果默认作为本地数据处理，放在 `全国shp/` 或被 `.gitignore` 列出的 `public/data/*.json` 大文件路径下，不建议提交。
+- 如需加载大型 SHP 或 GeoJSON，优先使用工具栏导入功能按需加载。
+- 农田识别面板里的“直接训练”会在浏览器内临时生成 ZIP 并上传后端，不需要先下载文件。
+- “备份 ZIP”下载出的文件通常由浏览器保存到系统“下载/Downloads”目录；从 `/train` 页面训练时，从任意位置选择该 ZIP 都可以。
 
-| 类别 | 图层 |
-| --- | --- |
-| 轻量边界 | 南海诸岛、南海九段线、南海边界 |
-| 轻量区划 | 九段线 |
+## 外部服务
 
-超过 1MB 的内置 GeoJSON 已从 `public/data/` 删除，避免点击内置图层时一次性加载大文件。这里按浏览器实际加载的 `public/data/*.json` 体积判断，而不是按原始 SHP 组件体积判断；例如 `hyd1_4p.shp` 原始组件约 1020.5KB，但转换后的 `一级河流(面).json` 约 2.3MB，因此不放入默认内置面板。
-
-以下内容默认作为本地数据处理，不上传到 GitHub：
-
-- `全国shp/`
-- 大型转换结果：国界线、省/市/县界、铁路、高速、国道、省道、水系等超过 1MB 的 GeoJSON
-
-如需使用大型 SHP 或 GeoJSON，建议通过工具栏的 SHP/GeoJSON 导入功能按需加载。也可以将原始 SHP 数据放入 `全国shp/` 后运行转换脚本：
-
-```bash
-node scripts/convert-shp.mjs
-```
-
-## 导入格式
-
-- GeoJSON：支持 `.geojson` 和 `.json`。
-- CSV：主要用于点位数据。
-- KML：支持 `.kml`，会转换为 GeoJSON 要素后加入新图层。
-- SHP：建议使用包含 `.shp/.dbf/.prj` 等文件的 `.zip`。
-
-导入后的要素会被分配到新图层，并自动写入 localStorage。
-
-## 注意事项
-
-- 地名搜索依赖高德地理编码服务，需要网络可访问高德接口。
-- 驾车导航依赖高德路径规划 Web 服务 API，起终点请求参数按 `经度,纬度` 传入，返回路线会转换为本工具内部使用的 WGS-84 坐标后绘制。
-- “农田”按钮当前是石河子场景的前端示例分割结果，用来验证地块识别后的图层展示、属性编辑和导出；真实生产识别仍需接入卫星/无人机影像和图像分割模型服务。
-- 如果把项目公开到 GitHub，请确保高德 Key 已做域名、IP、额度等限制，或改造为自己的环境变量配置。
+- 高德静态图代理（`/amap-static`）依赖高德 Web 服务，需配置 `AMAP_KEY`：本地开发可复制 `.env.example` 为 `.env` 并填写（`start.bat` 与 `npm run dev:all` 均会读取），生产环境通过环境变量注入。获取方式：https://console.amap.com/
 - 谷歌底图在部分网络环境下可能无法加载，这是网络访问限制，不是前端代码错误。
-- 本工具定位为本地标注与轻量数据查看，不替代 ArcGIS/QGIS 的完整空间分析能力。
+- 如果公开发布项目，应先给高德 Key 配置域名、IP、额度等限制。
 
 ## 验证
 
-本次更新已执行：
+最小验证：
 
 ```bash
 npm run build
 ```
 
-构建通过时，Vite 可能提示部分 chunk 超过 500 kB，这是地图与空间处理依赖带来的体积提醒，不影响本地运行。
+后端语法验证：
+
+```bash
+python -m compileall backend\farmland_segmenter
+```
+
+构建通过时，Vite 可能提示主 chunk 超过 500 kB，这是地图、空间处理、GeoTIFF 和 YOLO 数据集导出依赖带来的体积提醒，不影响本地运行。
 
 ## License
 
