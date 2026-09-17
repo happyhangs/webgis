@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useAppContext } from '../AppContext';
 import { getDefaultFeatureStyle } from '../utils/featureStyle';
 import { AMAP_STATIC_SIZE, fitAmapStaticToWgsBounds, normalizeAmapStaticZoom } from '../utils/amapStatic';
@@ -91,6 +91,15 @@ export function useYoloInference(
   const { state, dispatch } = useAppContext();
   const [inferring, setInferring] = useState(false);
   const [inferenceMessage, setInferenceMessage] = useState('');
+  /** 用户请求停止：长批次在下一张瓦片前退出（已收集的结果仍会写入）。 */
+  const cancelRef = useRef(false);
+
+  const cancelInference = useCallback(() => {
+    if (!cancelRef.current) {
+      cancelRef.current = true;
+      setInferenceMessage('正在停止识别...已完成的部分会保留。');
+    }
+  }, []);
 
   /** POST 单张影像到 /segment，返回校验过的原始面要素（不做裁剪与写图层）。 */
   const postSegmentImage = useCallback(async (
@@ -237,8 +246,11 @@ export function useYoloInference(
     const total = plan.tiles.length;
     const collected: SegmentedItem[] = [];
     let failed = 0;
+    let done = 0;
+    let cancelled = false;
 
     for (let i = 0; i < total; i += 1) {
+      if (cancelRef.current) { cancelled = true; break; }
       const tile = plan.tiles[i];
       setInferenceMessage(`正在识别 ${label}：第 ${i + 1}/${total} 张瓦片（z${plan.zoom}）...`);
       try {
@@ -254,17 +266,20 @@ export function useYoloInference(
       } catch {
         failed += 1;
       }
+      done += 1;
       if (i < total - 1) {
         await new Promise((resolve) => setTimeout(resolve, TILE_THROTTLE_MS));
       }
     }
 
+    const stopNote = cancelled ? `，已手动停止（完成 ${done}/${total} 张）` : '';
+
     if (collected.length === 0) {
-      if (failed === total) {
+      if (!cancelled && failed === total) {
         throw new Error(`全部 ${total} 张瓦片识别失败，请检查本地后端与网络后重试。`);
       }
       setInferenceMessage(
-        `${label}：${total} 张瓦片中未发现地块${failed > 0 ? `（${failed} 张失败）` : ''}。可尝试降低置信度或调小最小面积。`,
+        `${label}：${done} 张瓦片中未发现地块${failed > 0 ? `（${failed} 张失败）` : ''}${stopNote}。可尝试降低置信度或调小最小面积。`,
       );
       return;
     }
@@ -279,7 +294,7 @@ export function useYoloInference(
     const lowResNote = plan.zoom < LOW_RES_ZOOM ? `；z${plan.zoom} 分辨率较低，建议改选更小范围` : '';
     writeResultFeatures(
       deduped.map(({ item, areaSquareMeters }) => ({ item, areaSquareMeters })),
-      `，由 ${total} 张瓦片合并${removed > 0 ? `（去掉 ${removed} 个重复）` : ''}${failed > 0 ? `，${failed} 张瓦片失败` : ''}${lowResNote}`,
+      `，由 ${done} 张瓦片合并${removed > 0 ? `（去掉 ${removed} 个重复）` : ''}${failed > 0 ? `，${failed} 张失败` : ''}${stopNote}${lowResNote}`,
     );
   }, [backendUrl, clipFeatures, postSegmentImage, rankItemsByArea, writeResultFeatures]);
 
@@ -299,6 +314,7 @@ export function useYoloInference(
       return;
     }
 
+    cancelRef.current = false;
     setInferring(true);
     try {
       const imageBlob = await createUploadedImageBlob(labelFile, 640);
@@ -330,6 +346,7 @@ export function useYoloInference(
       return;
     }
 
+    cancelRef.current = false;
     setInferring(true);
     try {
       const imageBlob = await fetchAmapStaticBlob(backendUrl, snapshot.amapCenter, snapshot.zoom);
@@ -362,6 +379,7 @@ export function useYoloInference(
       return;
     }
 
+    cancelRef.current = false;
     setInferring(true);
     try {
       // 大框选同样走瓦片批处理（单瓦片保持原单图路径）
@@ -392,6 +410,7 @@ export function useYoloInference(
 
   const handleBoundsAndInfer = useCallback(async (targetBounds: Bounds, label: string) => {
     setInferenceMessage(`正在获取 ${label} 的卫星影像...`);
+    cancelRef.current = false;
     setInferring(true);
     try {
       const plan = planAmapTileGrid(targetBounds, { maxTiles: MAX_TILES, minZoom: MIN_TILE_ZOOM });
@@ -429,6 +448,7 @@ export function useYoloInference(
     handleCaptureAndInfer,
     handleSelectAndInfer,
     handleBoundsAndInfer,
+    cancelInference,
     inferring,
     inferenceMessage,
   };

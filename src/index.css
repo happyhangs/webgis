@@ -1832,6 +1832,34 @@ input[type="range"]:focus-visible {
   background: #eaf4ed;
   color: var(--accent);
   font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.farm-yolo-message > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.farm-stop-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 8px;
+  border: 1px solid currentColor;
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  font-size: 11px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.farm-stop-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
 }
 
 .farm-yolo-message.error {

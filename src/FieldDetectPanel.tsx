@@ -55,6 +55,7 @@ export default function FieldDetectPanel({ onOpenTraining }: { onOpenTraining?: 
     handleCaptureAndInfer,
     handleSelectAndInfer,
     handleBoundsAndInfer,
+    cancelInference,
     inferring,
     inferenceMessage,
   } = useYoloInference(
@@ -299,6 +300,7 @@ export default function FieldDetectPanel({ onOpenTraining }: { onOpenTraining?: 
           captureDisabled={false}
           inferring={inferring}
           message={inferenceMessage}
+          onCancelInference={cancelInference}
           modelFile={modelFile}
           trainedModelPath={trainedModel.path}
           trainedModelName={trainedModel.name}

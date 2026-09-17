@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Camera, Crosshair, FileImage, FileUp, Loader2, MapPinned, PenLine, ScanSearch } from 'lucide-react';
+import { Camera, Crosshair, FileImage, FileUp, Loader2, MapPinned, PenLine, ScanSearch, Square } from 'lucide-react';
 import { adminCityNames, loadAdminIndex, loadAdminRegions } from '../utils/adminRegions';
 import type { AdminIndex, AdminRegion } from '../utils/adminRegions';
 import type { Bounds } from '../utils/yoloDataset';
@@ -8,6 +8,7 @@ interface YoloInferenceCardProps {
   captureDisabled: boolean;
   inferring: boolean;
   message: string;
+  onCancelInference: () => void;
   modelFile: File | null;
   trainedModelPath: string;
   trainedModelName: string;
@@ -38,6 +39,7 @@ export function YoloInferenceCard({
   captureDisabled,
   inferring,
   message,
+  onCancelInference,
   modelFile,
   trainedModelPath,
   trainedModelName,
@@ -171,7 +173,13 @@ export function YoloInferenceCard({
       </label>
       {message && (
         <div className={"farm-yolo-message" + (message.includes('失败') ? ' error' : ' success')} style={{ marginTop: 6 }}>
-          {message}
+          <span>{message}</span>
+          {inferring && (
+            <button className="farm-stop-btn" type="button" onClick={onCancelInference}
+              title="停止识别，已完成的部分会保留" aria-label="停止识别">
+              <Square size={11} />停止
+            </button>
+          )}
         </div>
       )}
     </div>
