@@ -1,5 +1,9 @@
 # Bugs And Risks
 
+## 2026-09-17 训练早停
+- Resolved: 训练全链路支持 `patience` 早停（默认 30，0 禁用）：`train_from_directory` → CLI `--patience` → server `/train` 表单 → 前端 `useYoloTraining`/`TrainingPage` 均已打通，提交 `f4452bf`。针对此前"最终 epoch 掉到 28.4% 仍跑满 100 轮"的浪费；`best.pt` 本来就保留最佳权重，早停只省时间不损精度。
+- Note: 数据增强无需调整：Ultralytics 默认增强已开，代码额外加了 `mixup=0.15`、`copy_paste=0.15`（分割任务有利），另有 <20 张数据集的离线 hflip/rot90 兜底。精度瓶颈仍在数据量与多样性。
+
 ## 2026-09-17 标注数据可视化改进
 - Resolved: 打开页面不再落在默认北京视图：启动后自动 `flyToBounds` 到全部要素范围；图层行新增 Crosshair 定位按钮；主页面标注模式显示顶部横幅（实时块数 + 完成按钮）。提交 `386125e`。
 - Resolved: 自查引入并修复 `flyToBounds` 的经纬度顺序 bug：`wgs2gcj` 返回 `[lat, lng]`，聚合时读反会飞到北纬 85°（无卫星图区域），且 `moveend` 会把坏位置持久化。同类风险：`normalizeMapView` 已存的历史脏 mapView（`[85.03, 44.51]`）在下次正确视图保存后自愈。
