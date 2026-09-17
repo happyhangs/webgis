@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { useAppContext } from '../AppContext';
 import { buildManualLabelUpdates, buildYoloDatasetZipFromImage, exportManualYoloDatasetToBlob } from '../utils/yoloDataset';
 import { fitAmapStaticToWgsBounds } from '../utils/amapStatic';
+import { DEFAULT_BACKEND_URL } from '../backendUrl';
 import type { Bounds, ManualDatasetSource } from '../utils/yoloDataset';
 import type { GeoJSONFeature } from '../types';
 
@@ -82,7 +83,7 @@ export async function buildAmapDataset(features: GeoJSONFeature[], bounds: Bound
   const fit = fitAmapStaticToWgsBounds(bounds);
   const [lng, lat] = fit.amapCenter;
   const response = await fetch(
-    `http://127.0.0.1:8765/amap-static?location=${lng.toFixed(6)},${lat.toFixed(6)}&zoom=${fit.zoom}&size=640*640&style=satellite`,
+    `${DEFAULT_BACKEND_URL}/amap-static?location=${lng.toFixed(6)},${lat.toFixed(6)}&zoom=${fit.zoom}&size=640*640&style=satellite`,
   );
   if (!response.ok) throw new Error('无法获取与历史标注匹配的卫星训练影像。');
   return buildYoloDatasetZipFromImage(await response.blob(), features, fit.bounds, `amap_labels_z${fit.zoom}`);
@@ -91,7 +92,7 @@ export async function buildAmapDataset(features: GeoJSONFeature[], bounds: Bound
 export async function persistDatasetFile(file: File): Promise<void> {
   const form = new FormData();
   form.append('dataset', file, file.name);
-  const response = await fetch('http://127.0.0.1:8765/datasets', { method: 'POST', body: form });
+  const response = await fetch(`${DEFAULT_BACKEND_URL}/datasets`, { method: 'POST', body: form });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(payload.error || '真实标注集保存失败。');
 }

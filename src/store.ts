@@ -1,9 +1,9 @@
 import type { FeatureProperties, GeoJSONFeature, Layer, MapViewState, PersistedState, CustomBasemapInput } from './types';
 import { normalizeBasemapKey } from './basemaps';
 import { normalizeFeatureStyle } from './utils/featureStyle';
+import { DEFAULT_BACKEND_URL } from './backendUrl';
 
 const STORAGE_KEY = 'webgis_state';
-const DEFAULT_BACKEND_URL = 'http://127.0.0.1:8765';
 const DEFAULT_LAYER_ID = '__default__';
 const DEFAULT_LAYER: Layer = { id: DEFAULT_LAYER_ID, name: '默认图层', visible: true };
 const DEFAULT_MAP_VIEW: MapViewState = { center: [39.9042, 116.4074], zoom: 10 };

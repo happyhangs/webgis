@@ -6,8 +6,8 @@ import { readableTrainError } from '../utils/trainError';
 import type { Bounds, ManualDatasetSource } from '../utils/yoloDataset';
 import type { GeoJSONFeature } from '../types';
 import { buildAmapDataset } from './useYoloExport';
+import { DEFAULT_BACKEND_URL } from '../backendUrl';
 
-const DEFAULT_BACKEND_URL = 'http://127.0.0.1:8765';
 const LAST_MODEL_PATH_KEY = 'webgis:lastTrainedModelPath';
 const LAST_MODEL_NAME_KEY = 'webgis:lastTrainedModelName';
 

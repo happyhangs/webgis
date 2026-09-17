@@ -4,6 +4,7 @@ import { useDraggablePanel } from './useDraggablePanel';
 import { stopFloatingPanelButtonEvent, useFloatingPanels } from './FloatingPanelContext';
 import { useManualLabelLayer } from './hooks/useManualLabelLayer';
 import { useAppContext } from './AppContext';
+import { DEFAULT_BACKEND_URL } from './backendUrl';
 import { buildAmapDataset, persistDatasetFile } from './hooks/useYoloExport';
 import { useYoloInference } from './hooks/useYoloInference';
 import { YoloInferenceCard } from './components/YoloInferenceCard';
@@ -13,7 +14,6 @@ import type { AdminRegion } from './utils/adminRegions';
 import type { GeoJSONFeature, TrainingMapDraft } from './types';
 import type { MapAPI } from './utils/mapAPI';
 
-const DEFAULT_BACKEND_URL = 'http://127.0.0.1:8765';
 const ADMIN_RANGE_LAYER_NAME = '行政区识别范围';
 
 type OpenTraining = (dataset?: File | null, mapDraft?: TrainingMapDraft | null) => void;

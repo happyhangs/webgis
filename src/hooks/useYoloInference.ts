@@ -7,8 +7,8 @@ import { createUploadedImageBlob } from '../utils/yoloDataset';
 import type { GeoJSONFeature } from '../types';
 import type { Bounds, ManualDatasetSource } from '../utils/yoloDataset';
 import type { MapViewSnapshot } from '../utils/mapAPI';
+import { DEFAULT_BACKEND_URL } from '../backendUrl';
 
-const DEFAULT_BACKEND_URL = 'http://127.0.0.1:8765';
 const RESULT_LAYER_NAME = '农田模型识别';
 
 type RawYoloFeature = {

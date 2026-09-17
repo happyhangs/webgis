@@ -1,3 +1,4 @@
+import { DEFAULT_BACKEND_URL } from './backendUrl';
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react';
 import {
   Activity,
@@ -97,7 +98,6 @@ interface DraftView {
   y: number;
 }
 
-const DEFAULT_BACKEND_URL = 'http://127.0.0.1:8765';
 const MANUAL_LABEL_LAYER_NAME = '农田人工标定';
 const DEFAULT_DRAFT_COLOR = '#2f8f5b';
 const DEFAULT_DRAFT_SIZE = 520;
