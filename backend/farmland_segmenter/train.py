@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import importlib.util
 import json
 import os
@@ -214,6 +215,15 @@ def _image_files(directory: Path) -> list[Path]:
     )
 
 
+def _file_sha1(path: Path) -> str:
+    """内容哈希（分块读取，避免大文件占内存）。用于跨数据集的稳定验证集切分。"""
+    digest = hashlib.sha1()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def _clip_polygon_to_rect(
     points: list[tuple[float, float]],
     rect: tuple[float, float, float, float],
@@ -276,7 +286,12 @@ def _crop_yolo_labels(text: str, rect: tuple[float, float, float, float]) -> str
 
 
 def _ensure_validation_split(dataset_dir: Path) -> None:
-    """Create an image-disjoint validation set; spatially split a single source image."""
+    """Create an image-disjoint validation set; spatially split a single source image.
+
+    切分基于影像内容哈希的固定种子洗牌：同一张影像无论在哪次导出的数据集中出现，
+    都会分到同一侧（train/val）。这样验证集跨训练轮次保持稳定，mAP 才可比；
+    且 val 成员不随导出批次命名顺序漂移。
+    """
     train_images = dataset_dir / "images" / "train"
     train_labels = dataset_dir / "labels" / "train"
     val_images = dataset_dir / "images" / "val"
@@ -290,12 +305,44 @@ def _ensure_validation_split(dataset_dir: Path) -> None:
     images = _image_files(train_images)
     paired_images = [image for image in images if (train_labels / f"{image.stem}.txt").exists()]
     if len(paired_images) >= 2:
-        val_count = max(1, round(len(paired_images) * 0.2))
-        for image in paired_images[-val_count:]:
-            label = train_labels / f"{image.stem}.txt"
-            shutil.move(str(image), val_images / image.name)
-            if label.exists():
-                shutil.move(str(label), val_labels / label.name)
+        # 影像内容哈希 → 注册表（跨数据集稳定）；注册表损坏时直接用哈希作种子
+        registry_path = dataset_dir / ".val_split_registry.json"
+        hashes: dict[str, str] = {}
+        for image in paired_images:
+            hashes[image.name] = _file_sha1(image)
+        assigned: dict[str, str] = {}
+        if registry_path.exists():
+            try:
+                registry = json.loads(registry_path.read_text(encoding="utf-8"))
+                if isinstance(registry, dict):
+                    assigned = {k: str(v) for k, v in registry.items() if isinstance(v, str)}
+            except (json.JSONDecodeError, OSError):
+                assigned = {}
+        for name, digest in hashes.items():
+            if name not in assigned:
+                assigned[name] = "val" if int(digest[:8], 16) % 5 == 0 else "train"
+        try:
+            registry_path.write_text(json.dumps(assigned, ensure_ascii=False, indent=1), encoding="utf-8")
+        except OSError:
+            pass
+        val_names = {name for name, side in assigned.items() if side == "val"}
+        # 保底：哈希比例失真时至少留 1 张验证影像
+        if not val_names:
+            fallback = sorted(hashes.items(), key=lambda kv: kv[1])[0][0]
+            val_names = {fallback}
+            assigned[fallback] = "val"
+        if len(val_names) == len(hashes):
+            # 全被划到 val 的极端情况：把前 80% 拉回 train，避免空训练集
+            ordered = sorted(hashes.items(), key=lambda kv: kv[1])
+            for name, _ in ordered[: max(1, round(len(ordered) * 0.8))]:
+                assigned[name] = "train"
+            val_names = {name for name, side in assigned.items() if side == "val"}
+        for image in paired_images:
+            if image.name in val_names:
+                label = train_labels / f"{image.stem}.txt"
+                shutil.move(str(image), val_images / image.name)
+                if label.exists():
+                    shutil.move(str(label), val_labels / label.name)
         return
 
     image = paired_images[0]
