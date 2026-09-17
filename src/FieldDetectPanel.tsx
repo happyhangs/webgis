@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChevronsLeft, Database, Loader2, Map as MapIcon, ScanEye } from 'lucide-react';
+import { Check, ChevronsLeft, Database, Loader2, Map as MapIcon, ScanEye } from 'lucide-react';
 import { useDraggablePanel } from './useDraggablePanel';
 import { stopFloatingPanelButtonEvent, useFloatingPanels } from './FloatingPanelContext';
 import { useManualLabelLayer } from './hooks/useManualLabelLayer';
 import { useAppContext } from './AppContext';
-import { DEFAULT_BACKEND_URL } from './backendUrl';
 import { buildAmapDataset, persistDatasetFile } from './hooks/useYoloExport';
 import { useYoloInference } from './hooks/useYoloInference';
 import { YoloInferenceCard } from './components/YoloInferenceCard';
@@ -34,7 +33,7 @@ export default function FieldDetectPanel({ onOpenTraining }: { onOpenTraining?: 
   const { state, dispatch } = useAppContext();
   const { isPanelOpen, closePanel } = useFloatingPanels();
   const { panelRef, panelStyle, dragging, dragHandleProps, resizeHandle } = useDraggablePanel();
-  const { manualLabelFeatures, bounds } = useManualLabelLayer();
+  const { manualLabelFeatures, bounds, labelMode, activateLabelLayer, deactivateLabelLayer } = useManualLabelLayer();
 
   const [modelFile, setModelFile] = useState<File | null>(null);
   const [trainedModel, setTrainedModel] = useState(readLastTrainedModel);
@@ -48,6 +47,7 @@ export default function FieldDetectPanel({ onOpenTraining }: { onOpenTraining?: 
   const [localImageBounds, setLocalImageBounds] = useState<Bounds | null>(null);
   const [localImageStatus, setLocalImageStatus] = useState('');
   const [selectingLocalBounds, setSelectingLocalBounds] = useState(false);
+  const [homeLabeling, setHomeLabeling] = useState(false);
   const localPreviewUrlRef = useRef('');
 
   const {
@@ -228,34 +228,50 @@ export default function FieldDetectPanel({ onOpenTraining }: { onOpenTraining?: 
     await handleBoundsAndInfer(region.bounds, region.name);
   }, [handleAdminRegionSelected, handleBoundsAndInfer]);
 
-  const handleOpenMapDraftTraining = useCallback(async () => {
+  const handleFinishHomeLabeling = useCallback(() => {
+    deactivateLabelLayer();
+    setHomeLabeling(false);
+    dispatch({ type: 'SET_CURRENT_LAYER', id: '__default__' });
+  }, [deactivateLabelLayer, dispatch]);
+
+  const handleOpenHomeLabeling = useCallback(async () => {
     const api = (window as Window & { __webgis?: MapAPI }).__webgis;
     setSelectingMapDraft(true);
-    setTrainingMessage('请在地图上拖拽框选训练区域，按 Esc 可取消。');
+    setTrainingMessage('请在地图上拖拽框选标注区域，按 Esc 可取消。');
     try {
       const snapshot = await (api?.selectMapSnapshot?.() || Promise.resolve(api?.getMapSnapshot?.() || null));
       if (!snapshot) {
         setTrainingMessage('未选择地图区域。');
         return;
       }
-      const [lng, lat] = snapshot.amapCenter;
-      const zoom = snapshot.zoom;
-      const mapDraft: TrainingMapDraft = {
-        imageUrl: `${DEFAULT_BACKEND_URL}/amap-static?location=${lng.toFixed(6)},${lat.toFixed(6)}&zoom=${zoom}&size=640*640&style=satellite`,
-        amapCenter: [lng, lat],
-        bounds: snapshot.bounds,
-        zoom,
-        sourceName: `地图选区 z${zoom}`,
-        createdAt: Date.now(),
-      };
-      setTrainingMessage('已把地图选区转入训练中心。');
-      onOpenTraining?.(null, mapDraft);
+      const satBasemap = state.basemap === 'amap_sat' || state.basemap === 'amap_hybrid' || state.basemap === 'google_sat';
+      setTrainingMessage(
+        satBasemap
+          ? '已进入标注模式：请沿农田边界连续勾画地块，自动编号。'
+          : '已进入标注模式：请沿农田边界连续勾画地块。提示：切换到卫星底图更容易看清田块边界。',
+      );
+      // 飞到选区（selectionBounds 为用户拖框的真实范围；无则用整幅视图）
+      const target = snapshot.selectionBounds ?? snapshot.bounds;
+      window.setTimeout(() => {
+        api?.flyTo((target.south + target.north) / 2, (target.west + target.east) / 2);
+      }, 0);
+      // 直接在主页面进入农田人工标定层连续标注模式
+      activateLabelLayer();
+      setHomeLabeling(true);
     } catch (error) {
       setTrainingMessage(error instanceof Error ? error.message : '地图选区读取失败。');
     } finally {
       setSelectingMapDraft(false);
     }
-  }, [onOpenTraining]);
+  }, [activateLabelLayer, state.basemap]);
+
+  useEffect(() => {
+    // 主页面标注模式进行中时关闭面板，自动结束标注，避免状态悬空
+    if (!isPanelOpen('farm') && (homeLabeling || labelMode)) {
+      deactivateLabelLayer();
+      setHomeLabeling(false);
+    }
+  }, [isPanelOpen, homeLabeling, labelMode, deactivateLabelLayer]);
 
   if (!isPanelOpen('farm')) return null;
 
@@ -313,11 +329,18 @@ export default function FieldDetectPanel({ onOpenTraining }: { onOpenTraining?: 
             {preparingDataset ? <Loader2 size={14} className="farm-spin" /> : <Database size={14} />}
             {preparingDataset ? '正在整理训练集...' : `用现有 ${manualLabelFeatures.length} 个标注训练`}
           </button>
-          <button className="farm-secondary-btn" type="button" onClick={handleOpenMapDraftTraining}
+          <button className="farm-secondary-btn" type="button" onClick={handleOpenHomeLabeling}
             disabled={preparingDataset || selectingMapDraft} style={{ width: '100%', marginTop: 6 }}>
             {selectingMapDraft ? <Loader2 size={14} className="farm-spin" /> : <MapIcon size={14} />}
             {selectingMapDraft ? '等待地图框选...' : '框选地图并去标注'}
           </button>
+          {homeLabeling && (
+            <button className="farm-primary-btn" type="button" onClick={handleFinishHomeLabeling}
+              style={{ width: '100%', marginTop: 6 }}>
+              <Check size={14} />
+              {`完成标注（已标 ${manualLabelFeatures.length} 块）`}
+            </button>
+          )}
           <button className="farm-secondary-btn" type="button" onClick={() => onOpenTraining?.(null, null)}
             disabled={preparingDataset || selectingMapDraft} style={{ width: '100%', marginTop: 6 }}>
             打开训练中心

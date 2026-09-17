@@ -237,10 +237,12 @@ export default function Toolbar({ onOpenTraining, visible }: { onOpenTraining?: 
 
       switch (tool) {
         case 'Marker':
-          a.enableDraw('Marker');
-          break;
         case 'Line':
-          a.enableDraw('Line');
+          if ((window as any).__webgis_labelMode) {
+            alert('当前处于标注模式，请先在农田识别面板点击“完成标注”。');
+            return;
+          }
+          a.enableDraw(tool);
           break;
         case 'Polygon':
         case 'Rectangle':
