@@ -1,9 +1,16 @@
 # Bugs And Risks
 
+## 2026-09-17 浏览器级验证
+- Resolved: 已用真实浏览器完成桌面交互回归：绘制点/面、选中、属性编辑、删除（含原生 confirm）、三个浮窗、天气实时查询、GeoJSON 导出下载，全程零控制台错误。
+- Resolved: 移动端 390x844 视口验证通过：无水平溢出、工具栏正常换行（30px 行高 × 11 按钮）、地图 428px 可用、面板无重叠——WEBGIS_PLAN 移动端验收标准补验完成。
+- Resolved: 绘制点时 `applyStyle` 对 Geoman 返回的 `L.Marker` 调用 `setStyle` 抛 TypeError，导致点要素无法保存（`pm:create` 中断）。已按图层类型分派修复（Marker→setIcon，Path→setStyle），提交 `5a48db2`。此前该 bug 使"新增点"完全不可用，单测无法覆盖，仅浏览器实测能发现。
+- Note: `App.tsx` 已改为条件渲染训练页（此前审计记录的"覆盖渲染"问题实际已不存在）。
+
 ## 2026-09-17 仓库历史瘦身
-- Active: 仓库历史曾达 942MB（`webgis.zip` 168MB、`webgis/全生命周期*/` 照片 183MB、`public/data/` 大 GeoJSON 93MB 等）。已提交 `webgis/` 停止跟踪（`c1c22c1`），并用 `git filter-repo --strip-blobs-bigger-than 5M` 重写历史，完成后需 `git push origin --force --all` 覆盖远端。
+- Resolved: 仓库历史曾达 942MB（`webgis.zip` 168MB、`webgis/全生命周期*/` 照片 183MB、`public/data/` 大 GeoJSON 93MB 等）。已提交 `webgis/` 停止跟踪（旧 `c1c22c1`），并用 `git filter-repo --strip-blobs-bigger-than 5M` 重写历史；新仓库仅 4.45MB，`git fsck` 干净。
+- Resolved: 已 `git push origin --force --all` 覆盖远端（master 强推 + codex/地块分割 新分支）；中途 Clash Verge（127.0.0.1:7897）上游隧道断开导致推送失败，代理恢复后完成。
 - Mitigation: 重写前的完整历史备份在 `E:/codex/webgis-backup.bundle`（364MB），需要恢复旧提交时执行 `git clone E:/codex/webgis-backup.bundle`。
-- Note: 重写后所有旧 commit hash 变化；`重点研发/` 现场照片和 `webgis/` 本地数据仍保留在磁盘（仅退出跟踪）。
+- Note: 重写后所有旧 commit hash 变化；其他机器上的旧 clone 需重新 clone，不要 pull merge。`重点研发/` 现场照片和 `webgis/` 本地数据仍保留在磁盘（仅退出跟踪）。
 
 ## 2026-09-17 后端测试
 - Resolved: `backend/tests/test_server.py` 补齐后端测试（19 个：表单/查询解析、推理几何、HTTP 集成、ZIP 路径穿越防护），用 `D:/ProgramData/anaconda31/python.exe -m pytest tests/`（backend 目录下）运行；该环境才有 torch 2.5.1，系统 `python`/`pip` 是 3.7 且无依赖。
