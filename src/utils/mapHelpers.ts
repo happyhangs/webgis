@@ -78,6 +78,19 @@ export function emitFeatureClick(feature: GeoJSONFeature) {
 export function applyStyle(layer: any, feature: GeoJSONFeature, selected: boolean) {
   const p = feature.properties;
   if (p.shapeType === 'Marker') {
+    // Geoman 绘制点产生 L.Marker（没有 setStyle）；渲染链路用 circleMarker。
+    // 两种情况都兼容：Marker 用 setIcon 重设样式，Path 类沿用 setStyle。
+    if (typeof layer.setStyle !== 'function') {
+      if (typeof layer.setIcon === 'function') {
+        layer.setIcon(L.divIcon({
+          className: '',
+          html: `<span style="display:block;width:${selected ? 20 : 16}px;height:${selected ? 20 : 16}px;border-radius:50%;background:${p.color};border:${selected ? 3 : 2}px solid ${selected ? '#ff0' : '#fff'};box-sizing:border-box;box-shadow:0 1px 4px rgba(0,0,0,.4)"></span>`,
+          iconSize: [selected ? 20 : 16, selected ? 20 : 16],
+          iconAnchor: [selected ? 10 : 8, selected ? 10 : 8],
+        }));
+      }
+      return;
+    }
     layer.setStyle({
       radius: selected ? 10 : 8,
       fillColor: p.color,
