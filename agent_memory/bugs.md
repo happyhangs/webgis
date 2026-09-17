@@ -1,5 +1,14 @@
 # Bugs And Risks
 
+## 2026-09-17 仓库历史瘦身
+- Active: 仓库历史曾达 942MB（`webgis.zip` 168MB、`webgis/全生命周期*/` 照片 183MB、`public/data/` 大 GeoJSON 93MB 等）。已提交 `webgis/` 停止跟踪（`c1c22c1`），并用 `git filter-repo --strip-blobs-bigger-than 5M` 重写历史，完成后需 `git push origin --force --all` 覆盖远端。
+- Mitigation: 重写前的完整历史备份在 `E:/codex/webgis-backup.bundle`（364MB），需要恢复旧提交时执行 `git clone E:/codex/webgis-backup.bundle`。
+- Note: 重写后所有旧 commit hash 变化；`重点研发/` 现场照片和 `webgis/` 本地数据仍保留在磁盘（仅退出跟踪）。
+
+## 2026-09-17 后端测试
+- Resolved: `backend/tests/test_server.py` 补齐后端测试（19 个：表单/查询解析、推理几何、HTTP 集成、ZIP 路径穿越防护），用 `D:/ProgramData/anaconda31/python.exe -m pytest tests/`（backend 目录下）运行；该环境才有 torch 2.5.1，系统 `python`/`pip` 是 3.7 且无依赖。
+- Resolved: 前端后端地址收敛到 `src/backendUrl.ts`（支持 `VITE_BACKEND_URL` 覆盖），6 个文件的硬编码 `127.0.0.1:8765` 已替换（提交 `99b8650`）。
+
 ## 2026-08-07 模型精度
 - Resolved: 新数据集（139 张多区域）训练出的 `xinjiang_v1_20260807_150321.pt` 使验证指标从旧模型的 0.0% 提升到最佳 mAP50 50.7% / mAP50-95 26.1%；默认置信度 0.25 下真实推理可检出地块（7 vs 真实 6，最高置信度 0.80）。
 - Active: 最终 epoch（100）指标低于中期最佳（mAP50 28.4% vs 50.7%），存在后期过拟合/小验证集波动；当前保存的 `best.pt` 为训练过程最优，实际使用以最佳指标为准。进一步稳定精度需更多跨区域/跨时相数据。
@@ -11,7 +20,7 @@
 - Resolved: `start.bat` 硬编码高德 `AMAP_KEY` 已迁移到本地 `.env`（已加入 `.gitignore`）；`start.bat` 与 `scripts/start-all.mjs` 均会读取 `.env`，不再把密钥写进仓库。
 - Resolved: `public/data/counties/`（约 228MB / 309 文件）已加入 `.gitignore`，`git add -A` 不再入库。
 - Resolved: 全部代码/配置/文档已按功能分组提交（`74f549b`、`b1440ab`），未跟踪文件归零；`.env`、`backend/data/`、`public/data/counties/` 均不入库。
-- Active: `重点研发/` 下 24 张现场照片的删除与 1 个 KML 修改仍未提交，等待用户确认删除或恢复。
+- Resolved: `重点研发/合并导出.kml` 已确认为废弃数据并清空（内容标注为 Unused，提交 `0fb43d8`，完整内容可从 bundle 备份或历史恢复）。
 
 ## 2026-07-15 手动标注吸附
 - Resolved: 手动地块标注不再自动吸附已有顶点或边中点，连续完成一个地块后也不会恢复默认吸附配置。
