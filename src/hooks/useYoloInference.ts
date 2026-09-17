@@ -3,7 +3,7 @@ import { useAppContext } from '../AppContext';
 import { getDefaultFeatureStyle } from '../utils/featureStyle';
 import { AMAP_STATIC_SIZE, fitAmapStaticToWgsBounds, normalizeAmapStaticZoom } from '../utils/amapStatic';
 import { clipPolygonCoordinatesToBounds, polygonAreaSquareMeters } from '../utils/geoBounds';
-import { dedupeOverlappingParcels, planAmapTileGrid } from '../utils/tileBatch';
+import { dedupeOverlappingParcels, intersectBounds, planAmapTileGrid } from '../utils/tileBatch';
 import type { TileGridPlan } from '../utils/tileBatch';
 import { wgs2gcj } from '../utils/coord';
 import { createUploadedImageBlob } from '../utils/yoloDataset';
@@ -14,7 +14,13 @@ import { DEFAULT_BACKEND_URL } from '../backendUrl';
 
 const RESULT_LAYER_NAME = '农田模型识别';
 /** 瓦片批处理的张数上限；超过则规划阶段自动降低缩放。 */
-const MAX_TILES = 64;
+const MAX_TILES = 256;
+/** 瓦片规划的最低缩放：再低地块像素过小，宁可不识别。 */
+const MIN_TILE_ZOOM = 12;
+/** 低于该缩放的识别结果精度下降，完成消息中提示。 */
+const LOW_RES_ZOOM = 14;
+/** 瓦片间节流间隔（毫秒），避免连续请求压垮本地代理与高德瓦片服务。 */
+const TILE_THROTTLE_MS = 150;
 
 type RawYoloFeature = {
   type: 'Feature';
@@ -225,8 +231,9 @@ export function useYoloInference(
   /**
    * 瓦片批处理：把大范围按网格逐张识别，合并结果并按重叠去重。
    * 单张瓦片失败不中断整体，全部失败才报错。
+   * outerBounds 用于把每张瓦片结果再裁剪回整体范围（如行政区边界）。
    */
-  const runTiledSegment = useCallback(async (plan: TileGridPlan, label: string) => {
+  const runTiledSegment = useCallback(async (plan: TileGridPlan, label: string, outerBounds?: Bounds | null) => {
     const total = plan.tiles.length;
     const collected: SegmentedItem[] = [];
     let failed = 0;
@@ -242,9 +249,13 @@ export function useYoloInference(
         const resized = await createUploadedImageBlob(jpegFile, AMAP_STATIC_SIZE);
         if (!resized) throw new Error('瓦片影像预处理失败。');
         const rawFeatures = await postSegmentImage(resized, tile.bounds, `tile_${i + 1}.jpg`);
-        collected.push(...rankItemsByArea(clipFeatures(rawFeatures, tile.bounds)));
+        const clipBounds = outerBounds ? (intersectBounds(tile.bounds, outerBounds) ?? tile.bounds) : tile.bounds;
+        collected.push(...rankItemsByArea(clipFeatures(rawFeatures, clipBounds)));
       } catch {
         failed += 1;
+      }
+      if (i < total - 1) {
+        await new Promise((resolve) => setTimeout(resolve, TILE_THROTTLE_MS));
       }
     }
 
@@ -265,9 +276,10 @@ export function useYoloInference(
       confidence: Number(item.properties?.parcelConfidence || 0),
     })));
     const removed = collected.length - deduped.length;
+    const lowResNote = plan.zoom < LOW_RES_ZOOM ? `；z${plan.zoom} 分辨率较低，建议改选更小范围` : '';
     writeResultFeatures(
       deduped.map(({ item, areaSquareMeters }) => ({ item, areaSquareMeters })),
-      `，由 ${total} 张瓦片合并${removed > 0 ? `（去掉 ${removed} 个重复）` : ''}${failed > 0 ? `，${failed} 张瓦片失败` : ''}`,
+      `，由 ${total} 张瓦片合并${removed > 0 ? `（去掉 ${removed} 个重复）` : ''}${failed > 0 ? `，${failed} 张瓦片失败` : ''}${lowResNote}`,
     );
   }, [backendUrl, clipFeatures, postSegmentImage, rankItemsByArea, writeResultFeatures]);
 
@@ -352,6 +364,15 @@ export function useYoloInference(
 
     setInferring(true);
     try {
+      // 大框选同样走瓦片批处理（单瓦片保持原单图路径）
+      const selection = snapshot.selectionBounds ?? snapshot.bounds;
+      const plan = snapshot.selectionBounds
+        ? planAmapTileGrid(selection, { maxTiles: MAX_TILES, minZoom: MIN_TILE_ZOOM })
+        : null;
+      if (plan && plan.tiles.length > 1) {
+        await runTiledSegment(plan, '框选区域', selection);
+        return;
+      }
       const imageBlob = await fetchAmapStaticBlob(backendUrl, snapshot.amapCenter, snapshot.zoom);
       const jpegFile = await blobToJpegFile(imageBlob, 'map_selection');
       const resized = await createUploadedImageBlob(jpegFile, 640);
@@ -367,16 +388,16 @@ export function useYoloInference(
     } finally {
       setInferring(false);
     }
-  }, [backendUrl, runSegment]);
+  }, [backendUrl, runSegment, runTiledSegment]);
 
   const handleBoundsAndInfer = useCallback(async (targetBounds: Bounds, label: string) => {
     setInferenceMessage(`正在获取 ${label} 的卫星影像...`);
     setInferring(true);
     try {
-      const plan = planAmapTileGrid(targetBounds, { maxTiles: MAX_TILES });
+      const plan = planAmapTileGrid(targetBounds, { maxTiles: MAX_TILES, minZoom: MIN_TILE_ZOOM });
       if (plan && plan.tiles.length > 1) {
-        // 大范围：分瓦片逐张识别，合并去重
-        await runTiledSegment(plan, label);
+        // 大范围：分瓦片逐张识别，合并去重（结果仍裁剪回行政区范围）
+        await runTiledSegment(plan, label, targetBounds);
         return;
       }
       // 小范围（或区域过大无法规划）：整幅单图识别

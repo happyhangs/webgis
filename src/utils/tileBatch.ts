@@ -27,6 +27,8 @@ export interface TileGridOptions {
   maxTiles?: number;
   /** 候选缩放（从高到低）。 */
   zoomPreference?: number[];
+  /** 允许的最低缩放；低于此缩放的方案直接放弃（返回 null）。 */
+  minZoom?: number;
   /** 相邻瓦片重叠比例（0~0.5），用于避免地块恰好被切在瓦片边界。 */
   overlap?: number;
   /** 瓦片像素尺寸（默认与 /amap-static 一致的 640）。 */
@@ -47,6 +49,7 @@ function tileSpanAt(centerLng: number, centerLat: number, zoom: number, size: nu
 export function planAmapTileGrid(region: ViewBounds, options: TileGridOptions = {}): TileGridPlan | null {
   const maxTiles = options.maxTiles ?? 64;
   const zoomPreference = options.zoomPreference ?? [16, 15, 14, 13, 12, 11, 10];
+  const minZoom = options.minZoom ?? 3;
   const overlap = Math.min(0.45, Math.max(0, options.overlap ?? 0.2));
   const size = options.size ?? AMAP_STATIC_SIZE;
 
@@ -58,6 +61,7 @@ export function planAmapTileGrid(region: ViewBounds, options: TileGridOptions = 
   const centerLat = (region.south + region.north) / 2;
 
   for (const zoom of zoomPreference) {
+    if (zoom < minZoom) break;
     const span = tileSpanAt(centerLng, centerLat, zoom, size);
     if (span.w <= 0 || span.h <= 0) continue;
     const stepW = span.w * (1 - overlap);
@@ -95,6 +99,16 @@ export interface DedupInput {
   confidence: number;
 }
 
+/** 两个范围的交集；无交集时返回 null。 */
+export function intersectBounds(a: ViewBounds, b: ViewBounds): ViewBounds | null {
+  const west = Math.max(a.west, b.west);
+  const east = Math.min(a.east, b.east);
+  const south = Math.max(a.south, b.south);
+  const north = Math.min(a.north, b.north);
+  if (west >= east || south >= north) return null;
+  return { west, south, east, north };
+}
+
 function bboxOf(coords: number[][][]): ViewBounds {
   let west = Infinity;
   let south = Infinity;
@@ -126,9 +140,22 @@ function bboxIou(a: ViewBounds, b: ViewBounds): number {
   return union > 0 ? inter / union : 0;
 }
 
+/** 小包围盒有多大比例落在另一个包围盒内。 */
+function bboxContainment(small: ViewBounds, big: ViewBounds): number {
+  const ix = Math.max(0, Math.min(small.east, big.east) - Math.max(small.west, big.west));
+  const iy = Math.max(0, Math.min(small.north, big.north) - Math.max(small.south, big.south));
+  const inter = ix * iy;
+  const areaSmall = Math.max(0, small.east - small.west) * Math.max(0, small.north - small.south);
+  return areaSmall > 0 ? inter / areaSmall : 0;
+}
+
 /**
  * 跨瓦片去重：地块被瓦片边界切开时会在两张瓦片分别检出（含重叠区）。
- * 规则：包围盒 IoU 较高且面积量级相近时视为同一地块，保留面积更大者。
+ * 规则（满足任一即视为同一地块，保留面积更大者）：
+ *  1) 面积量级相近（比例 ≥0.5）且包围盒 IoU ≥0.4 —— 同一位置的重复检出；
+ *  2) 较小者 ≥85% 落在较大者包围盒内，且面积比 ≥0.15 —— 大块完整、小块是
+ *     邻瓦片切出的残缺副本。
+ * 面积比 <0.15 的嵌套保留（可能是大块缝隙里真实存在的小地块）。
  * 按面积降序贪心，保证结果与输入顺序无关。
  */
 export function dedupeOverlappingParcels<T extends DedupInput>(items: T[]): T[] {
@@ -140,8 +167,13 @@ export function dedupeOverlappingParcels<T extends DedupInput>(items: T[]): T[] 
     const isDuplicate = kept.some(({ item: other, bbox: otherBbox }) => {
       const otherArea = Math.max(1, other.areaSquareMeters);
       const ratio = Math.min(area, otherArea) / Math.max(area, otherArea);
-      if (ratio < 0.5) return false; // 面积量级差太多，不是同一块地
-      return bboxIou(bbox, otherBbox) >= 0.4;
+      if (ratio < 0.15) return false; // 面积差太多，不是同一块地（如大田缝隙里的小地块）
+      if (bboxIou(bbox, otherBbox) >= 0.4 && ratio >= 0.5) return true;
+      // 残缺副本：较小者几乎完全包含在较大者的包围盒内
+      if (area <= otherArea) {
+        return ratio >= 0.15 && bboxContainment(bbox, otherBbox) >= 0.85;
+      }
+      return ratio >= 0.15 && bboxContainment(otherBbox, bbox) >= 0.85;
     });
     if (!isDuplicate) kept.push({ item, bbox });
   }
