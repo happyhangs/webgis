@@ -3,6 +3,9 @@ import { useAppContext } from '../AppContext';
 import { getDefaultFeatureStyle } from '../utils/featureStyle';
 import { AMAP_STATIC_SIZE, fitAmapStaticToWgsBounds, normalizeAmapStaticZoom } from '../utils/amapStatic';
 import { clipPolygonCoordinatesToBounds, polygonAreaSquareMeters } from '../utils/geoBounds';
+import { dedupeOverlappingParcels, planAmapTileGrid } from '../utils/tileBatch';
+import type { TileGridPlan } from '../utils/tileBatch';
+import { wgs2gcj } from '../utils/coord';
 import { createUploadedImageBlob } from '../utils/yoloDataset';
 import type { GeoJSONFeature } from '../types';
 import type { Bounds, ManualDatasetSource } from '../utils/yoloDataset';
@@ -10,11 +13,18 @@ import type { MapViewSnapshot } from '../utils/mapAPI';
 import { DEFAULT_BACKEND_URL } from '../backendUrl';
 
 const RESULT_LAYER_NAME = '农田模型识别';
+/** 瓦片批处理的张数上限；超过则规划阶段自动降低缩放。 */
+const MAX_TILES = 64;
 
 type RawYoloFeature = {
   type: 'Feature';
   geometry: { type: 'Polygon'; coordinates: number[][][] };
   properties?: Record<string, any>;
+};
+
+type SegmentedItem = {
+  item: RawYoloFeature;
+  areaSquareMeters: number;
 };
 
 /**
@@ -76,15 +86,12 @@ export function useYoloInference(
   const [inferring, setInferring] = useState(false);
   const [inferenceMessage, setInferenceMessage] = useState('');
 
-  /**
-   * Core segment logic: image blob + bounds → POST /segment → dispatch results.
-   */
-  const runSegment = useCallback(async (
+  /** POST 单张影像到 /segment，返回校验过的原始面要素（不做裁剪与写图层）。 */
+  const postSegmentImage = useCallback(async (
     imageBlob: Blob,
     segmentBounds: Bounds,
     imageFileName: string,
-    constraintBounds?: Bounds | null,
-  ) => {
+  ): Promise<RawYoloFeature[]> => {
     const formData = new FormData();
     formData.append('image', imageBlob, imageFileName);
     formData.append('west', String(segmentBounds.west));
@@ -110,50 +117,43 @@ export function useYoloInference(
     if (!response.ok) {
       throw new Error(payload.error || `HTTP ${response.status}`);
     }
-
-    const rawFeatures: RawYoloFeature[] = Array.isArray(payload.features)
+    return Array.isArray(payload.features)
       ? payload.features.filter((item: any) =>
         item?.type === 'Feature' &&
         item?.geometry?.type === 'Polygon' &&
         Array.isArray(item.geometry.coordinates),
       )
       : [];
-    const boundedFeatures: RawYoloFeature[] = constraintBounds
-      ? rawFeatures.flatMap((item: any) => {
-        const coordinates = clipPolygonCoordinatesToBounds(item.geometry.coordinates, constraintBounds);
-        return coordinates ? [{ ...item, geometry: { ...item.geometry, coordinates } }] : [];
-      })
-      : rawFeatures;
-    if (boundedFeatures.length === 0) {
-      setInferenceMessage(
-        constraintBounds
-          ? `识别完成，但框选范围内没有发现地块。可尝试降低置信度到 ${(Math.max(0.05, yoloConfidence - 0.05)).toFixed(2)}，或调小最小面积。`
-          : `识别完成，但没有发现地块。可尝试降低置信度到 ${(Math.max(0.05, yoloConfidence - 0.05)).toFixed(2)}，或调小最小面积。`,
-      );
-      return;
-    }
-    const boundedFeaturesWithArea: Array<{ item: RawYoloFeature; areaSquareMeters: number }> = boundedFeatures
+  }, [backendUrl, minAreaM2, modelFile, trainedModelPath, yoloConfidence, yoloIou]);
+
+  /** 把识别结果裁剪到约束范围（如框选/瓦片边界）。 */
+  const clipFeatures = useCallback((rawFeatures: RawYoloFeature[], constraintBounds?: Bounds | null): RawYoloFeature[] => {
+    if (!constraintBounds) return rawFeatures;
+    return rawFeatures.flatMap((item) => {
+      const coordinates = clipPolygonCoordinatesToBounds(item.geometry.coordinates, constraintBounds);
+      return coordinates ? [{ ...item, geometry: { ...item.geometry, coordinates } }] : [];
+    });
+  }, []);
+
+  /** 计算面积并按最小面积过滤。 */
+  const rankItemsByArea = useCallback((features: RawYoloFeature[]): SegmentedItem[] => {
+    return features
       .map((item) => ({
         item,
         areaSquareMeters: Number(polygonAreaSquareMeters(item.geometry.coordinates).toFixed(2)),
       }))
       .filter(({ areaSquareMeters }) => areaSquareMeters >= minAreaM2);
-    if (boundedFeaturesWithArea.length === 0) {
-      setInferenceMessage(
-        constraintBounds
-          ? '识别完成，但框选范围内没有满足最小面积的地块。可调小最小面积后重试。'
-          : '识别完成，但没有满足最小面积的地块。可调小最小面积后重试。',
-      );
-      return;
-    }
+  }, [minAreaM2]);
 
+  /** 把识别结果一次性写入结果图层（清空旧结果），并给出完成消息。 */
+  const writeResultFeatures = useCallback((items: SegmentedItem[], suffix = '') => {
     const existingLayer = state.layers.find((layer) => layer.name === RESULT_LAYER_NAME);
     const layerId = existingLayer?.id || crypto.randomUUID();
     if (!existingLayer) {
       dispatch({ type: 'ADD_LAYER', layer: { id: layerId, name: RESULT_LAYER_NAME, visible: true } });
     }
 
-    const features: GeoJSONFeature[] = boundedFeaturesWithArea.map(({ item, areaSquareMeters }, index: number) => {
+    const features: GeoJSONFeature[] = items.map(({ item, areaSquareMeters }, index: number) => {
       const confidence = Number(item.properties?.parcelConfidence || 0);
       const parcelCode = item.properties?.parcelCode || `YOLO-${String(index + 1).padStart(3, '0')}`;
       return {
@@ -187,9 +187,89 @@ export function useYoloInference(
 
     const totalAreaMu = features.reduce((sum, feature) => sum + (feature.properties.parcelAreaMu || 0), 0);
     setInferenceMessage(
-      `识别完成：${features.length} 个地块${totalAreaMu > 0 ? `，约 ${totalAreaMu.toFixed(2)} 亩` : ''}，已写入"${RESULT_LAYER_NAME}"图层${constraintBounds ? '，已约束到框选范围' : ''}。`,
+      `识别完成：${features.length} 个地块${totalAreaMu > 0 ? `，约 ${totalAreaMu.toFixed(2)} 亩` : ''}，已写入"${RESULT_LAYER_NAME}"图层${suffix}。`,
     );
-  }, [backendUrl, dispatch, minAreaM2, modelFile, state.layers, trainedModelPath, yoloConfidence, yoloIou]);
+  }, [dispatch, state.layers]);
+
+  /**
+   * Core segment logic: image blob + bounds → POST /segment → dispatch results.
+   */
+  const runSegment = useCallback(async (
+    imageBlob: Blob,
+    segmentBounds: Bounds,
+    imageFileName: string,
+    constraintBounds?: Bounds | null,
+  ) => {
+    const rawFeatures = await postSegmentImage(imageBlob, segmentBounds, imageFileName);
+    const boundedFeatures = clipFeatures(rawFeatures, constraintBounds);
+    if (boundedFeatures.length === 0) {
+      setInferenceMessage(
+        constraintBounds
+          ? `识别完成，但框选范围内没有发现地块。可尝试降低置信度到 ${(Math.max(0.05, yoloConfidence - 0.05)).toFixed(2)}，或调小最小面积。`
+          : `识别完成，但没有发现地块。可尝试降低置信度到 ${(Math.max(0.05, yoloConfidence - 0.05)).toFixed(2)}，或调小最小面积。`,
+      );
+      return;
+    }
+    const boundedFeaturesWithArea = rankItemsByArea(boundedFeatures);
+    if (boundedFeaturesWithArea.length === 0) {
+      setInferenceMessage(
+        constraintBounds
+          ? '识别完成，但框选范围内没有满足最小面积的地块。可调小最小面积后重试。'
+          : '识别完成，但没有满足最小面积的地块。可调小最小面积后重试。',
+      );
+      return;
+    }
+    writeResultFeatures(boundedFeaturesWithArea, constraintBounds ? '，已约束到框选范围' : '');
+  }, [clipFeatures, postSegmentImage, rankItemsByArea, writeResultFeatures, yoloConfidence]);
+
+  /**
+   * 瓦片批处理：把大范围按网格逐张识别，合并结果并按重叠去重。
+   * 单张瓦片失败不中断整体，全部失败才报错。
+   */
+  const runTiledSegment = useCallback(async (plan: TileGridPlan, label: string) => {
+    const total = plan.tiles.length;
+    const collected: SegmentedItem[] = [];
+    let failed = 0;
+
+    for (let i = 0; i < total; i += 1) {
+      const tile = plan.tiles[i];
+      setInferenceMessage(`正在识别 ${label}：第 ${i + 1}/${total} 张瓦片（z${plan.zoom}）...`);
+      try {
+        const [lng, lat] = tile.center;
+        const [gcjLat, gcjLng] = wgs2gcj(lat, lng);
+        const imageBlob = await fetchAmapStaticBlob(backendUrl, [gcjLng, gcjLat], plan.zoom);
+        const jpegFile = await blobToJpegFile(imageBlob, `tile_${i + 1}`);
+        const resized = await createUploadedImageBlob(jpegFile, AMAP_STATIC_SIZE);
+        if (!resized) throw new Error('瓦片影像预处理失败。');
+        const rawFeatures = await postSegmentImage(resized, tile.bounds, `tile_${i + 1}.jpg`);
+        collected.push(...rankItemsByArea(clipFeatures(rawFeatures, tile.bounds)));
+      } catch {
+        failed += 1;
+      }
+    }
+
+    if (collected.length === 0) {
+      if (failed === total) {
+        throw new Error(`全部 ${total} 张瓦片识别失败，请检查本地后端与网络后重试。`);
+      }
+      setInferenceMessage(
+        `${label}：${total} 张瓦片中未发现地块${failed > 0 ? `（${failed} 张失败）` : ''}。可尝试降低置信度或调小最小面积。`,
+      );
+      return;
+    }
+
+    const deduped = dedupeOverlappingParcels(collected.map(({ item, areaSquareMeters }) => ({
+      item,
+      areaSquareMeters,
+      coordinates: item.geometry.coordinates,
+      confidence: Number(item.properties?.parcelConfidence || 0),
+    })));
+    const removed = collected.length - deduped.length;
+    writeResultFeatures(
+      deduped.map(({ item, areaSquareMeters }) => ({ item, areaSquareMeters })),
+      `，由 ${total} 张瓦片合并${removed > 0 ? `（去掉 ${removed} 个重复）` : ''}${failed > 0 ? `，${failed} 张瓦片失败` : ''}`,
+    );
+  }, [backendUrl, clipFeatures, postSegmentImage, rankItemsByArea, writeResultFeatures]);
 
   const handleInference = useCallback(async () => {
     setInferenceMessage('');
@@ -293,13 +373,24 @@ export function useYoloInference(
     setInferenceMessage(`正在获取 ${label} 的卫星影像...`);
     setInferring(true);
     try {
-      // ponytail: one fitted image keeps this interactive; use tiled batch jobs for province-scale runs.
+      const plan = planAmapTileGrid(targetBounds, { maxTiles: MAX_TILES });
+      if (plan && plan.tiles.length > 1) {
+        // 大范围：分瓦片逐张识别，合并去重
+        await runTiledSegment(plan, label);
+        return;
+      }
+      // 小范围（或区域过大无法规划）：整幅单图识别
       const fitted = fitAmapStaticToWgsBounds(targetBounds);
       const imageBlob = await fetchAmapStaticBlob(backendUrl, fitted.amapCenter, fitted.zoom);
       const jpegFile = await blobToJpegFile(imageBlob, 'admin_region');
       const resized = await createUploadedImageBlob(jpegFile, 640);
       if (!resized) throw new Error('行政区影像预处理失败。');
-      await runSegment(resized, fitted.bounds, 'admin_region.jpg', targetBounds);
+      await runSegment(
+        resized,
+        fitted.bounds,
+        'admin_region.jpg',
+        targetBounds,
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : '未知错误';
       setInferenceMessage(
@@ -310,7 +401,7 @@ export function useYoloInference(
     } finally {
       setInferring(false);
     }
-  }, [backendUrl, runSegment]);
+  }, [backendUrl, runSegment, runTiledSegment]);
 
   return {
     handleInference,
