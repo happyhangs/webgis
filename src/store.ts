@@ -223,23 +223,32 @@ function defaultFeatureName(shapeType: FeatureProperties['shapeType'], index: nu
   return `恢复面 ${index}`;
 }
 
-function normalizeMapView(value: unknown): MapViewState {
+export function normalizeMapView(value: unknown): MapViewState {
   if (!value || typeof value !== 'object') return DEFAULT_MAP_VIEW;
   const view = value as Partial<MapViewState>;
   const center = Array.isArray(view.center) ? view.center : [];
-  const lat = Number(center[0]);
-  const lng = Number(center[1]);
+  let lat = Number(center[0]);
+  let lng = Number(center[1]);
   const zoom = Number(view.zoom);
-  if (
-    Number.isFinite(lat) &&
-    Number.isFinite(lng) &&
-    Math.abs(lat) <= 90 &&
-    Math.abs(lng) <= 180 &&
-    Number.isFinite(zoom)
+  if (!Number.isFinite(zoom)) return DEFAULT_MAP_VIEW;
+
+  const valid = (la: number, ln: number) =>
+    Number.isFinite(la) && Number.isFinite(ln) && Math.abs(la) <= 90 && Math.abs(ln) <= 180;
+
+  if (!valid(lat, lng) && valid(lng, lat)) {
+    // 纬度完全非法但交换后合法 → 按经纬写反纠正
+    [lat, lng] = [lng, lat];
+  } else if (
+    // 历史缺陷曾把 [lat,lng] 写反：纬度落在中国经度带（72~137.8）且超出北界，
+    // 同时存储的"经度"落在中国纬度带内——符合该特征即纠正。
+    lat > 55.8271 && lat >= 72 && lat <= 137.8347 &&
+    lng >= 0.8293 && lng <= 55.8271
   ) {
-    return { center: [lat, lng], zoom: Math.min(22, Math.max(1, Math.round(zoom))) };
+    [lat, lng] = [lng, lat];
   }
-  return DEFAULT_MAP_VIEW;
+
+  if (!valid(lat, lng)) return DEFAULT_MAP_VIEW;
+  return { center: [lat, lng], zoom: Math.min(22, Math.max(1, Math.round(zoom))) };
 }
 
 function normalizeCustomBasemap(value: unknown): CustomBasemapInput | null {
