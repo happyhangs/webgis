@@ -1,5 +1,15 @@
 # Bugs And Risks
 
+## 2026-09-17 大范围识别瓦片批处理（本轮）
+- Resolved: 行政区/大框选识别不再把整个范围拟合进一张 640px 影像（县域越大像素越粗、小地块检不出）。新增 `src/utils/tileBatch.ts`：按重叠带规划瓦片网格（从 z16 向下降缩放，瓦片数上限 256、最低 z12），`useYoloInference` 逐张取图识别、单张失败不中断、跨瓦片按包围盒 IoU/包含度去重后合并写入；瓦片间 150ms 节流；低于 z14 提示分辨率不足。提交 `d59fb2d`+`7be3c4e`+`9e7fc68`。
+- Verified: 真实浏览器 E2E（z15 视口全幅框选）→ 规划 6 张 z16 瓦片全部成功 → 合并 25 个地块约 4119 亩，去重 16 个重复；图层计数、地图渲染、属性（置信度/面积/`yolov11-seg:xinjiang_v1_20260807_150321` 来源）均正确。单图小选区路径（9 块/725 亩）与瓦片路径均通过。
+- Note: 长批次（80+ 张）跑动时浏览器测试通道多次掉线（浏览器进程崩溃），已确认是测试通道问题而非页面逻辑错误（重新打开后轮询持续正常）；真实使用中 165 张 z15 级别的批次耗时约 10 分钟，建议提示用户等待或先选小范围。
+- Note: `webgis:lastTrainedModelPath` 存相对路径时后端按 backend/ 目录解析（`backend/models/x` 会变成 `backend/backend/models/x`）；训练流程写入的是绝对路径，正常使用无影响。
+
+## 2026-09-17 训练链路端到端冒烟
+- Resolved: 新增 `backend/smoke_train.py`：合成 8 张小数据集走真实 ultralytics 训练（2 epoch CPU 约 1 分钟），覆盖哈希切分、自动增强、patience、results.csv 解析、模型落盘。提交 `ad5c787`。
+- Verified: 冒烟 PASS（切分 train 15/val 3，模型落盘）；后端 legacy `test_training_pipeline.py`（7 测试）与 `test_server_network.py` 亦通过。
+
 ## 2026-09-17 固定独立验收集
 - Resolved: 验证集切分改为影像内容 SHA1 哈希驱动 + 注册表（`.val_split_registry.json`）：同一张影像在任何一次数据集导出中都分到同一侧，跨训练轮次 mAP 可比；旧逻辑按文件名排序取末尾 20%，val 随导出批次漂移且集中于同区域。含 val 空/全满保底、损坏注册表降级；单张影像空间切分保留。提交 `95d936b`。
 - Verified: 两次真实数据集演练（xinjiang_multiregion_v1）：① 已有切分的数据集（beitun/xinyuan 整区域留 val）走早退路径、原样保留；② 仅取 119 张 train 影像模拟无预切分导出 → 哈希切分 val 27 / train 92，删除注册表后重跑结果完全一致（确定性）。后端 27 测试全过（新增 7 个切分测试）。
