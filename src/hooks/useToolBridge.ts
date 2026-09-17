@@ -94,6 +94,33 @@ export function useToolBridge(
     } catch { /* ignore */ }
   }, [basemap]);
 
+  const flyToBounds = useCallback((target: ViewBounds) => {
+    const map = mapRef.current;
+    if (!map) return;
+    try {
+      const needGCJ = getBasemapConfig(basemap).wgs2gcj === true;
+      // wgs2gcj 返回 [lat, lng]，对角点分别换算后取包络足够定位用途
+      const corners: Array<[number, number]> = [
+        [target.west, target.south],
+        [target.west, target.north],
+        [target.east, target.south],
+        [target.east, target.north],
+      ];
+      const shifted = corners.map(([lng, lat]) =>
+        needGCJ ? (wgs2gcj(lat, lng) as [number, number]) : ([lat, lng] as [number, number]),
+      );
+      const lats = shifted.map(([lat]) => lat);
+      const lngs = shifted.map(([, lng]) => lng);
+      map.flyToBounds(
+        L.latLngBounds(
+          [Math.min(...lats), Math.min(...lngs)],
+          [Math.max(...lats), Math.max(...lngs)],
+        ),
+        { padding: [40, 40], maxZoom: FEATURE_ZOOM_100M, ...FEATURE_FLY_OPTIONS },
+      );
+    } catch { /* ignore */ }
+  }, [basemap]);
+
   const placeMarker = useCallback((lat: number, lng: number, name: string) => {
     const map = mapRef.current;
     if (!map) return;
@@ -257,7 +284,7 @@ export function useToolBridge(
   useEffect(() => {
     const api: MapAPI = {
       enableDraw, disableDraw, enableEdit, disableEdit,
-      enableRemoval, disableRemoval, flyTo, flyToFeature, placeMarker,
+      enableRemoval, disableRemoval, flyTo, flyToFeature, flyToBounds, placeMarker,
       getMapSnapshot, selectMapSnapshot, showTrainingImage, clearTrainingImage,
     };
     (window as any).__webgis = api;
@@ -267,7 +294,7 @@ export function useToolBridge(
       trainingImageRef.current?.remove();
     };
   }, [enableDraw, disableDraw, enableEdit, disableEdit,
-      enableRemoval, disableRemoval, flyTo, flyToFeature, placeMarker, getMapSnapshot, selectMapSnapshot,
+      enableRemoval, disableRemoval, flyTo, flyToFeature, flyToBounds, placeMarker, getMapSnapshot, selectMapSnapshot,
       showTrainingImage, clearTrainingImage]);
 }
 

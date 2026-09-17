@@ -28,6 +28,8 @@ export interface MapAPI {
   disableRemoval: () => void;
   flyTo: (lat: number, lng: number, zoom?: number) => void;
   flyToFeature: (feature: GeoJSONFeature) => void;
+  /** 按 WGS-84 范围飞行定位（内部按当前底图做 GCJ 偏移换算）。 */
+  flyToBounds: (bounds: ViewBounds) => void;
   placeMarker: (lat: number, lng: number, name: string) => void;
   getMapSnapshot: () => MapViewSnapshot | null;
   selectMapSnapshot: () => Promise<MapViewSnapshot | null>;

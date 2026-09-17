@@ -1839,6 +1839,55 @@ input[type="range"]:focus-visible {
   color: #8a4b00;
 }
 
+/* ── 主页面标注模式横幅 ── */
+.map-labeling-banner {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 650;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px 7px 14px;
+  border-radius: 999px;
+  background: rgba(20, 33, 26, 0.92);
+  color: #fff;
+  font-size: 12.5px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+  white-space: nowrap;
+}
+
+.map-labeling-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #51cf66;
+  animation: farmPulse 1.4s ease-in-out infinite;
+}
+
+.map-labeling-text {
+  opacity: 0.95;
+}
+
+.map-labeling-finish {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  border-radius: 999px;
+  padding: 5px 12px;
+  background: #51cf66;
+  color: #10281a;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.map-labeling-finish:hover {
+  background: #69db7c;
+}
+
 .farm-training-progress {
   display: grid;
   gap: 6px;

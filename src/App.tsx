@@ -7,8 +7,10 @@ import PropertyPanel from './PropertyPanel';
 import WeatherPanel from './WeatherPanel';
 import MapView from './MapView';
 import { FloatingPanelProvider } from './FloatingPanelContext';
-import { useState, useCallback, useEffect, lazy, Suspense } from 'react';
+import { useState, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import type { TrainingMapDraft } from './types';
+import { useAppContext } from './AppContext';
+import { mergeFeaturesBounds } from './utils/geoBounds';
 
 const TrainingPage = lazy(() => import('./TrainingPage'));
 
@@ -18,6 +20,30 @@ function AppShell() {
   );
   const [trainingDataset, setTrainingDataset] = useState<File | null>(null);
   const [trainingMapDraft, setTrainingMapDraft] = useState<TrainingMapDraft | null>(null);
+  const { state } = useAppContext();
+  const autoLocatedRef = useRef(false);
+
+  // 启动后自动定位到已有数据的范围，避免打开页面落在默认视图看不到自己的标注。
+  // 注意：本地状态恢复发生在父级 Provider 的 effect 中（晚于本 effect 首次执行），
+  // 因此 features 为空时不能锁定标记，要等数据到达后再定位。
+  useEffect(() => {
+    if (autoLocatedRef.current || showTraining) return;
+    if (state.features.length === 0) return;
+    const bounds = mergeFeaturesBounds(state.features);
+    if (!bounds) {
+      autoLocatedRef.current = true;
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      const api = (window as Window & { __webgis?: { flyToBounds?: (b: typeof bounds) => void } }).__webgis;
+      if (api?.flyToBounds) {
+        api.flyToBounds(bounds);
+        autoLocatedRef.current = true;
+      }
+    }, 600);
+    return () => window.clearTimeout(timer);
+  }, [showTraining, state.features]);
+
 
   useEffect(() => {
     const onPop = () => {

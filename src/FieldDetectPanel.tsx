@@ -276,7 +276,18 @@ export default function FieldDetectPanel({ onOpenTraining }: { onOpenTraining?: 
   if (!isPanelOpen('farm')) return null;
 
   return (
-    <aside ref={panelRef} className={`panel floating-panel farm-detect-panel${dragging ? ' is-dragging' : ''}`} style={panelStyle}>
+    <>
+      {homeLabeling && (
+        <div className="map-labeling-banner">
+          <span className="map-labeling-dot" />
+          <span className="map-labeling-text">标注模式：沿农田边界连续勾画地块，自动编号</span>
+          <button className="map-labeling-finish" type="button" onClick={handleFinishHomeLabeling}>
+            <Check size={13} />
+            完成标注（{manualLabelFeatures.length} 块）
+          </button>
+        </div>
+      )}
+      <aside ref={panelRef} className={`panel floating-panel farm-detect-panel${dragging ? ' is-dragging' : ''}`} style={panelStyle}>
       <div className="farm-detect-header floating-panel-drag-handle" {...dragHandleProps}>
         <span className="farm-detect-title"><ScanEye size={15} />农田识别</span>
         <button className="panel-toggle" onPointerDown={stopFloatingPanelButtonEvent}
@@ -360,6 +371,7 @@ export default function FieldDetectPanel({ onOpenTraining }: { onOpenTraining?: 
       <div {...resizeHandle('nw')} />
       <div {...resizeHandle('se')} />
       <div {...resizeHandle('sw')} />
-    </aside>
+      </aside>
+    </>
   );
 }

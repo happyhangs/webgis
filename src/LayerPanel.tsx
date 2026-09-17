@@ -14,6 +14,7 @@ import {
   ChevronsRight,
   Layers,
   Check,
+  Crosshair,
   Pencil,
   Search,
   Copy,
@@ -21,6 +22,7 @@ import {
   Map as MapIcon,
 } from 'lucide-react';
 import { useAppContext, DEFAULT_LAYER_ID } from './AppContext';
+import { mergeFeaturesBounds } from './utils/geoBounds';
 import type { GeoJSONFeature, Layer } from './types';
 
 interface AdminCityEntry {
@@ -355,6 +357,16 @@ export default function LayerPanel() {
                 )}
                 <span className="layer-count">{features.length}</span>
                 {isActive && <Check size={13} className="layer-active-mark" />}
+                {features.length > 0 && (
+                  <button className="layer-action-btn" title="定位到该图层" aria-label={`定位到图层「${layer.name}」`}
+                    onClick={() => {
+                      const bounds = mergeFeaturesBounds(features);
+                      const api = (window as any).__webgis;
+                      if (bounds && api?.flyToBounds) api.flyToBounds(bounds);
+                    }}>
+                    <Crosshair size={12} />
+                  </button>
+                )}
                 <button className="layer-action-btn" title="重命名" aria-label={`重命名图层「${layer.name}」`} onClick={() => startRename(layer.id)}><Pencil size={12} /></button>
                 {isDefault && features.length > 0 && (
                   <button className="layer-action-btn danger" title="清空默认图层" aria-label="清空默认图层"

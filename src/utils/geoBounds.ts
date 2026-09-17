@@ -24,6 +24,35 @@ export function polygonAreaSquareMeters(coordinates: number[][][]): number {
   });
 }
 
+/** 合并多个要素的经纬度范围（忽略非法坐标），无有效要素时返回 null。 */
+export function mergeFeaturesBounds(
+  features: Array<{ geometry?: { type?: string; coordinates?: unknown } }>,
+): ViewBounds | null {
+  let west = Infinity;
+  let east = -Infinity;
+  let south = Infinity;
+  let north = -Infinity;
+  const visit = (coords: unknown): void => {
+    if (!Array.isArray(coords)) return;
+    if (typeof coords[0] === 'number' && typeof coords[1] === 'number') {
+      const lng = coords[0] as number;
+      const lat = coords[1] as number;
+      if (!Number.isFinite(lng) || !Number.isFinite(lat)) return;
+      if (lng < -180 || lng > 180 || lat < -90 || lat > 90) return;
+      if (lng < west) west = lng;
+      if (lng > east) east = lng;
+      if (lat < south) south = lat;
+      if (lat > north) north = lat;
+      return;
+    }
+    for (const child of coords) visit(child);
+  };
+  for (const feature of features) visit(feature.geometry?.coordinates);
+  if (!Number.isFinite(west) || !Number.isFinite(south)) return null;
+  if (east - west > 180) return null; // 跨反经线的杂散数据不做合并
+  return { west, south, east, north };
+}
+
 function clipRingToBounds(ring: Point[], bounds: ViewBounds): Point[] {
   let output = ring;
   for (const edge of ['west', 'east', 'south', 'north'] as const) {
