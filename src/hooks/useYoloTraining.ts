@@ -92,6 +92,7 @@ export function useYoloTraining(
       const formData = new FormData();
       formData.append('dataset', blob, 'farmland_dataset.zip');
       formData.append('epochs', String(trainTotalEpochs));
+      formData.append('patience', '30');
       formData.append('output_name', outputName || 'farmland_seg');
       const resp = await fetch(backendUrl + "/train", { method: 'POST', body: formData });
       if (!resp.ok) {

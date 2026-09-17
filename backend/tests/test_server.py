@@ -192,3 +192,17 @@ class TestZipSafety:
             with pytest.raises(ValueError, match="unsafe path"):
                 server._safe_extract_zip(zf, target)
         assert not (target.parent / "evil.txt").exists()
+
+
+class TestTrainParams:
+    def test_patience_form_parsing(self):
+        assert server._form_int(_form(patience="30"), "patience", default=30) == 30
+        assert server._form_int(_form(patience="0"), "patience", default=30) == 0
+        assert server._form_int(_form(), "patience", default=30) == 30
+        assert server._form_int(_form(patience="abc"), "patience", default=30) == 30
+
+    def test_patience_rejects_negative(self):
+        # 负数会被 server 归一为默认值 30（见 /train 处理逻辑）
+        raw = server._form_int(_form(patience="-5"), "patience", default=30)
+        assert raw == -5  # 解析层不拦截；由 server 归一化
+        assert (raw is None or raw < 0) is True

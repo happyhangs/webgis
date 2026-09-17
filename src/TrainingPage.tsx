@@ -817,11 +817,12 @@ export default function TrainingPage({
     const starting: TrainStatus = { status: 'starting', epoch: 0, totalEpochs: epochs, metrics: {}, history: [] };
     statusSignatureRef.current = statusSignature(starting);
     setStatus(starting);
-    pushLog(`提交训练任务：${zipFile.name}，${epochs} 轮，Batch ${batch}。`, 'info', `submit:${zipFile.name}:${epochs}:${batch}`);
+    pushLog(`提交训练任务：${zipFile.name}，${epochs} 轮，Batch ${batch}，早停耐心 ${30}。`, 'info', `submit:${zipFile.name}:${epochs}:${batch}`);
     try {
       const form = new FormData();
       form.append('dataset', zipFile, zipFile.name);
       form.append('epochs', String(epochs));
+      form.append('patience', '30');
       form.append('batch', String(batch));
       form.append('output_name', outputName || 'farmland_seg');
       const resp = await fetch(`${backendUrl}/train`, { method: 'POST', body: form });

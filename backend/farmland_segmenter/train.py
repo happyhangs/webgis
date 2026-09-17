@@ -414,6 +414,7 @@ def train_from_directory(
     lr: float = 0.001,
     device: str = "auto",
     output_dir: str | None = None,
+    patience: int = 30,
 ) -> dict[str, Any]:
     dataset_dir = Path(dataset_dir)
     _validate_dataset(dataset_dir)
@@ -472,6 +473,7 @@ def train_from_directory(
             augment=True,
             mixup=0.15,
             copy_paste=0.15,
+            patience=max(0, patience),
             task="segment",
             save=True,
             save_period=-1,
@@ -517,6 +519,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--model", default="yolo11n-seg.pt", help="base model name or path")
     parser.add_argument("--output-name", default=None, help="output model stem")
     parser.add_argument("--epochs", type=int, default=100)
+    parser.add_argument("--patience", type=int, default=30,
+                        help="早停耐心值：连续 N 个 epoch 验证指标无提升则停止（0 表示禁用早停）")
     parser.add_argument("--batch", type=int, default=8)
     parser.add_argument("--imgsz", type=int, default=640)
     parser.add_argument("--lr", type=float, default=0.001)
@@ -529,6 +533,7 @@ def main(argv: list[str] | None = None) -> int:
         model_name=args.model,
         output_name=args.output_name,
         epochs=args.epochs,
+        patience=args.patience,
         batch=args.batch,
         imgsz=args.imgsz,
         lr=args.lr,

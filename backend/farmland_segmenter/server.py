@@ -197,6 +197,9 @@ class FarmlandSegmentHandler(BaseHTTPRequestHandler):
                 return
 
             epochs = _form_int(form, "epochs", default=100) or 100
+            patience = _form_int(form, "patience", default=30)
+            if patience is None or patience < 0:
+                patience = 30
             batch = _form_int(form, "batch", default=8) or 8
             model_name = _form_text(form, "model") or "yolo11n-seg.pt"
             output_name = _form_text(form, "output_name") or _form_text(form, "outputName") or "farmland_seg"
@@ -283,6 +286,7 @@ class FarmlandSegmentHandler(BaseHTTPRequestHandler):
                         output_name=output_name,
                         epochs=epochs,
                         batch=batch,
+                        patience=patience,
                         device="auto",
                     )
                     prepared_dir = persistent_dataset_dir / "prepared"
