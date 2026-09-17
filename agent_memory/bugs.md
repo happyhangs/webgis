@@ -1,5 +1,10 @@
 # Bugs And Risks
 
+## 2026-09-17 固定独立验收集
+- Resolved: 验证集切分改为影像内容 SHA1 哈希驱动 + 注册表（`.val_split_registry.json`）：同一张影像在任何一次数据集导出中都分到同一侧，跨训练轮次 mAP 可比；旧逻辑按文件名排序取末尾 20%，val 随导出批次漂移且集中于同区域。含 val 空/全满保底、损坏注册表降级；单张影像空间切分保留。提交 `95d936b`。
+- Verified: 真实数据集演练（xinjiang_multiregion_v1，139 张）→ val 20 / train 119；后端 27 测试全过（新增 7 个切分测试）。
+- Note: 现有 `xinjiang_v1` 模型的历史 mAP 仍是旧切分下的数字，与新切分不可直接比较；下次训练起使用新验证集。
+
 ## 2026-09-17 训练早停
 - Resolved: 训练全链路支持 `patience` 早停（默认 30，0 禁用）：`train_from_directory` → CLI `--patience` → server `/train` 表单 → 前端 `useYoloTraining`/`TrainingPage` 均已打通，提交 `f4452bf`。针对此前"最终 epoch 掉到 28.4% 仍跑满 100 轮"的浪费；`best.pt` 本来就保留最佳权重，早停只省时间不损精度。
 - Note: 数据增强无需调整：Ultralytics 默认增强已开，代码额外加了 `mixup=0.15`、`copy_paste=0.15`（分割任务有利），另有 <20 张数据集的离线 hflip/rot90 兜底。精度瓶颈仍在数据量与多样性。
