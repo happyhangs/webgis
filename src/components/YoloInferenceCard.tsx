@@ -252,7 +252,7 @@ function AdminRegionPicker({
         </select>
       </div>
       <div className="farm-label-hint">
-        {selected ? `已选择 ${selected.name}；大范围会自动分瓦片批量识别（最多几十张，耗时较长）。` : status}
+        {selected ? `已选择 ${selected.name}；大范围会自动分瓦片批量识别（最多约 256 张，耗时较长）。` : status}
       </div>
       <div className="farm-inline-actions">
         <button className="farm-secondary-btn" type="button" disabled={!selected || disabled}
