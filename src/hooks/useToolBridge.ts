@@ -52,6 +52,34 @@ export function useToolBridge(
 
   const disableDraw = useCallback(() => { mapRef.current?.pm.disableDraw(); }, []);
 
+  /** 标注模式：进入连续画地块（Esc 取消当前块后会自动继续）。 */
+  const startLabelDrawing = useCallback(() => {
+    (window as any).__webgis_labelDrawIntended = true;
+    mapRef.current?.pm.disableGlobalRemovalMode();
+    mapRef.current?.pm.enableDraw('Polygon' as any, {
+      continueDrawing: true,
+      snappable: false,
+      snapMiddle: false,
+    });
+  }, []);
+
+  /** 标注模式：退出画地块（完成标注 / 切换到删除块时调用）。 */
+  const stopLabelDrawing = useCallback(() => {
+    (window as any).__webgis_labelDrawIntended = false;
+    mapRef.current?.pm.disableDraw();
+  }, []);
+
+  /** 标注模式：进入"点错块即删"（只作用于标定层，见 useMapInit 的 pm:remove）。 */
+  const startLabelRemoval = useCallback(() => {
+    (window as any).__webgis_labelDrawIntended = false;
+    mapRef.current?.pm.disableDraw();
+    mapRef.current?.pm.enableGlobalRemovalMode();
+  }, []);
+
+  const stopLabelRemoval = useCallback(() => {
+    mapRef.current?.pm.disableGlobalRemovalMode();
+  }, []);
+
   const enableEdit = useCallback(() => {
     const layer = (window as any).__webgis_selectedLayer;
     if (layer) { (layer as any).pm.enable(FAST_EDIT_OPTIONS); }
@@ -286,16 +314,19 @@ export function useToolBridge(
       enableDraw, disableDraw, enableEdit, disableEdit,
       enableRemoval, disableRemoval, flyTo, flyToFeature, flyToBounds, placeMarker,
       getMapSnapshot, selectMapSnapshot, showTrainingImage, clearTrainingImage,
+      startLabelDrawing, stopLabelDrawing, startLabelRemoval, stopLabelRemoval,
     };
     (window as any).__webgis = api;
     return () => {
       delete (window as any).__webgis;
       delete (window as any).__webgis_selectedLayer;
+      (window as any).__webgis_labelDrawIntended = false;
       trainingImageRef.current?.remove();
     };
   }, [enableDraw, disableDraw, enableEdit, disableEdit,
       enableRemoval, disableRemoval, flyTo, flyToFeature, flyToBounds, placeMarker, getMapSnapshot, selectMapSnapshot,
-      showTrainingImage, clearTrainingImage]);
+      showTrainingImage, clearTrainingImage,
+      startLabelDrawing, stopLabelDrawing, startLabelRemoval, stopLabelRemoval]);
 }
 
 function viewBoundsToLeaflet(bounds: ViewBounds, needGCJ: boolean): L.LatLngBounds {

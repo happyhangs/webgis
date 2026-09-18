@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useAppContext } from '../AppContext';
 import { setManualLabelLayerId } from '../utils/mapHelpers';
 import {
   getManualLabelFeatures,
   getLayerBounds,
-  buildManualLabelUpdates,
 } from '../utils/yoloDataset';
+import { planLabelUpdates } from '../utils/labelTools';
 import { adoptRecognitionAsLabels } from '../utils/preAnnotation';
 import type { Bounds } from '../utils/yoloDataset';
 import type { GeoJSONFeature } from '../types';
@@ -14,8 +14,8 @@ export const MANUAL_LABEL_LAYER_NAME = '农田人工标定';
 
 export function useManualLabelLayer() {
   const { state, dispatch } = useAppContext();
-  const [labelLayerId, setLabelLayerId] = useState('');
-  const [labelMode, setLabelMode] = useState(false);
+  const [labelLayerId, setLabelLayerId] = React.useState('');
+  const labelMode = state.labelMode;
 
   // Find or create the manual label layer
   useEffect(() => {
@@ -42,9 +42,17 @@ export function useManualLabelLayer() {
     return () => { delete (window as any).__webgis_labelMode; };
   }, [labelMode]);
 
+  const startLabelDrawing = useCallback(() => {
+    (window as any).__webgis?.startLabelDrawing?.();
+  }, []);
+
+  const startLabelRemoval = useCallback(() => {
+    (window as any).__webgis?.startLabelRemoval?.();
+  }, []);
+
   const activateLabelLayer = useCallback(() => {
     const api = (window as any).__webgis;
-    if (!api?.enableDraw) return;
+    if (!api?.startLabelDrawing) return;
     let lid = labelLayerId;
     if (!lid) {
       const existing = findLabelLayer(state.layers, state.features);
@@ -63,15 +71,16 @@ export function useManualLabelLayer() {
       }
     }
     dispatch({ type: 'SET_CURRENT_LAYER', id: lid });
-    window.setTimeout(() => api.enableDraw('Polygon', { snappable: false, snapMiddle: false }), 0);
-    setLabelMode(true);
+    dispatch({ type: 'SET_LABEL_MODE', on: true });
+    window.setTimeout(() => api.startLabelDrawing(), 0);
   }, [dispatch, labelLayerId, state.features, state.layers]);
 
   const deactivateLabelLayer = useCallback(() => {
     const api = (window as any).__webgis;
-    api?.disableDraw?.();
-    setLabelMode(false);
-  }, []);
+    api?.stopLabelDrawing?.();
+    api?.stopLabelRemoval?.();
+    dispatch({ type: 'SET_LABEL_MODE', on: false });
+  }, [dispatch]);
 
   /**
    * 把识别结果图层中的面要素转入人工标定：
@@ -143,40 +152,59 @@ export function useManualLabelLayer() {
     [labelLayerId, state.features],
   );
 
-  // Auto-number unlabeled features
+  // 本会话新画地块的撤销栈：只在标注模式进行中记录新出现的标定块，
+  // 装载历史数据（恢复快照/加载图层）时只刷新基线，绝不入栈。
+  const knownIdsRef = useRef<Set<string> | null>(null);
+  const drawnStackRef = useRef<string[]>([]);
   useEffect(() => {
-    const updates = buildManualLabelUpdates(manualLabelFeatures).filter((item) => {
-      const feat = manualLabelFeatures.find((c) => c.properties.id === item.id);
-      return feat && (
-        feat.properties.parcelRole !== 'parcel' ||
-        feat.properties.source !== 'manual-farmland-label' ||
-        !feat.properties.parcelCode ||
-        typeof feat.properties.parcelAreaMu !== 'number'
-      );
-    });
-    updates.forEach((item) => dispatch({ type: 'UPDATE_FEATURE', id: item.id, updates: item.updates }));
-
-    const unlabeled = manualLabelFeatures.filter((f) => !f.properties.parcelCode);
-    if (unlabeled.length > 0) {
-      const existingCodes = new Set(manualLabelFeatures.map((f) => f.properties.parcelCode).filter(Boolean));
-      const maxExisting = manualLabelFeatures.reduce((max, f) => Math.max(max, f.properties.parcelIndex || 0), 0);
-      unlabeled.forEach((feature, idx) => {
-        const parcelIndex = maxExisting + idx + 1;
-        const code = "MAN-" + String(parcelIndex).padStart(3, '0');
-        if (existingCodes.has(code)) return;
-        dispatch({
-          type: 'UPDATE_FEATURE', id: feature.properties.id,
-          updates: {
-            name: "农田标定-" + code, parcelCode: code, parcelIndex,
-            parcelGroup: '人工标定', parcelRole: 'parcel' as const,
-            source: 'manual-farmland-label' as const,
-          },
-        });
-      });
+    const ids = manualLabelFeatures.map((f) => f.properties.id);
+    if (knownIdsRef.current === null || !labelModeRef.current) {
+      knownIdsRef.current = new Set(ids);
+      return;
     }
+    const known = knownIdsRef.current;
+    for (const id of ids) {
+      if (!known.has(id)) drawnStackRef.current.push(id);
+    }
+    knownIdsRef.current = new Set(ids);
+  }, [manualLabelFeatures]);
+
+  const undoLastBlock = useCallback(() => {
+    while (drawnStackRef.current.length > 0) {
+      const id = drawnStackRef.current.pop()!;
+      if (state.features.some((f) => f.properties.id === id)) {
+        dispatch({ type: 'DELETE_FEATURE', id });
+        return id;
+      }
+    }
+    return null;
+  }, [dispatch, state.features]);
+
+  const canUndo = drawnStackRef.current.some((id) =>
+    state.features.some((f) => f.properties.id === id),
+  );
+
+  // 自动编号 + 补齐面积/分组：编号只分配给还没有 parcelCode 的块，
+  // 从现有最大编号顺延且绝不重号（详见 utils/labelTools）。
+  useEffect(() => {
+    const updates = planLabelUpdates(manualLabelFeatures);
+    updates.forEach((item) => dispatch({ type: 'UPDATE_FEATURE', id: item.id, updates: item.updates }));
   }, [dispatch, manualLabelFeatures]);
 
-  return { labelLayerId, manualLabelFeatures, bounds, labelMode, activateLabelLayer, deactivateLabelLayer, deleteLabelFeature, importRecognitionFeatures };
+  return {
+    labelLayerId,
+    manualLabelFeatures,
+    bounds,
+    labelMode,
+    activateLabelLayer,
+    deactivateLabelLayer,
+    deleteLabelFeature,
+    importRecognitionFeatures,
+    startLabelDrawing,
+    startLabelRemoval,
+    undoLastBlock,
+    canUndo,
+  };
 }
 
 function findLabelLayer(layers: Array<{ id: string; name: string }>, features: any[]) {

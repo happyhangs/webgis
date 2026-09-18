@@ -25,14 +25,6 @@ function _isManualLabelLayerId(id: string) {
   return id === _manualLabelLayerId;
 }
 
-// Track the path-drawn feature count per layer to auto-number even before the FieldDetectPanel effect runs
-let _layerDrawCounts: Record<string, number> = {};
-
-function _nextDrawIndex(layerId: string): number {
-  _layerDrawCounts[layerId] = (_layerDrawCounts[layerId] || 0) + 1;
-  return _layerDrawCounts[layerId];
-}
-
 export function buildFeature(geojson: any, shape: string, layerId: string): GeoJSONFeature {
   const shapeType =
     shape === 'Marker'
@@ -48,9 +40,9 @@ export function buildFeature(geojson: any, shape: string, layerId: string): GeoJ
   let defaultName = isManualLabelLayer ? '' : `未命名${label}`;
 
   if (isManualLabelLayer) {
-    const idx = _nextDrawIndex(layerId);
-    const code = `MAN-${String(idx).padStart(3, '0')}`;
-    defaultName = `农田标定-${code}`;
+    // 不在此处预分配编号：真正的 MAN-xxx 由 useManualLabelLayer 依据现有最大号统一分配，
+    // 避免用计数式临时号造成与历史标注重号（旧实现会让新块先显示为 MAN-001）。
+    defaultName = '农田标定-新块';
   }
   return {
     ...geojson,

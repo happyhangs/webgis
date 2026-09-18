@@ -114,30 +114,14 @@ export default function Toolbar({ onOpenTraining, visible }: { onOpenTraining?: 
 
   // Reset activeTool when component becomes visible again (e.g. returning from TrainingPage)
   useEffect(() => {
-    if (visible) {
+    if (visible && !state.labelMode) {
       const a = api();
       a?.disableDraw();
       a?.disableEdit();
       a?.disableRemoval();
       setActiveTool(null);
     }
-  }, [visible]);
-
-  // Auto-disable drawing tools when label mode is activated externally
-  useEffect(() => {
-    const checkLabelMode = () => {
-      if ((window as any).__webgis_labelMode && activeTool) {
-        const a = api();
-        a?.disableDraw();
-        a?.disableEdit();
-        a?.disableRemoval();
-        setActiveTool(null);
-      }
-    };
-    // Poll for label mode changes (set via FieldDetectPanel)
-    const interval = setInterval(checkLabelMode, 500);
-    return () => clearInterval(interval);
-  }, [activeTool]);
+  }, [visible, state.labelMode]);
 
   const api = () => (window as any).__webgis;
 
@@ -221,6 +205,9 @@ export default function Toolbar({ onOpenTraining, visible }: { onOpenTraining?: 
       const a = api();
       if (!a) return;
 
+      // 标注模式由地图顶部的标注工具条接管，通用工具全部停用（按钮已 disabled，此处兜底）
+      if (state.labelMode) return;
+
       if (activeTool === tool) {
         // Toggle off
         a.disableDraw();
@@ -238,18 +225,10 @@ export default function Toolbar({ onOpenTraining, visible }: { onOpenTraining?: 
       switch (tool) {
         case 'Marker':
         case 'Line':
-          if ((window as any).__webgis_labelMode) {
-            alert('当前处于标注模式，请先在农田识别面板点击“完成标注”。');
-            return;
-          }
           a.enableDraw(tool);
           break;
         case 'Polygon':
         case 'Rectangle':
-          if ((window as any).__webgis_labelMode) {
-            alert('当前处于标注模式，请先退出标注再使用绘制工具。');
-            return;
-          }
           a.enableDraw(
             tool === 'Polygon' ? 'Polygon' : 'Rectangle',
           );
@@ -267,7 +246,7 @@ export default function Toolbar({ onOpenTraining, visible }: { onOpenTraining?: 
       }
       setActiveTool(tool);
     },
-    [activeTool],
+    [activeTool, state.labelMode, state.selectedFeatureId],
   );
 
   const handleExportGeoJSON = () => {
@@ -592,32 +571,36 @@ export default function Toolbar({ onOpenTraining, visible }: { onOpenTraining?: 
       <div className="toolbar-group">
         <button
           className={`toolbar-btn ${activeTool === 'Marker' ? 'active' : ''}`}
-          title="绘制点"
+          title={state.labelMode ? '标注模式中：请用地图顶部的标注工具' : '绘制点'}
           aria-label="绘制点"
+          disabled={state.labelMode}
           onClick={() => handleToolClick('Marker')}
         >
           <MapPin size={18} />
         </button>
         <button
           className={`toolbar-btn ${activeTool === 'Line' ? 'active' : ''}`}
-          title="绘制线"
+          title={state.labelMode ? '标注模式中：请用地图顶部的标注工具' : '绘制线'}
           aria-label="绘制线"
+          disabled={state.labelMode}
           onClick={() => handleToolClick('Line')}
         >
           <Minus size={18} />
         </button>
         <button
           className={`toolbar-btn ${activeTool === 'Polygon' ? 'active' : ''}`}
-          title="绘制面"
+          title={state.labelMode ? '标注模式中：请用地图顶部的标注工具' : '绘制面'}
           aria-label="绘制面"
+          disabled={state.labelMode}
           onClick={() => handleToolClick('Polygon')}
         >
           <Hexagon size={18} />
         </button>
         <button
           className={`toolbar-btn ${activeTool === 'Rectangle' ? 'active' : ''}`}
-          title="绘制矩形"
+          title={state.labelMode ? '标注模式中：请用地图顶部的标注工具' : '绘制矩形'}
           aria-label="绘制矩形"
+          disabled={state.labelMode}
           onClick={() => handleToolClick('Rectangle')}
         >
           <Square size={18} />
@@ -627,16 +610,18 @@ export default function Toolbar({ onOpenTraining, visible }: { onOpenTraining?: 
       <div className="toolbar-group">
         <button
           className={`toolbar-btn ${activeTool === 'Edit' ? 'active' : ''}`}
-          title="编辑几何"
+          title={state.labelMode ? '标注模式中：请先完成标注' : '编辑几何'}
           aria-label="编辑几何"
+          disabled={state.labelMode}
           onClick={() => handleToolClick('Edit')}
         >
           <Pencil size={18} />
         </button>
         <button
           className={`toolbar-btn danger ${activeTool === 'Remove' ? 'active' : ''}`}
-          title="删除要素"
+          title={state.labelMode ? '标注模式中：请用标注工具条的「删错块」' : '删除要素'}
           aria-label="删除要素"
+          disabled={state.labelMode}
           onClick={() => handleToolClick('Remove')}
         >
           <Trash2 size={18} />

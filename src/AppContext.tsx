@@ -14,6 +14,8 @@ interface AppState {
   mapView: MapViewState;
   basemap: string;
   customBasemap: CustomBasemapInput | null;
+  /** 主页面标注模式（临时状态，不随快照持久化；进入训练中心/地图卸载时退出）。 */
+  labelMode: boolean;
 }
 
 export type Action =
@@ -35,6 +37,7 @@ export type Action =
   | { type: 'COPY_FEATURE'; featureId: string; layerId: string }
   | { type: 'BATCH_ADD_FEATURES'; features: GeoJSONFeature[] }
   | { type: 'CLEAR_LAYER_FEATURES'; layerId: string }
+  | { type: 'SET_LABEL_MODE'; on: boolean }
   | { type: 'SET_CUSTOM_BASEMAP'; customBasemap: CustomBasemapInput | null };
 
 function reducer(state: AppState, action: Action): AppState {
@@ -135,6 +138,9 @@ function reducer(state: AppState, action: Action): AppState {
         selectedFeatureId: null,
       };
 
+    case 'SET_LABEL_MODE':
+      return { ...state, labelMode: action.on };
+
     case 'MOVE_FEATURE':
       return {
         ...state,
@@ -187,6 +193,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     mapView: { center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM },
     basemap: DEFAULT_BASEMAP,
     customBasemap: null,
+    labelMode: false,
   });
 
   const restored = useRef(false);

@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Check, ChevronsLeft, Database, Loader2, Map as MapIcon, ScanEye, Sparkles } from 'lucide-react';
+import { Check, ChevronsLeft, Database, Loader2, Map as MapIcon, ScanEye, Sparkles, Square } from 'lucide-react';
 import { useDraggablePanel } from './useDraggablePanel';
 import { stopFloatingPanelButtonEvent, useFloatingPanels } from './FloatingPanelContext';
 import { useManualLabelLayer } from './hooks/useManualLabelLayer';
 import { useAppContext } from './AppContext';
-import { buildAmapDataset, persistDatasetFile } from './hooks/useYoloExport';
+import { persistDatasetFile } from './hooks/useYoloExport';
+import { buildAmapDataset } from './utils/amapDataset';
 import { RESULT_LAYER_NAME, useYoloInference } from './hooks/useYoloInference';
 import { YoloInferenceCard } from './components/YoloInferenceCard';
+import AnnotationToolbar from './components/AnnotationToolbar';
+import type { AnnotationTool } from './components/AnnotationToolbar';
 import { createUploadedImageBlob, readGeoTiffBounds } from './utils/yoloDataset';
 import type { Bounds } from './utils/yoloDataset';
 import type { AdminRegion } from './utils/adminRegions';
@@ -33,7 +36,18 @@ export default function FieldDetectPanel({ onOpenTraining }: { onOpenTraining?: 
   const { state, dispatch } = useAppContext();
   const { isPanelOpen, closePanel } = useFloatingPanels();
   const { panelRef, panelStyle, dragging, dragHandleProps, resizeHandle } = useDraggablePanel();
-  const { manualLabelFeatures, bounds, labelMode, activateLabelLayer, deactivateLabelLayer, importRecognitionFeatures } = useManualLabelLayer();
+  const {
+    manualLabelFeatures,
+    bounds,
+    labelMode,
+    activateLabelLayer,
+    deactivateLabelLayer,
+    importRecognitionFeatures,
+    startLabelDrawing,
+    startLabelRemoval,
+    undoLastBlock,
+    canUndo,
+  } = useManualLabelLayer();
 
   const [modelFile, setModelFile] = useState<File | null>(null);
   const [trainedModel, setTrainedModel] = useState(readLastTrainedModel);
@@ -47,8 +61,10 @@ export default function FieldDetectPanel({ onOpenTraining }: { onOpenTraining?: 
   const [localImageBounds, setLocalImageBounds] = useState<Bounds | null>(null);
   const [localImageStatus, setLocalImageStatus] = useState('');
   const [selectingLocalBounds, setSelectingLocalBounds] = useState(false);
-  const [homeLabeling, setHomeLabeling] = useState(false);
+  const [annTool, setAnnTool] = useState<AnnotationTool>('draw');
   const localPreviewUrlRef = useRef('');
+  /** 数据集生成（逐地块取图）的停止标记。 */
+  const prepareCancelRef = useRef(false);
 
   const {
     handleInference,
@@ -178,17 +194,32 @@ export default function FieldDetectPanel({ onOpenTraining }: { onOpenTraining?: 
       return;
     }
     setPreparingDataset(true);
-    setTrainingMessage('正在把历史标注与对应卫星影像整理为训练集...');
+    prepareCancelRef.current = false;
+    setTrainingMessage(`正在生成训练样本（逐地块高清取样 0/${manualLabelFeatures.length}）...`);
     try {
-      const blob = await buildAmapDataset(manualLabelFeatures, bounds);
+      const result = await buildAmapDataset(manualLabelFeatures, {
+        onProgress: ({ done, total }) =>
+          setTrainingMessage(`正在生成训练样本 ${done}/${total}（逐地块高清取样，可停止）...`),
+        shouldCancel: () => prepareCancelRef.current,
+      });
       const file = new File(
-        [blob],
+        [result.blob],
         `farmland_labels_${new Date().toISOString().slice(0, 10)}.zip`,
         { type: 'application/zip' },
       );
       await persistDatasetFile(file);
-      setTrainingMessage(`已保存并转入 ${manualLabelFeatures.length} 个历史标注。`);
-      onOpenTraining?.(file, null);
+      const failNote = result.failedCount > 0 ? `，${result.failedCount} 个样本取图失败已跳过` : '';
+      if (result.cancelled) {
+        // 用户主动停止：保留已完成的样本，但不强制跳转训练中心
+        setTrainingMessage(
+          `已停止（生成 ${result.sampleCount}/${result.plannedCount} 个样本${failNote}，已保存到训练数据列表，可随时重试）。`,
+        );
+      } else {
+        setTrainingMessage(
+          `已生成 ${result.sampleCount} 个训练样本${failNote}（对应 ${manualLabelFeatures.length} 个标注），转入训练中心。`,
+        );
+        onOpenTraining?.(file, null);
+      }
     } catch (error) {
       setTrainingMessage(error instanceof Error ? error.message : '历史标注训练集生成失败。');
     } finally {
@@ -231,12 +262,27 @@ export default function FieldDetectPanel({ onOpenTraining }: { onOpenTraining?: 
 
   const handleFinishHomeLabeling = useCallback(() => {
     deactivateLabelLayer();
-    setHomeLabeling(false);
+    setAnnTool('draw');
     dispatch({ type: 'SET_CURRENT_LAYER', id: '__default__' });
   }, [deactivateLabelLayer, dispatch]);
 
+  const handleSelectDrawTool = useCallback(() => {
+    setAnnTool('draw');
+    startLabelDrawing();
+  }, [startLabelDrawing]);
+
+  const handleSelectRemoveTool = useCallback(() => {
+    setAnnTool('remove');
+    startLabelRemoval();
+  }, [startLabelRemoval]);
+
+  const handleUndoBlock = useCallback(() => {
+    undoLastBlock();
+  }, [undoLastBlock]);
+
   const handleOpenHomeLabeling = useCallback(async () => {
     const api = (window as Window & { __webgis?: MapAPI }).__webgis;
+    if (labelMode) return;
     setSelectingMapDraft(true);
     setTrainingMessage('请在地图上拖拽框选标注区域，按 Esc 可取消。');
     try {
@@ -257,22 +303,21 @@ export default function FieldDetectPanel({ onOpenTraining }: { onOpenTraining?: 
         api?.flyTo((target.south + target.north) / 2, (target.west + target.east) / 2);
       }, 0);
       // 直接在主页面进入农田人工标定层连续标注模式
+      setAnnTool('draw');
       activateLabelLayer();
-      setHomeLabeling(true);
     } catch (error) {
       setTrainingMessage(error instanceof Error ? error.message : '地图选区读取失败。');
     } finally {
       setSelectingMapDraft(false);
     }
-  }, [activateLabelLayer, state.basemap]);
+  }, [activateLabelLayer, labelMode, state.basemap]);
 
-  useEffect(() => {
-    // 主页面标注模式进行中时关闭面板，自动结束标注，避免状态悬空
-    if (!isPanelOpen('farm') && (homeLabeling || labelMode)) {
-      deactivateLabelLayer();
-      setHomeLabeling(false);
-    }
-  }, [isPanelOpen, homeLabeling, labelMode, deactivateLabelLayer]);
+  // 地图卸载（例如进入训练中心）时退出标注模式，避免状态悬空
+  const deactivateRef = useRef(deactivateLabelLayer);
+  deactivateRef.current = deactivateLabelLayer;
+  useEffect(() => () => {
+    deactivateRef.current();
+  }, []);
 
   // 「农田模型识别」图层中的识别结果（可一键转为人工标定做修正）
   const recognitionFeatures = useMemo(() => {
@@ -302,20 +347,20 @@ export default function FieldDetectPanel({ onOpenTraining }: { onOpenTraining?: 
     }
   }, [dispatch, importRecognitionFeatures, recognitionFeatures, state.layers]);
 
-  if (!isPanelOpen('farm')) return null;
-
   return (
     <>
-      {homeLabeling && (
-        <div className="map-labeling-banner">
-          <span className="map-labeling-dot" />
-          <span className="map-labeling-text">标注模式：沿农田边界连续勾画地块，自动编号</span>
-          <button className="map-labeling-finish" type="button" onClick={handleFinishHomeLabeling}>
-            <Check size={13} />
-            完成标注（{manualLabelFeatures.length} 块）
-          </button>
-        </div>
+      {labelMode && (
+        <AnnotationToolbar
+          count={manualLabelFeatures.length}
+          tool={annTool}
+          canUndo={canUndo}
+          onSelectDraw={handleSelectDrawTool}
+          onSelectRemove={handleSelectRemoveTool}
+          onUndo={handleUndoBlock}
+          onFinish={handleFinishHomeLabeling}
+        />
       )}
+      {isPanelOpen('farm') && (
       <aside ref={panelRef} className={`panel floating-panel farm-detect-panel${dragging ? ' is-dragging' : ''}`} style={panelStyle}>
       <div className="farm-detect-header floating-panel-drag-handle" {...dragHandleProps}>
         <span className="farm-detect-title"><ScanEye size={15} />农田识别</span>
@@ -382,11 +427,11 @@ export default function FieldDetectPanel({ onOpenTraining }: { onOpenTraining?: 
             {preparingDataset ? '正在整理训练集...' : `用现有 ${manualLabelFeatures.length} 个标注训练`}
           </button>
           <button className="farm-secondary-btn" type="button" onClick={handleOpenHomeLabeling}
-            disabled={preparingDataset || selectingMapDraft} style={{ width: '100%', marginTop: 6 }}>
+            disabled={preparingDataset || selectingMapDraft || labelMode} style={{ width: '100%', marginTop: 6 }}>
             {selectingMapDraft ? <Loader2 size={14} className="farm-spin" /> : <MapIcon size={14} />}
-            {selectingMapDraft ? '等待地图框选...' : '框选地图并去标注'}
+            {selectingMapDraft ? '等待地图框选...' : labelMode ? '标注进行中…' : '框选地图并去标注'}
           </button>
-          {homeLabeling && (
+          {labelMode && (
             <button className="farm-primary-btn" type="button" onClick={handleFinishHomeLabeling}
               style={{ width: '100%', marginTop: 6 }}>
               <Check size={14} />
@@ -399,7 +444,14 @@ export default function FieldDetectPanel({ onOpenTraining }: { onOpenTraining?: 
           </button>
           {trainingMessage && (
             <div className={`farm-yolo-message${trainingMessage.includes('失败') ? ' error' : ' success'}`} style={{ marginTop: 6 }}>
-              {trainingMessage}
+              <span>{trainingMessage}</span>
+              {preparingDataset && (
+                <button className="farm-stop-btn" type="button"
+                  onClick={() => { prepareCancelRef.current = true; }}
+                  title="停止生成，已完成的样本会保留" aria-label="停止生成训练样本">
+                  <Square size={11} />停止
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -413,6 +465,7 @@ export default function FieldDetectPanel({ onOpenTraining }: { onOpenTraining?: 
       <div {...resizeHandle('se')} />
       <div {...resizeHandle('sw')} />
       </aside>
+      )}
     </>
   );
 }

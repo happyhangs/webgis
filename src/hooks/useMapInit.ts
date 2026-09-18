@@ -15,6 +15,7 @@ import {
 } from '../utils/mapHelpers';
 import type { GeoJSONFeature, MapViewState } from '../types';
 import type { Action } from '../AppContext';
+import { computeAreaProps } from '../utils/labelTools';
 
 export function useMapInit(
   containerRef: React.RefObject<HTMLDivElement | null>,
@@ -98,6 +99,10 @@ export function useMapInit(
         ...geojson,
         properties: { ...feature.properties },
       };
+      // 拖动顶点修改几何后重算面积，避免训练元数据里的亩数停留在旧值
+      if (updated.properties.source === 'manual-farmland-label') {
+        updated.properties = { ...updated.properties, ...computeAreaProps(updated as GeoJSONFeature) };
+      }
       layer.feature = updated;
       clearLayerTooltip(layer);
 
@@ -109,10 +114,36 @@ export function useMapInit(
 
     map.on('pm:remove', (e: any) => {
       const feature = e.layer.feature as GeoJSONFeature | undefined;
-      if (feature) {
-        layerMapRef.current.delete(feature.properties.id);
-        dispatch({ type: 'DELETE_FEATURE', id: feature.properties.id });
+      if (!feature) return;
+      // 标注模式下删除工具只作用于标定层地块，避免误删其他图层要素
+      if ((window as any).__webgis_labelMode && feature.properties.source !== 'manual-farmland-label') {
+        return;
       }
+      layerMapRef.current.delete(feature.properties.id);
+      dispatch({ type: 'DELETE_FEATURE', id: feature.properties.id });
+    });
+
+    // 标注模式：Esc 取消当前画到一半的块（清空顶点后 30ms 内自动续画，见上面的 drawend）
+    const onLabelKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      const win = window as any;
+      if (!win.__webgis_labelMode || !win.__webgis_labelDrawIntended) return;
+      map.pm.disableDraw();
+    };
+    document.addEventListener('keydown', onLabelKeyDown);
+
+    // 标注模式：Esc / 中断绘制导致连续画块退出时自动续画，避免"标不了"的死状态
+    map.on('pm:drawend', () => {
+      const win = window as any;
+      if (!win.__webgis_labelMode || !win.__webgis_labelDrawIntended) return;
+      window.setTimeout(() => {
+        if (!win.__webgis_labelMode || !win.__webgis_labelDrawIntended) return;
+        map.pm.enableDraw('Polygon' as any, {
+          continueDrawing: true,
+          snappable: false,
+          snapMiddle: false,
+        });
+      }, 30);
     });
 
     map.on('moveend', () => {
@@ -127,6 +158,7 @@ export function useMapInit(
     mapRef.current = map;
 
     return () => {
+      document.removeEventListener('keydown', onLabelKeyDown);
       map.remove();
       layerMapRef.current.clear();
       selectedLayerRef.current = null;
