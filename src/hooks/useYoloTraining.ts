@@ -5,7 +5,7 @@ import { readSSEStream } from '../utils/sseStream';
 import { readableTrainError } from '../utils/trainError';
 import type { Bounds, ManualDatasetSource } from '../utils/yoloDataset';
 import type { GeoJSONFeature } from '../types';
-import { buildAmapDataset } from './useYoloExport';
+import { buildAmapDataset } from '../utils/amapDataset';
 import { DEFAULT_BACKEND_URL } from '../backendUrl';
 
 const LAST_MODEL_PATH_KEY = 'webgis:lastTrainedModelPath';
@@ -83,7 +83,9 @@ export function useYoloTraining(
       const updates = buildManualLabelUpdates(manualLabelFeatures);
       updates.forEach((item) => dispatch({ type: 'UPDATE_FEATURE', id: item.id, updates: item.updates }));
       const blob = manualSource === 'amap'
-        ? await buildAmapDataset(manualLabelFeatures, bounds)
+        ? (await buildAmapDataset(manualLabelFeatures, {
+            onProgress: ({ done, total }) => setTrainMessage(`正在生成训练样本 ${done}/${total}（逐地块高清取样）...`),
+          })).blob
         : await exportManualYoloDatasetToBlob({
           layers: state.layers, features: state.features,
           boundsLayerId: labelLayerId, labelLayerId,

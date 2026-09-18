@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useAppContext } from '../AppContext';
-import { buildManualLabelUpdates, buildYoloDatasetZipFromImage, exportManualYoloDatasetToBlob } from '../utils/yoloDataset';
-import { fitAmapStaticToWgsBounds } from '../utils/amapStatic';
+import { buildManualLabelUpdates, exportManualYoloDatasetToBlob } from '../utils/yoloDataset';
+import { buildAmapDataset } from '../utils/amapDataset';
 import { DEFAULT_BACKEND_URL } from '../backendUrl';
 import type { Bounds, ManualDatasetSource } from '../utils/yoloDataset';
 import type { GeoJSONFeature } from '../types';
@@ -33,7 +33,9 @@ export function useYoloExport(
     const updates = buildManualLabelUpdates(manualLabelFeatures);
     updates.forEach((item) => dispatch({ type: 'UPDATE_FEATURE', id: item.id, updates: item.updates }));
     const blob = manualSource === 'amap'
-      ? await buildAmapDataset(manualLabelFeatures, bounds)
+      ? (await buildAmapDataset(manualLabelFeatures, {
+          onProgress: ({ done, total }) => setManualMessage(`正在生成训练样本 ${done}/${total}（逐地块高清取样）...`),
+        })).blob
       : await exportManualYoloDatasetToBlob({
         layers: state.layers, features: state.features,
         boundsLayerId: labelLayerId, labelLayerId,
@@ -77,16 +79,6 @@ export function useYoloExport(
   }, [buildYoloDatasetFile]);
 
   return { handleBuildTrainingDataset, handleExportYoloDataset, manualExporting, manualMessage, setManualMessage };
-}
-
-export async function buildAmapDataset(features: GeoJSONFeature[], bounds: Bounds): Promise<Blob> {
-  const fit = fitAmapStaticToWgsBounds(bounds);
-  const [lng, lat] = fit.amapCenter;
-  const response = await fetch(
-    `${DEFAULT_BACKEND_URL}/amap-static?location=${lng.toFixed(6)},${lat.toFixed(6)}&zoom=${fit.zoom}&size=640*640&style=satellite`,
-  );
-  if (!response.ok) throw new Error('无法获取与历史标注匹配的卫星训练影像。');
-  return buildYoloDatasetZipFromImage(await response.blob(), features, fit.bounds, `amap_labels_z${fit.zoom}`);
 }
 
 export async function persistDatasetFile(file: File): Promise<void> {
