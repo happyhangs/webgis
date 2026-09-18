@@ -149,6 +149,31 @@ function bboxContainment(small: ViewBounds, big: ViewBounds): number {
   return areaSmall > 0 ? inter / areaSmall : 0;
 }
 
+/** 判定两个地块是否为同一块（同一套包围盒规则，供去重与预标注复用）。 */
+function overlapsWithBBoxes(
+  areaA: number,
+  bboxA: ViewBounds,
+  areaB: number,
+  bboxB: ViewBounds,
+): boolean {
+  const ratio = Math.min(areaA, areaB) / Math.max(areaA, areaB);
+  if (ratio < 0.15) return false; // 面积差太多，不是同一块地（如大田缝隙里的小地块）
+  if (bboxIou(bboxA, bboxB) >= 0.4 && ratio >= 0.5) return true;
+  // 残缺副本：较小者几乎完全包含在较大者的包围盒内
+  if (areaA <= areaB) return bboxContainment(bboxA, bboxB) >= 0.85;
+  return bboxContainment(bboxB, bboxA) >= 0.85;
+}
+
+/** 公开的单对判定：两个地块是否视为同一块。 */
+export function parcelsOverlap(a: DedupInput, b: DedupInput): boolean {
+  return overlapsWithBBoxes(
+    Math.max(1, a.areaSquareMeters),
+    bboxOf(a.coordinates),
+    Math.max(1, b.areaSquareMeters),
+    bboxOf(b.coordinates),
+  );
+}
+
 /**
  * 跨瓦片去重：地块被瓦片边界切开时会在两张瓦片分别检出（含重叠区）。
  * 规则（满足任一即视为同一地块，保留面积更大者）：
@@ -164,17 +189,9 @@ export function dedupeOverlappingParcels<T extends DedupInput>(items: T[]): T[] 
   for (const item of sorted) {
     const bbox = bboxOf(item.coordinates);
     const area = Math.max(1, item.areaSquareMeters);
-    const isDuplicate = kept.some(({ item: other, bbox: otherBbox }) => {
-      const otherArea = Math.max(1, other.areaSquareMeters);
-      const ratio = Math.min(area, otherArea) / Math.max(area, otherArea);
-      if (ratio < 0.15) return false; // 面积差太多，不是同一块地（如大田缝隙里的小地块）
-      if (bboxIou(bbox, otherBbox) >= 0.4 && ratio >= 0.5) return true;
-      // 残缺副本：较小者几乎完全包含在较大者的包围盒内
-      if (area <= otherArea) {
-        return ratio >= 0.15 && bboxContainment(bbox, otherBbox) >= 0.85;
-      }
-      return ratio >= 0.15 && bboxContainment(otherBbox, bbox) >= 0.85;
-    });
+    const isDuplicate = kept.some(({ item: other, bbox: otherBbox }) =>
+      overlapsWithBBoxes(area, bbox, Math.max(1, other.areaSquareMeters), otherBbox),
+    );
     if (!isDuplicate) kept.push({ item, bbox });
   }
   return kept.map(({ item }) => item);

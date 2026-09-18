@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Check, ChevronsLeft, Database, Loader2, Map as MapIcon, ScanEye } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Check, ChevronsLeft, Database, Loader2, Map as MapIcon, ScanEye, Sparkles } from 'lucide-react';
 import { useDraggablePanel } from './useDraggablePanel';
 import { stopFloatingPanelButtonEvent, useFloatingPanels } from './FloatingPanelContext';
 import { useManualLabelLayer } from './hooks/useManualLabelLayer';
 import { useAppContext } from './AppContext';
 import { buildAmapDataset, persistDatasetFile } from './hooks/useYoloExport';
-import { useYoloInference } from './hooks/useYoloInference';
+import { RESULT_LAYER_NAME, useYoloInference } from './hooks/useYoloInference';
 import { YoloInferenceCard } from './components/YoloInferenceCard';
 import { createUploadedImageBlob, readGeoTiffBounds } from './utils/yoloDataset';
 import type { Bounds } from './utils/yoloDataset';
@@ -33,7 +33,7 @@ export default function FieldDetectPanel({ onOpenTraining }: { onOpenTraining?: 
   const { state, dispatch } = useAppContext();
   const { isPanelOpen, closePanel } = useFloatingPanels();
   const { panelRef, panelStyle, dragging, dragHandleProps, resizeHandle } = useDraggablePanel();
-  const { manualLabelFeatures, bounds, labelMode, activateLabelLayer, deactivateLabelLayer } = useManualLabelLayer();
+  const { manualLabelFeatures, bounds, labelMode, activateLabelLayer, deactivateLabelLayer, importRecognitionFeatures } = useManualLabelLayer();
 
   const [modelFile, setModelFile] = useState<File | null>(null);
   const [trainedModel, setTrainedModel] = useState(readLastTrainedModel);
@@ -274,6 +274,31 @@ export default function FieldDetectPanel({ onOpenTraining }: { onOpenTraining?: 
     }
   }, [isPanelOpen, homeLabeling, labelMode, deactivateLabelLayer]);
 
+  // 「农田模型识别」图层中的识别结果（可一键转为人工标定做修正）
+  const recognitionFeatures = useMemo(() => {
+    const resultLayer = state.layers.find((layer) => layer.name === RESULT_LAYER_NAME);
+    if (!resultLayer) return [] as GeoJSONFeature[];
+    return state.features.filter(
+      (feature) =>
+        feature.properties.layerId === resultLayer.id &&
+        (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon'),
+    );
+  }, [state.features, state.layers]);
+
+  const handleAdoptRecognition = useCallback(() => {
+    if (recognitionFeatures.length === 0) return;
+    const { added, skipped } = importRecognitionFeatures(recognitionFeatures);
+    if (added > 0) {
+      const resultLayer = state.layers.find((layer) => layer.name === RESULT_LAYER_NAME);
+      if (resultLayer) dispatch({ type: 'CLEAR_LAYER_FEATURES', layerId: resultLayer.id });
+      setTrainingMessage(
+        `已把 ${added} 块识别结果转为人工标定${skipped > 0 ? `（跳过 ${skipped} 块与已有标定重复）` : ''}，可在地图上修正边界后训练。`,
+      );
+    } else {
+      setTrainingMessage(`识别结果与已有标定重复（${skipped} 块），无需转换。`);
+    }
+  }, [dispatch, importRecognitionFeatures, recognitionFeatures, state.layers]);
+
   if (!isPanelOpen('farm')) return null;
 
   return (
@@ -335,7 +360,18 @@ export default function FieldDetectPanel({ onOpenTraining }: { onOpenTraining?: 
           </div>
           <div className="farm-step-meta">
             <span>历史面标注 <strong>{manualLabelFeatures.length}</strong> 个</span>
+            {recognitionFeatures.length > 0 && (
+              <span>识别结果 <strong>{recognitionFeatures.length}</strong> 块待处理</span>
+            )}
           </div>
+          {recognitionFeatures.length > 0 && (
+            <button className="farm-secondary-btn" type="button" onClick={handleAdoptRecognition}
+              disabled={preparingDataset || selectingMapDraft}
+              style={{ width: '100%', marginTop: 8 }}>
+              <Sparkles size={14} />
+              {`把识别结果转为人工标定（${recognitionFeatures.length} 块）`}
+            </button>
+          )}
           <button className="farm-primary-btn" type="button" onClick={handleOpenTrainingWithLabels}
             disabled={preparingDataset || selectingMapDraft || manualLabelFeatures.length === 0}
             style={{ width: '100%', marginTop: 8 }}>

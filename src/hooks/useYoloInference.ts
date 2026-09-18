@@ -12,7 +12,7 @@ import type { Bounds, ManualDatasetSource } from '../utils/yoloDataset';
 import type { MapViewSnapshot } from '../utils/mapAPI';
 import { DEFAULT_BACKEND_URL } from '../backendUrl';
 
-const RESULT_LAYER_NAME = '农田模型识别';
+export const RESULT_LAYER_NAME = '农田模型识别';
 /** 瓦片批处理的张数上限；超过则规划阶段自动降低缩放。 */
 const MAX_TILES = 256;
 /** 瓦片规划的最低缩放：再低地块像素过小，宁可不识别。 */
@@ -202,7 +202,7 @@ export function useYoloInference(
 
     const totalAreaMu = features.reduce((sum, feature) => sum + (feature.properties.parcelAreaMu || 0), 0);
     setInferenceMessage(
-      `识别完成：${features.length} 个地块${totalAreaMu > 0 ? `，约 ${totalAreaMu.toFixed(2)} 亩` : ''}，已写入"${RESULT_LAYER_NAME}"图层${suffix}。`,
+      `识别完成：${features.length} 个地块${totalAreaMu > 0 ? `，约 ${totalAreaMu.toFixed(2)} 亩` : ''}，已写入"${RESULT_LAYER_NAME}"图层${suffix}。可在下方「训练与标注」一键转为人工标定修正。`,
     );
   }, [dispatch, state.layers]);
 

@@ -6,7 +6,11 @@ import {
   getLayerBounds,
   buildManualLabelUpdates,
 } from '../utils/yoloDataset';
+import { adoptRecognitionAsLabels } from '../utils/preAnnotation';
 import type { Bounds } from '../utils/yoloDataset';
+import type { GeoJSONFeature } from '../types';
+
+export const MANUAL_LABEL_LAYER_NAME = '农田人工标定';
 
 export function useManualLabelLayer() {
   const { state, dispatch } = useAppContext();
@@ -68,6 +72,40 @@ export function useManualLabelLayer() {
     api?.disableDraw?.();
     setLabelMode(false);
   }, []);
+
+  /**
+   * 把识别结果图层中的面要素转入人工标定：
+   * 确保标定层存在 → 跳过与已有标定重叠的块 → 生成 MAN-xxx 新标定。
+   * 返回新增/跳过数量，由调用方决定消息与源图层清理。
+   */
+  const importRecognitionFeatures = useCallback((recognitionFeatures: GeoJSONFeature[]) => {
+    let lid = labelLayerId;
+    if (!lid) {
+      const existing = findLabelLayer(state.layers, state.features);
+      if (existing) {
+        lid = existing.id;
+        if (existing.name !== MANUAL_LABEL_LAYER_NAME) {
+          dispatch({ type: 'RENAME_LAYER', id: existing.id, name: MANUAL_LABEL_LAYER_NAME });
+        }
+      } else {
+        lid = crypto.randomUUID();
+        dispatch({ type: 'ADD_LAYER', layer: { id: lid, name: MANUAL_LABEL_LAYER_NAME, visible: true } });
+      }
+      setLabelLayerId(lid);
+      setManualLabelLayerId(lid);
+    }
+    const existingLabels = getManualLabelFeatures(state.features, lid);
+    const { features, skipped } = adoptRecognitionAsLabels({
+      recognitionFeatures,
+      existingLabels,
+      labelLayerId: lid,
+    });
+    if (features.length > 0) {
+      dispatch({ type: 'BATCH_ADD_FEATURES', features });
+      dispatch({ type: 'SET_CURRENT_LAYER', id: lid });
+    }
+    return { added: features.length, skipped, layerId: lid };
+  }, [dispatch, labelLayerId, state.features, state.layers]);
 
   const deleteLabelFeature = useCallback((featureId: string) => {
     dispatch({ type: 'DELETE_FEATURE', id: featureId });
@@ -138,7 +176,7 @@ export function useManualLabelLayer() {
     }
   }, [dispatch, manualLabelFeatures]);
 
-  return { labelLayerId, manualLabelFeatures, bounds, labelMode, activateLabelLayer, deactivateLabelLayer, deleteLabelFeature };
+  return { labelLayerId, manualLabelFeatures, bounds, labelMode, activateLabelLayer, deactivateLabelLayer, deleteLabelFeature, importRecognitionFeatures };
 }
 
 function findLabelLayer(layers: Array<{ id: string; name: string }>, features: any[]) {
