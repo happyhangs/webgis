@@ -119,6 +119,25 @@ describe('adoptRecognitionAsLabels', () => {
     expect(String(features[1].properties.description)).toContain('90%');
   });
 
+  it('reports low-confidence count among converted blocks only', () => {
+    const existing = [makeRect(86.0, 44.5, 86.002, 44.502, { parcelCode: 'MAN-001', parcelIndex: 1 })];
+    const recognition = [
+      makeRect(86.0001, 44.5001, 86.0021, 44.5021, { parcelConfidence: 0.2 }), // 与已有标定重复且低置信 → 应跳过且不计入
+      makeRect(86.01, 44.5, 86.011, 44.501, { parcelConfidence: 0.3 }),
+      makeRect(86.02, 44.5, 86.021, 44.501, { parcelConfidence: 0.49 }),
+      makeRect(86.03, 44.5, 86.031, 44.501, { parcelConfidence: 0.8 }),
+    ];
+    const { features, skipped, lowConfidence } = adoptRecognitionAsLabels({
+      recognitionFeatures: recognition,
+      existingLabels: existing,
+      labelLayerId: 'layer-label',
+    });
+
+    expect(features).toHaveLength(3);
+    expect(skipped).toBe(1);
+    expect(lowConfidence).toBe(2);
+  });
+
   it('ignores non-polygon geometries', () => {
     const point: GeoJSONFeature = {
       type: 'Feature',

@@ -7,6 +7,7 @@
 import { getDefaultFeatureStyle } from './featureStyle';
 import { polygonAreaSquareMeters } from './geoBounds';
 import { parcelsOverlap } from './tileBatch';
+import { LOW_CONFIDENCE } from './fieldReview';
 import type { DedupInput } from './tileBatch';
 import type { GeoJSONFeature } from '../types';
 
@@ -26,6 +27,8 @@ export interface AdoptRecognitionResult {
   features: GeoJSONFeature[];
   /** 因与已有标定重叠而跳过的数量。 */
   skipped: number;
+  /** 新增块中模型置信度低于阈值（建议优先核对）的数量。 */
+  lowConfidence: number;
 }
 
 /** 从既有编号（parcelIndex 与 MAN-xxx 代码）推算下一个可用序号。 */
@@ -75,6 +78,7 @@ export function adoptRecognitionAsLabels(options: AdoptRecognitionOptions): Adop
   let serial = nextLabelIndex(existingLabels);
   const features: GeoJSONFeature[] = [];
   let skipped = 0;
+  let lowConfidence = 0;
 
   for (const source of recognitionFeatures) {
     if (source.geometry.type !== 'Polygon' && source.geometry.type !== 'MultiPolygon') continue;
@@ -91,6 +95,7 @@ export function adoptRecognitionAsLabels(options: AdoptRecognitionOptions): Adop
     const confidenceText = Number.isFinite(confidence) && confidence > 0
       ? `模型预标注，置信度 ${(confidence * 100).toFixed(0)}%，请核对修正`
       : '模型预标注，请核对修正';
+    if (Number.isFinite(confidence) && confidence < LOW_CONFIDENCE) lowConfidence += 1;
 
     features.push({
       type: 'Feature',
@@ -120,5 +125,5 @@ export function adoptRecognitionAsLabels(options: AdoptRecognitionOptions): Adop
     serial += 1;
   }
 
-  return { features, skipped };
+  return { features, skipped, lowConfidence };
 }

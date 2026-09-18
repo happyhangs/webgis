@@ -1,5 +1,6 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  ChevronRight,
   ChevronsLeft,
   Grid3x3,
   TrendingUp,
@@ -11,6 +12,15 @@ import { useAppContext } from './AppContext';
 import type { GeoJSONFeature } from './types';
 import { useDraggablePanel } from './useDraggablePanel';
 import { stopFloatingPanelButtonEvent, useFloatingPanels } from './FloatingPanelContext';
+import {
+  confidenceLevel,
+  featureConfidence,
+  fieldSortLabel,
+  nextReviewIndex,
+  nextSortBy,
+  sortFieldList,
+} from './utils/fieldReview';
+import type { FieldSortBy } from './utils/fieldReview';
 
 function safeAreaMu(feature: GeoJSONFeature): number | null {
   if (
@@ -31,8 +41,9 @@ export default function FieldPanel() {
   const { state, dispatch } = useAppContext();
   const { isPanelOpen, closePanel } = useFloatingPanels();
   const [filterLayer, setFilterLayer] = useState<string>('__all__');
-  const [sortBy, setSortBy] = useState<'name' | 'area'>('area');
+  const [sortBy, setSortBy] = useState<FieldSortBy>('area');
   const { panelRef, panelStyle, dragging, dragHandleProps, resizeHandle } = useDraggablePanel();
+  const listRef = useRef<HTMLDivElement>(null);
 
   const polygons = useMemo(() => {
     return state.features.filter((f) => {
@@ -48,9 +59,7 @@ export default function FieldPanel() {
       const areaMu = safeAreaMu(f);
       return areaMu === null ? [] : [{ feature: f, areaMu }];
     });
-    if (sortBy === 'area') list.sort((a, b) => b.areaMu - a.areaMu);
-    else list.sort((a, b) => a.feature.properties.name.localeCompare(b.feature.properties.name, 'zh'));
-    return list;
+    return sortFieldList(list, sortBy);
   }, [polygons, sortBy]);
 
   const totalMu = useMemo(() => sorted.reduce((s, f) => s + f.areaMu, 0), [sorted]);
@@ -77,6 +86,20 @@ export default function FieldPanel() {
     dispatch({ type: 'SELECT_FEATURE', id: feature.properties.id });
     (window as any).__webgis?.flyToFeature?.(feature);
   }, [dispatch]);
+
+  /** 逐块核对：跳到当前选中项的下一块（按当前排序，末尾回绕）。 */
+  const handleNext = useCallback(() => {
+    if (sorted.length === 0) return;
+    const currentIndex = sorted.findIndex((item) => item.feature.properties.id === state.selectedFeatureId);
+    const nextIndex = nextReviewIndex(sorted.length, currentIndex);
+    if (nextIndex >= 0) handleFlyTo(sorted[nextIndex].feature);
+  }, [sorted, state.selectedFeatureId, handleFlyTo]);
+
+  // 选中变化时把列表项滚到可见区域（核对模式联动地图）
+  useEffect(() => {
+    if (!state.selectedFeatureId || !listRef.current) return;
+    listRef.current.querySelector('.field-item.active')?.scrollIntoView({ block: 'nearest' });
+  }, [state.selectedFeatureId]);
 
   if (!isPanelOpen('field')) return null;
 
@@ -122,10 +145,21 @@ export default function FieldPanel() {
             ))}
           </select>
           <button
-            className={`field-sort-btn ${sortBy === 'area' ? 'active' : ''}`}
-            onClick={() => setSortBy(sortBy === 'area' ? 'name' : 'area')}
+            className={`field-sort-btn ${sortBy !== 'area' ? 'active' : ''}`}
+            onClick={() => setSortBy(nextSortBy(sortBy))}
+            title="切换排序：面积 → 置信度 → 名称"
           >
-            {sortBy === 'area' ? '面积↓' : '名称'}
+            {fieldSortLabel(sortBy)}
+          </button>
+          <button
+            className="field-sort-btn field-next-btn"
+            onClick={handleNext}
+            disabled={sorted.length === 0}
+            title="逐块核对：定位到下一块（按当前排序）"
+            aria-label="下一块"
+          >
+            <ChevronRight size={13} />
+            下一块
           </button>
         </div>
 
@@ -150,26 +184,36 @@ export default function FieldPanel() {
             暂无面状地块。<br />导入KML或GeoJSON面数据后自动统计。
           </div>
         ) : (
-          <div className="field-list">
-            {sorted.map(({ feature, areaMu }) => (
-              <div
-                key={feature.properties.id}
-                className="field-item"
-                onClick={() => handleFlyTo(feature)}
-                title="点击定位到该地块"
-              >
-                <span className="field-color" style={{ backgroundColor: feature.properties.color }} />
-                <span className="field-name">
-                  {feature.properties.parcelCode && (
-                    <span className="field-code">{feature.properties.parcelCode}</span>
-                  )}
-                  <span className="field-name-text">
-                    {feature.properties.parcelGroup || feature.properties.name}
+          <div className="field-list" ref={listRef}>
+            {sorted.map(({ feature, areaMu }) => {
+              const confidence = featureConfidence(feature);
+              const level = confidenceLevel(confidence);
+              const active = feature.properties.id === state.selectedFeatureId;
+              return (
+                <div
+                  key={feature.properties.id}
+                  className={`field-item${active ? ' active' : ''}`}
+                  onClick={() => handleFlyTo(feature)}
+                  title="点击定位到该地块"
+                >
+                  <span className="field-color" style={{ backgroundColor: feature.properties.color }} />
+                  <span className="field-name">
+                    {feature.properties.parcelCode && (
+                      <span className="field-code">{feature.properties.parcelCode}</span>
+                    )}
+                    <span className="field-name-text">
+                      {feature.properties.parcelGroup || feature.properties.name}
+                    </span>
                   </span>
-                </span>
-                <span className="field-mu">{areaMu.toFixed(1)} 亩</span>
-              </div>
-            ))}
+                  {level && confidence !== null && (
+                    <span className={`field-conf ${level}`} title={`模型置信度 ${(confidence * 100).toFixed(0)}%`}>
+                      {Math.round(confidence * 100)}%
+                    </span>
+                  )}
+                  <span className="field-mu">{areaMu.toFixed(1)} 亩</span>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

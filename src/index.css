@@ -829,9 +829,29 @@ button {
   font-size: 12px;
 }
 .field-item:hover { background: var(--blue-soft); }
+.field-item.active { background: var(--accent-soft); }
 .field-color { width: 10px; height: 10px; border-radius: 4px; flex-shrink: 0; }
 .field-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .field-mu { color: var(--blue); font-weight: 600; font-size: 12px; flex-shrink: 0; }
+.field-conf {
+  flex-shrink: 0;
+  padding: 1px 5px;
+  border-radius: 5px;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+.field-conf.high { background: var(--field-soft); color: var(--field); }
+.field-conf.mid { background: var(--gold-soft); color: var(--gold); }
+.field-conf.low { background: var(--danger-soft); color: var(--danger); }
+.field-next-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 8px;
+}
+.field-next-btn:disabled { cursor: not-allowed; opacity: 0.58; }
 
 /* ===== Field Detect Panel ===== */
 .detect-launcher {

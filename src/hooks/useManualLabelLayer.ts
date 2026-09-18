@@ -95,7 +95,7 @@ export function useManualLabelLayer() {
       setManualLabelLayerId(lid);
     }
     const existingLabels = getManualLabelFeatures(state.features, lid);
-    const { features, skipped } = adoptRecognitionAsLabels({
+    const { features, skipped, lowConfidence } = adoptRecognitionAsLabels({
       recognitionFeatures,
       existingLabels,
       labelLayerId: lid,
@@ -104,7 +104,7 @@ export function useManualLabelLayer() {
       dispatch({ type: 'BATCH_ADD_FEATURES', features });
       dispatch({ type: 'SET_CURRENT_LAYER', id: lid });
     }
-    return { added: features.length, skipped, layerId: lid };
+    return { added: features.length, skipped, lowConfidence, layerId: lid };
   }, [dispatch, labelLayerId, state.features, state.layers]);
 
   const deleteLabelFeature = useCallback((featureId: string) => {

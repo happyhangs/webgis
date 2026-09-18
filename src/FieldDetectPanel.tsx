@@ -287,12 +287,15 @@ export default function FieldDetectPanel({ onOpenTraining }: { onOpenTraining?: 
 
   const handleAdoptRecognition = useCallback(() => {
     if (recognitionFeatures.length === 0) return;
-    const { added, skipped } = importRecognitionFeatures(recognitionFeatures);
+    const { added, skipped, lowConfidence } = importRecognitionFeatures(recognitionFeatures);
     if (added > 0) {
       const resultLayer = state.layers.find((layer) => layer.name === RESULT_LAYER_NAME);
       if (resultLayer) dispatch({ type: 'CLEAR_LAYER_FEATURES', layerId: resultLayer.id });
+      const base = `已把 ${added} 块识别结果转为人工标定${skipped > 0 ? `（跳过 ${skipped} 块与已有标定重复）` : ''}`;
       setTrainingMessage(
-        `已把 ${added} 块识别结果转为人工标定${skipped > 0 ? `（跳过 ${skipped} 块与已有标定重复）` : ''}，可在地图上修正边界后训练。`,
+        lowConfidence > 0
+          ? `${base}；其中 ${lowConfidence} 块置信度低于 50%，建议在「地块管理」按置信度排序优先核对。`
+          : `${base}，可在「地块管理」逐块核对后训练。`,
       );
     } else {
       setTrainingMessage(`识别结果与已有标定重复（${skipped} 块），无需转换。`);
