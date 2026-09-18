@@ -1,5 +1,10 @@
 # Bugs And Risks
 
+## 2026-09-18 识别结果一键转为人工标定（预标注，本轮）
+- Feature: 新链路「模型识别 → 一键转为可编辑标定 → 修正 → 训练」。`src/utils/preAnnotation.ts` 的 `adoptRecognitionAsLabels`：识别面 → MAN-xxx（续号取 parcelIndex 与 MAN 代码最大值 +1）、与已有标定按包围盒规则去重跳过、置信度写入描述（"模型预标注，置信度 NN%，请核对修正"）；`useManualLabelLayer.importRecognitionFeatures` 确保标定层存在并批量写入；农田识别面板「训练与标注」出现「把识别结果转为人工标定（N 块）」按钮，转换后清空识别结果图层。单测 6 例（65 用例全过）。
+- Verified: 浏览器 E2E —— 109 块识别结果一键转入 → 标定层 60→169、编号 MAN-061..MAN-169 连续、识别层清空计数 0、按钮消失、消息与 meta 正确；地图渲染正常。测试数据已还原（保留用户 60 块标定）。
+- Lesson: 测试数据清理必须**双端同步**（localStorage + 后端 POST /state）。应用加载时比较两侧 `savedAt` 取较新者——只清 localStorage 会被后端较新副本回滚（上轮清理"丢失"的真实原因）。清理时以 `Date.now()` 重写 savedAt 并 POST `/state`。
+
 ## 2026-09-17 瓦片批处理可中途停止（本轮）
 - Resolved: 长批次（上百张瓦片、约 10 分钟）新增停止能力：`useYoloInference` 的 `cancelRef` + 每张瓦片前检查；停止后已收集结果照常合并去重写入图层，消息标注"已手动停止（完成 N/M 张）"。UI 在识别进行中于消息条右侧显示"停止"按钮。提交 `542edfd`。
 - Verified: 浏览器实测 28 张 z16 批次跑到第 13 张时点停止 → 109 个地块 / 11952 亩照常写入图层（去重 37 个），消息与按钮状态正确。停止功能不影响单图路径（无长循环）。
