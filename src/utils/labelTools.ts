@@ -3,8 +3,27 @@ import type { GeoJSONFeature } from '../types';
 
 export const MANUAL_LABEL_SOURCE = 'manual-farmland-label';
 
+/** 训练中心草图写回图层时使用的编号前缀（与 MAN-xxx 并存，来源可辨）。 */
+export const TRAINING_LABEL_PREFIX = '训练标注-';
+
 export function formatLabelCode(index: number): string {
   return `MAN-${String(index).padStart(3, '0')}`;
+}
+
+/**
+ * 现有「训练标注-N」编号的最大 N。
+ * 训练中心写回图层时以此为基准顺延，避免旧实现用全库要素数当偏移量
+ * 造成的重号/跳号（删除要素后计数回退即撞号）。
+ */
+export function maxTrainingLabelIndex(features: GeoJSONFeature[]): number {
+  let max = 0;
+  for (const feature of features) {
+    const matched = new RegExp(`^${TRAINING_LABEL_PREFIX}(\\d+)$`).exec(
+      String(feature.properties.parcelCode || ''),
+    );
+    if (matched) max = Math.max(max, Number(matched[1]));
+  }
+  return max;
 }
 
 function parseLabelCode(code: unknown): number | null {

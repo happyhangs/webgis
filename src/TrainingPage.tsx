@@ -26,6 +26,8 @@ import { useAppContext } from './AppContext';
 import { useFloatingPanels } from './FloatingPanelContext';
 import type { GeoJSONFeature, TrainingMapDraft } from './types';
 import { getDefaultFeatureStyle } from './utils/featureStyle';
+import { computeAreaProps, maxTrainingLabelIndex, TRAINING_LABEL_PREFIX } from './utils/labelTools';
+import { MANUAL_LABEL_LAYER_NAME } from './hooks/useManualLabelLayer';
 import { readableTrainError } from './utils/trainError';
 import { buildYoloDatasetZipFromImage } from './utils/yoloDataset';
 import { AMAP_STATIC_SIZE } from './utils/amapStatic';
@@ -98,7 +100,6 @@ interface DraftView {
   y: number;
 }
 
-const MANUAL_LABEL_LAYER_NAME = '农田人工标定';
 const DEFAULT_DRAFT_COLOR = '#2f8f5b';
 const DEFAULT_DRAFT_SIZE = 520;
 const TILE_SIZE = 256;
@@ -142,13 +143,6 @@ function formatDraftBounds(bounds: TrainingMapDraft['bounds']): string {
   return `${bounds.west.toFixed(5)}, ${bounds.south.toFixed(5)} ~ ${bounds.east.toFixed(5)}, ${bounds.north.toFixed(5)}`;
 }
 
-function estimateAreaSquareMeters(west: number, south: number, east: number, north: number): number {
-  const midLat = ((south + north) / 2) * Math.PI / 180;
-  const width = Math.abs(east - west) * 111320 * Math.max(0.1, Math.cos(midLat));
-  const height = Math.abs(north - south) * 110540;
-  return Math.round(width * height);
-}
-
 function draftPointToLngLat(point: DraftPoint, bounds: TrainingMapDraft['bounds']): [number, number] {
   return [
     bounds.west + point.x * (bounds.east - bounds.west),
@@ -171,15 +165,10 @@ function draftShapeToFeature(
     : shape.type === 'line'
       ? { type: 'LineString', coordinates: coords }
       : { type: 'Polygon', coordinates: [[...coords, coords[0]]] };
-  const lngs = coords.map(([lng]) => lng);
-  const lats = coords.map(([, lat]) => lat);
-  const area = shape.type === 'polygon'
-    ? estimateAreaSquareMeters(Math.min(...lngs), Math.min(...lats), Math.max(...lngs), Math.max(...lats))
-    : undefined;
 
-  return {
+  const feature: GeoJSONFeature = {
     type: 'Feature',
-    geometry,
+    geometry: geometry as GeoJSONFeature['geometry'],
     properties: {
       id: createDraftId('map-draft-feature'),
       name: `训练中心标注 ${index + 1}`,
@@ -187,16 +176,18 @@ function draftShapeToFeature(
       ...style,
       shapeType,
       layerId,
-      parcelCode: `训练标注-${index + 1}`,
+      parcelCode: `${TRAINING_LABEL_PREFIX}${index + 1}`,
       parcelIndex: index + 1,
       parcelGroup: '训练中心',
-      parcelAreaSquareMeters: area,
-      parcelAreaMu: area ? area / 666.667 : undefined,
-      areaApproximate: shape.type === 'polygon',
       parcelRole: 'parcel',
       source: 'training-map-draft',
     },
   };
+  if (shape.type === 'polygon') {
+    // 精确多边形面积（旧实现用包围盒估算，写回后面积字段永远不会被重算）
+    feature.properties = { ...feature.properties, ...computeAreaProps(feature) };
+  }
+  return feature;
 }
 
 function buildAmapSatelliteTiles(center: [number, number], zoom: number): DraftTile[] {
@@ -231,13 +222,6 @@ function buildAmapSatelliteTiles(center: [number, number], zoom: number): DraftT
   }
 
   return tiles;
-}
-
-function flyToFeatureAfterReturn(feature: GeoJSONFeature): void {
-  window.setTimeout(() => {
-    const api = (window as Window & { __webgis?: { flyToFeature?: (f: GeoJSONFeature) => void } }).__webgis;
-    api?.flyToFeature?.(feature);
-  }, 180);
 }
 
 function readableStatusLabel(status: string): string {
@@ -405,6 +389,8 @@ export default function TrainingPage({
   const [draftShapes, setDraftShapes] = useState<DraftShape[]>([]);
   const [activePoints, setActivePoints] = useState<DraftPoint[]>([]);
   const [hoverPoint, setHoverPoint] = useState<DraftPoint | null>(null);
+  /** 已写回图层的草图 id：再次点「添加至图层」时不重复写入。 */
+  const [writtenShapeIds, setWrittenShapeIds] = useState<Set<string>>(() => new Set());
   const [draftSize, setDraftSize] = useState(DEFAULT_DRAFT_SIZE);
   const [draftColor, setDraftColor] = useState(DEFAULT_DRAFT_COLOR);
   const [draftView, setDraftView] = useState<DraftView>(DEFAULT_DRAFT_VIEW);
@@ -701,6 +687,13 @@ export default function TrainingPage({
     setDraftShapes([]);
     setActivePoints([]);
     setHoverPoint(null);
+    setWrittenShapeIds(new Set());
+  }, []);
+
+  /** 放弃正在画的这一块（点/线/面都适用），已画好的草稿保留。 */
+  const handleCancelActiveDraftShape = useCallback(() => {
+    setActivePoints([]);
+    setHoverPoint(null);
   }, []);
 
   const handleAddDraftToLayer = useCallback(() => {
@@ -710,14 +703,30 @@ export default function TrainingPage({
       layerId = crypto.randomUUID();
       dispatch({ type: 'ADD_LAYER', layer: { id: layerId, name: MANUAL_LABEL_LAYER_NAME, visible: true } });
     }
-    const offset = state.features.length;
-    const features = draftShapes.map((shape, index) => draftShapeToFeature(shape, mapDraft.bounds, layerId, offset + index, draftColor));
+    const pendingShapes = draftShapes.filter((shape) => !writtenShapeIds.has(shape.id));
+    if (pendingShapes.length === 0) {
+      setMessage('草图中的标注此前都已添加过，未重复写入；修改草图（删旧画新）后可继续添加。');
+      return;
+    }
+    // 编号从标定层现有「训练标注-N」最大值顺延，绝不重号。
+    // 旧实现用全库要素总数当偏移量：删除任何要素后计数回退，就会与已有编号撞号。
+    const existingFeatures = state.features.filter((feature) => feature.properties.layerId === layerId);
+    const startIndex = maxTrainingLabelIndex(existingFeatures);
+    const features = pendingShapes.map((shape, index) =>
+      draftShapeToFeature(shape, mapDraft.bounds, layerId, startIndex + index, draftColor),
+    );
     dispatch({ type: 'BATCH_ADD_FEATURES', features });
     dispatch({ type: 'SET_CURRENT_LAYER', id: layerId });
-    setMessage(`已添加 ${features.length} 个地图标注到“${MANUAL_LABEL_LAYER_NAME}”，草图仍保留。`);
+    setWrittenShapeIds((prev) => {
+      const next = new Set(prev);
+      for (const shape of pendingShapes) next.add(shape.id);
+      return next;
+    });
+    const skipped = draftShapes.length - pendingShapes.length;
+    const skippedNote = skipped > 0 ? `（${skipped} 个此前已添加，未重复）` : '';
+    setMessage(`已添加 ${features.length} 个地图标注到“${MANUAL_LABEL_LAYER_NAME}”${skippedNote}，草图仍保留；返回地图即可查看与继续编辑。`);
     pushLog(`已添加 ${features.length} 个地图标注到“${MANUAL_LABEL_LAYER_NAME}”。`, 'success', `map-draft-added:${features.length}:${mapDraft.createdAt}`);
-    flyToFeatureAfterReturn(features[0]);
-  }, [dispatch, draftColor, draftShapes, mapDraft, pushLog, state.currentLayerId, state.features.length, state.layers]);
+  }, [dispatch, draftColor, draftShapes, mapDraft, pushLog, state.features, state.layers, writtenShapeIds]);
 
   const handleUseDraftAsDataset = useCallback(async () => {
     if (!mapDraft) return;
@@ -737,8 +746,11 @@ export default function TrainingPage({
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const imageBlob = await response.blob();
       const layerId = state.layers.find((layer) => layer.name === MANUAL_LABEL_LAYER_NAME)?.id || 'training-map-draft';
+      // 编号同样从标定层现有「训练标注-N」顺延，保持与写回图层一致的含义
+      const existingFeatures = state.features.filter((feature) => feature.properties.layerId === layerId);
+      const startIndex = maxTrainingLabelIndex(existingFeatures);
       const features = polygonShapes.map((shape, index) =>
-        draftShapeToFeature(shape, mapDraft.bounds, layerId, index, draftColor),
+        draftShapeToFeature(shape, mapDraft.bounds, layerId, startIndex + index, draftColor),
       );
       const stamp = new Date().toISOString().replace(/[:.]/g, '-');
       const zipBlob = await buildYoloDatasetZipFromImage(
@@ -762,7 +774,7 @@ export default function TrainingPage({
       setMessage(`训练数据生成失败：${errorText}`);
       pushLog(errorText, 'error', `map-draft-dataset-error:${errorText}`);
     }
-  }, [activePoints, draftColor, draftShapes, draftTool, mapDraft, pushLog, state.layers]);
+  }, [activePoints, draftColor, draftShapes, draftTool, mapDraft, pushLog, state.features, state.layers]);
 
   // Check backend availability on mount
   useEffect(() => {
@@ -937,6 +949,11 @@ export default function TrainingPage({
   const draftTrainingPolygonCount = draftPolygonCount + (
     draftTool === 'polygon' && activePoints.length >= 3 ? 1 : 0
   );
+  /** 尚未写回图层的草图数量（「添加至图层」只写这些，避免重复添加） */
+  const unwrittenDraftCount = useMemo(
+    () => draftShapes.filter((shape) => !writtenShapeIds.has(shape.id)).length,
+    [draftShapes, writtenShapeIds],
+  );
   const draftLayoutStyle = useMemo(
     () => ({ '--draft-map-size': `${draftSize}px`, '--draft-color': draftColor }) as CSSProperties,
     [draftColor, draftSize],
@@ -1033,6 +1050,7 @@ export default function TrainingPage({
               <button type="button" className={draftTool === 'delete' ? 'active' : ''} onClick={() => { setDraftTool('delete'); setActivePoints([]); setHoverPoint(null); }}><Trash2 size={14} />删除</button>
               <button type="button" onClick={handleFinishDraftShape} disabled={!canFinishDraftShape}><CheckCircle2 size={14} />{draftTool === 'polygon' ? '闭合面' : '完成当前'}</button>
               <button type="button" onClick={handleUndoDraftPoint} disabled={activePoints.length === 0}>撤销点</button>
+              <button type="button" onClick={handleCancelActiveDraftShape} disabled={activePoints.length === 0} title="放弃正在画的这一块，已画好的标注保留">取消当前</button>
             </div>
             <div className={`training-map-draft-layout dock-${draftDock}`} style={draftLayoutStyle}>
               <div
@@ -1133,8 +1151,15 @@ export default function TrainingPage({
                   <button className="training-secondary-btn" type="button" onClick={handleClearDraftRects} disabled={draftShapes.length === 0 && activePoints.length === 0}>
                     <Trash2 size={14} />清空
                   </button>
-                  <button className="training-primary-btn" type="button" onClick={handleAddDraftToLayer} disabled={draftShapes.length === 0}>
-                    <CheckCircle2 size={15} />添加至图层
+                  <button className="training-primary-btn" type="button" onClick={handleAddDraftToLayer}
+                    disabled={draftShapes.length === 0 || unwrittenDraftCount === 0}
+                    title={draftShapes.length > 0 && unwrittenDraftCount === 0 ? '草图标注都已添加过；删旧画新后可继续添加' : undefined}>
+                    <CheckCircle2 size={15} />
+                    {draftShapes.length > 0 && unwrittenDraftCount === 0
+                      ? '已全部添加'
+                      : unwrittenDraftCount > 0 && unwrittenDraftCount < draftShapes.length
+                        ? `添加至图层（${unwrittenDraftCount} 个新）`
+                        : '添加至图层'}
                   </button>
                 </div>
               </div>

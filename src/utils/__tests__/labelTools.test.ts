@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { formatLabelCode, planLabelUpdates, computeAreaProps } from '../labelTools';
+import {
+  formatLabelCode,
+  planLabelUpdates,
+  computeAreaProps,
+  maxTrainingLabelIndex,
+} from '../labelTools';
 import type { GeoJSONFeature } from '../../types';
 
 function makeFeature(
@@ -172,5 +177,32 @@ describe('computeAreaProps', () => {
     const props = computeAreaProps(makeFeature('f'));
     expect(props.parcelAreaSquareMeters).toBeGreaterThan(0);
     expect(props.parcelAreaMu).toBeCloseTo(props.parcelAreaSquareMeters! / 666.667, 1);
+  });
+});
+
+describe('maxTrainingLabelIndex', () => {
+  it('returns 0 when no training codes exist', () => {
+    expect(maxTrainingLabelIndex([])).toBe(0);
+    expect(maxTrainingLabelIndex([makeFeature('a', { parcelCode: 'MAN-007' })])).toBe(0);
+  });
+
+  it('finds the highest training code regardless of order or gaps', () => {
+    const features = [
+      makeFeature('a', { parcelCode: '训练标注-12' }),
+      makeFeature('b', { parcelCode: 'MAN-061' }),
+      makeFeature('c', { parcelCode: '训练标注-5' }),
+      makeFeature('d', { parcelCode: '训练标注-30' }),
+    ];
+    expect(maxTrainingLabelIndex(features)).toBe(30);
+  });
+
+  it('ignores malformed or partial codes', () => {
+    const features = [
+      makeFeature('a', { parcelCode: '训练标注-' }),
+      makeFeature('b', { parcelCode: '训练标注-abc' }),
+      makeFeature('c', { parcelCode: '训练标注-9x' }),
+      makeFeature('d', { parcelCode: '训练标注-4' }),
+    ];
+    expect(maxTrainingLabelIndex(features)).toBe(4);
   });
 });
